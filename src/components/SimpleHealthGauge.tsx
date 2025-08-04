@@ -34,8 +34,8 @@ const SimpleHealthGauge: React.FC<SimpleHealthGaugeProps> = ({
   
   const healthData = getHealthData(clampedValue);
   
-  // Calculate rotation for needle (0° = right, -180° = left)
-  const rotation = -180 + (clampedValue / 100) * 180;
+  // Calculate rotation for needle (0° = left/good, 180° = right/bad)
+  const rotation = (clampedValue / 100) * 180;
   
   return (
     <Box sx={{ 
@@ -52,10 +52,10 @@ const SimpleHealthGauge: React.FC<SimpleHealthGaugeProps> = ({
         borderRadius: '50%',
         background: `conic-gradient(
           from 180deg,
-          #4caf50 0deg 72deg,
-          #ffc107 72deg 99deg,
-          #ff9800 99deg 117deg,
-          #d32f2f 117deg 180deg,
+          #4caf50 0deg ${180 * 0.4}deg,
+          #ffc107 ${180 * 0.4}deg ${180 * 0.55}deg,
+          #ff9800 ${180 * 0.55}deg ${180 * 0.65}deg,
+          #d32f2f ${180 * 0.65}deg 180deg,
           #e0e0e0 180deg 360deg
         )`,
         display: 'flex',
