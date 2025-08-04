@@ -48,9 +48,22 @@ const HealthGauge: React.FC<HealthGaugeProps> = ({
       display: 'flex', 
       flexDirection: 'column', 
       alignItems: 'center',
-      gap: 1
+      gap: 1,
+      p: 1,
+      minWidth: config.width + 20,
+      minHeight: config.height + 40
     }}>
-      <Box sx={{ position: 'relative', width: config.width, height: config.height }}>
+      <Box sx={{ 
+        position: 'relative', 
+        width: config.width, 
+        height: config.height,
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 2,
+        bgcolor: 'background.paper',
+        p: 1,
+        boxShadow: 1
+      }}>
         {/* Gauge background */}
         <svg
           width={config.width}
