@@ -22,6 +22,7 @@ interface LendingContextType {
   currentTime: Date;
   createLoan: (params: LoanParams) => void;
   repayLoan: (loanId: string, amount: number) => void;
+  addCollateral: (loanId: string, amount: number) => void;
   liquidateLoan: (loanId: string) => void;
   simulateTime: (days: number) => void;
   updateXpmPrice: (newPriceUSD: number) => void;
@@ -134,6 +135,33 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           borrowedAmount: loan.borrowedAmount - paidPrincipal,
           accruedInterest: loan.accruedInterest - paidInterest,
           currentLTV: calculateLTV(collateralValueUSD, remainingDebtUSD),
+        };
+      })
+    );
+  }, [marketData.xpmPriceUSD, marketData.xrpPriceUSD]);
+
+  const addCollateral = useCallback((loanId: string, amount: number) => {
+    setLoans(prevLoans =>
+      prevLoans.map(loan => {
+        if (loan.id !== loanId || loan.status !== 'active') return loan;
+        
+        const newCollateralAmount = loan.collateralAmount + amount;
+        const collateralValueUSD = calculateCollateralValueUSD(newCollateralAmount, marketData.xpmPriceUSD);
+        const debtValueUSD = calculateDebtValueUSD(loan.borrowedAmount + loan.accruedInterest, marketData.xrpPriceUSD);
+        
+        // Recalculate liquidation price with new collateral amount
+        const newLiquidationPrice = calculateLiquidationPriceUSD(
+          loan.borrowedAmount + loan.accruedInterest,
+          newCollateralAmount,
+          marketData.xrpPriceUSD,
+          65
+        );
+        
+        return {
+          ...loan,
+          collateralAmount: newCollateralAmount,
+          currentLTV: calculateLTV(collateralValueUSD, debtValueUSD),
+          liquidationPrice: newLiquidationPrice,
         };
       })
     );
@@ -275,6 +303,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         currentTime,
         createLoan,
         repayLoan,
+        addCollateral,
         liquidateLoan,
         simulateTime,
         updateXpmPrice,

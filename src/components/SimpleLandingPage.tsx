@@ -16,6 +16,11 @@ import {
   FormControlLabel,
   Radio,
   Switch,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
 } from '@mui/material';
 import { useLending } from '../context/LendingContext';
 import { calculateMaxBorrowUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
@@ -25,6 +30,9 @@ const SimpleLandingPage: React.FC = () => {
   const [collateralAmount, setCollateralAmount] = useState<string>('150000');
   const [selectedTerm, setSelectedTerm] = useState<number>(60);
   const [autoRenew, setAutoRenew] = useState<boolean>(true);
+  const [confirmDialog, setConfirmDialog] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
   
   const collateral = parseFloat(collateralAmount) || 0;
   const collateralValueUSD = collateral * marketData.xpmPriceUSD;
@@ -35,15 +43,24 @@ const SimpleLandingPage: React.FC = () => {
 
   const handleCreateLoan = () => {
     if (collateral > 0) {
-      createLoan({
-        collateralAmount: collateral,
-        borrowAmount: maxBorrowXRP,
-        interestRate: 15,
-        liquidationThreshold: 65,
-        termDays: selectedTerm,
-        autoRenew: autoRenew,
-      });
+      setConfirmDialog(true);
     }
+  };
+
+  const confirmCreateLoan = () => {
+    createLoan({
+      collateralAmount: collateral,
+      borrowAmount: maxBorrowXRP,
+      interestRate: selectedTerm === 30 ? 14 : selectedTerm === 60 ? 15 : 16,
+      liquidationThreshold: 65,
+      termDays: selectedTerm,
+      autoRenew: autoRenew,
+    });
+    setConfirmDialog(false);
+    setSuccessMessage(`Loan created successfully! You received ${maxBorrowXRP.toFixed(0)} XRP for ${selectedTerm} days with ${autoRenew ? 'auto-renewal enabled' : 'manual renewal'}.`);
+    setShowSuccess(true);
+    // Reset form
+    setCollateralAmount('150000');
   };
 
   const termOptions = [
@@ -260,6 +277,60 @@ const SimpleLandingPage: React.FC = () => {
           </Grid>
         </Grid>
       </Paper>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={confirmDialog} onClose={() => setConfirmDialog(false)}>
+        <DialogTitle>Confirm Loan Creation</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            <Typography variant="body1" gutterBottom>
+              <strong>Loan Summary:</strong>
+            </Typography>
+            <Typography variant="body2" gutterBottom>
+              • Collateral: {collateral.toLocaleString()} XPM (${collateralValueUSD.toFixed(0)} USD)
+            </Typography>
+            <Typography variant="body2" gutterBottom>
+              • You'll receive: {maxBorrowXRP.toFixed(0)} XRP (${borrowValueUSD.toFixed(0)} USD)
+            </Typography>
+            <Typography variant="body2" gutterBottom>
+              • Term: {selectedTerm} days ({selectedTerm === 30 ? '14%' : selectedTerm === 60 ? '15%' : '16%'} APR)
+            </Typography>
+            <Typography variant="body2" gutterBottom>
+              • Auto-renewal: {autoRenew ? 'Enabled' : 'Disabled'}
+            </Typography>
+            <Typography variant="body2" gutterBottom>
+              • Liquidation if XPM drops to: ${liquidationPriceUSD.toFixed(4)}
+            </Typography>
+            
+            <Alert severity="info" sx={{ mt: 2 }}>
+              <Typography variant="body2">
+                By confirming, you agree to deposit the collateral and receive the XRP loan. 
+                Interest will accrue daily at the specified rate.
+              </Typography>
+            </Alert>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialog(false)}>
+            Cancel
+          </Button>
+          <Button onClick={confirmCreateLoan} variant="contained" size="large">
+            Confirm & Create Loan
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Success Notification */}
+      <Snackbar
+        open={showSuccess}
+        autoHideDuration={6000}
+        onClose={() => setShowSuccess(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setShowSuccess(false)} severity="success" sx={{ width: '100%' }}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

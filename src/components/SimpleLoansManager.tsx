@@ -19,24 +19,66 @@ import {
   Chip,
   Alert,
   LinearProgress,
+  Snackbar,
+  Stack,
 } from '@mui/material';
 import { useLending } from '../context/LendingContext';
 import { Loan } from '../types/lending';
 
 const SimpleLoansManager: React.FC = () => {
-  const { loans, repayLoan, liquidateLoan, marketData, extendLoan, currentTime } = useLending();
+  const { loans, repayLoan, liquidateLoan, addCollateral, marketData, extendLoan, currentTime } = useLending();
   const [repayDialog, setRepayDialog] = useState<{ open: boolean; loan: Loan | null }>({ open: false, loan: null });
+  const [addCollateralDialog, setAddCollateralDialog] = useState<{ open: boolean; loan: Loan | null }>({ open: false, loan: null });
   const [repayAmount, setRepayAmount] = useState('');
+  const [collateralAmount, setCollateralAmount] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const activeLoans = loans.filter(loan => loan.status === 'active');
   const hasLoans = loans.length > 0;
 
   const handleRepay = () => {
     if (repayDialog.loan && repayAmount) {
-      repayLoan(repayDialog.loan.id, parseFloat(repayAmount));
+      const amount = parseFloat(repayAmount);
+      const totalDebt = repayDialog.loan.borrowedAmount + repayDialog.loan.accruedInterest;
+      
+      repayLoan(repayDialog.loan.id, amount);
       setRepayDialog({ open: false, loan: null });
       setRepayAmount('');
+      
+      if (amount >= totalDebt) {
+        setSuccessMessage('Loan fully repaid! Collateral will be returned.');
+      } else {
+        setSuccessMessage(`Successfully repaid ${amount.toFixed(4)} XRP. Remaining debt: ${(totalDebt - amount).toFixed(4)} XRP`);
+      }
+      setShowSuccess(true);
     }
+  };
+
+  const handleAddCollateral = () => {
+    if (addCollateralDialog.loan && collateralAmount) {
+      const amount = parseFloat(collateralAmount);
+      const oldLTV = addCollateralDialog.loan.currentLTV;
+      
+      addCollateral(addCollateralDialog.loan.id, amount);
+      setAddCollateralDialog({ open: false, loan: null });
+      setCollateralAmount('');
+      
+      setSuccessMessage(`Added ${amount.toLocaleString()} XPM collateral. Your LTV improved from ${oldLTV.toFixed(1)}% to a lower ratio.`);
+      setShowSuccess(true);
+    }
+  };
+
+  const handleExtendLoan = (loanId: string) => {
+    extendLoan(loanId);
+    setSuccessMessage('Loan successfully extended for another term period.');
+    setShowSuccess(true);
+  };
+
+  const handleLiquidation = (loanId: string) => {
+    liquidateLoan(loanId);
+    setSuccessMessage('Loan liquidated. Liquidation fee applied.');
+    setShowSuccess(true);
   };
 
   const getLoanHealthColor = (ltv: number) => {
@@ -208,35 +250,47 @@ const SimpleLoansManager: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     {loan.status === 'active' && (
-                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => setRepayDialog({ open: true, loan })}
-                        >
-                          Repay
-                        </Button>
-                        {canExtend && getDaysUntilMaturity(loan.maturityDate) <= 7 && (
+                      <Stack direction="column" spacing={1}>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                           <Button
                             size="small"
                             variant="outlined"
-                            color="info"
-                            onClick={() => extendLoan(loan.id)}
+                            onClick={() => setRepayDialog({ open: true, loan })}
                           >
-                            Extend
+                            Repay
                           </Button>
-                        )}
-                        {loan.currentLTV >= 65 && (
                           <Button
                             size="small"
-                            variant="contained"
-                            color="error"
-                            onClick={() => liquidateLoan(loan.id)}
+                            variant="outlined"
+                            color="secondary"
+                            onClick={() => setAddCollateralDialog({ open: true, loan })}
                           >
-                            Liquidate
+                            Add Collateral
                           </Button>
-                        )}
-                      </Box>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                          {canExtend && getDaysUntilMaturity(loan.maturityDate) <= 7 && (
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="info"
+                              onClick={() => handleExtendLoan(loan.id)}
+                            >
+                              Extend
+                            </Button>
+                          )}
+                          {loan.currentLTV >= 65 && (
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="error"
+                              onClick={() => handleLiquidation(loan.id)}
+                            >
+                              Liquidate
+                            </Button>
+                          )}
+                        </Box>
+                      </Stack>
                     )}
                   </TableCell>
                 </TableRow>
@@ -307,6 +361,64 @@ const SimpleLoansManager: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Add Collateral Dialog */}
+      <Dialog open={addCollateralDialog.open} onClose={() => setAddCollateralDialog({ open: false, loan: null })}>
+        <DialogTitle>Add Collateral</DialogTitle>
+        <DialogContent>
+          {addCollateralDialog.loan && (
+            <Box sx={{ pt: 2 }}>
+              <Typography variant="body2" gutterBottom>
+                Current collateral: {addCollateralDialog.loan.collateralAmount.toLocaleString()} XPM
+              </Typography>
+              <Typography variant="body2" gutterBottom color="text.secondary">
+                Current LTV: {addCollateralDialog.loan.currentLTV.toFixed(1)}%
+              </Typography>
+              <TextField
+                autoFocus
+                fullWidth
+                label="Additional XPM Amount"
+                type="number"
+                value={collateralAmount}
+                onChange={(e) => setCollateralAmount(e.target.value)}
+                sx={{ mt: 2 }}
+                inputProps={{ step: 1000, min: 1000 }}
+                helperText={`Adding collateral will reduce your LTV and liquidation risk. Worth $${parseFloat(collateralAmount || '0') * marketData.xpmPriceUSD} USD`}
+              />
+              {parseFloat(collateralAmount || '0') > 0 && (
+                <Box sx={{ mt: 2, p: 2, bgcolor: 'success.light', borderRadius: 1 }}>
+                  <Typography variant="body2" color="success.dark">
+                    New total collateral: {(addCollateralDialog.loan.collateralAmount + parseFloat(collateralAmount || '0')).toLocaleString()} XPM
+                  </Typography>
+                  <Typography variant="body2" color="success.dark">
+                    Estimated new LTV: {(((addCollateralDialog.loan.borrowedAmount + addCollateralDialog.loan.accruedInterest) * marketData.xrpPriceUSD) / ((addCollateralDialog.loan.collateralAmount + parseFloat(collateralAmount || '0')) * marketData.xpmPriceUSD) * 100).toFixed(1)}%
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddCollateralDialog({ open: false, loan: null })}>
+            Cancel
+          </Button>
+          <Button onClick={handleAddCollateral} variant="contained" color="secondary">
+            Add Collateral
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Success Notification */}
+      <Snackbar
+        open={showSuccess}
+        autoHideDuration={6000}
+        onClose={() => setShowSuccess(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setShowSuccess(false)} severity="success" sx={{ width: '100%' }}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
