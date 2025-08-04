@@ -17,11 +17,11 @@ const HealthGauge: React.FC<HealthGaugeProps> = ({
   // Clamp value between 0 and 100
   const clampedValue = Math.min(Math.max(value, 0), 100);
   
-  // Size configurations
+  // Size configurations - fixed proportions for proper semicircle
   const sizeConfig = {
-    small: { width: 120, height: 80, thickness: 8, fontSize: '0.875rem' },
-    medium: { width: 180, height: 120, thickness: 12, fontSize: '1.125rem' },
-    large: { width: 240, height: 160, thickness: 16, fontSize: '1.5rem' }
+    small: { width: 100, height: 60, thickness: 6, fontSize: '0.75rem' },
+    medium: { width: 140, height: 80, thickness: 8, fontSize: '0.875rem' },
+    large: { width: 180, height: 100, thickness: 12, fontSize: '1.125rem' }
   };
   
   const config = sizeConfig[size];
@@ -70,9 +70,9 @@ const HealthGauge: React.FC<HealthGaugeProps> = ({
           
           {/* Background arc */}
           <path
-            d={`M ${config.thickness / 2} ${config.height - config.thickness / 2} 
-                A ${config.width / 2 - config.thickness / 2} ${config.height - config.thickness / 2} 
-                0 0 1 ${config.width - config.thickness / 2} ${config.height - config.thickness / 2}`}
+            d={`M ${config.thickness} ${config.height - config.thickness / 2} 
+                A ${config.width / 2 - config.thickness} ${config.width / 2 - config.thickness} 
+                0 0 1 ${config.width - config.thickness} ${config.height - config.thickness / 2}`}
             fill="none"
             stroke="#e0e0e0"
             strokeWidth={config.thickness}
@@ -81,9 +81,9 @@ const HealthGauge: React.FC<HealthGaugeProps> = ({
           
           {/* Colored arc */}
           <path
-            d={`M ${config.thickness / 2} ${config.height - config.thickness / 2} 
-                A ${config.width / 2 - config.thickness / 2} ${config.height - config.thickness / 2} 
-                0 0 1 ${config.width - config.thickness / 2} ${config.height - config.thickness / 2}`}
+            d={`M ${config.thickness} ${config.height - config.thickness / 2} 
+                A ${config.width / 2 - config.thickness} ${config.width / 2 - config.thickness} 
+                0 0 1 ${config.width - config.thickness} ${config.height - config.thickness / 2}`}
             fill="none"
             stroke={`url(#${gradientId})`}
             strokeWidth={config.thickness}
@@ -94,13 +94,17 @@ const HealthGauge: React.FC<HealthGaugeProps> = ({
           {[0, 40, 55, 65, 100].map((tick) => {
             const angle = (tick / 100) * 180 - 90;
             const radians = (angle * Math.PI) / 180;
-            const innerRadius = config.width / 2 - config.thickness - 5;
-            const outerRadius = config.width / 2 - config.thickness + 5;
+            const radius = config.width / 2 - config.thickness;
+            const innerRadius = radius - 5;
+            const outerRadius = radius + 5;
             
-            const x1 = config.width / 2 + innerRadius * Math.cos(radians);
-            const y1 = config.height - config.thickness / 2 + innerRadius * Math.sin(radians);
-            const x2 = config.width / 2 + outerRadius * Math.cos(radians);
-            const y2 = config.height - config.thickness / 2 + outerRadius * Math.sin(radians);
+            const centerX = config.width / 2;
+            const centerY = config.height - config.thickness / 2;
+            
+            const x1 = centerX + innerRadius * Math.cos(radians);
+            const y1 = centerY + innerRadius * Math.sin(radians);
+            const x2 = centerX + outerRadius * Math.cos(radians);
+            const y2 = centerY + outerRadius * Math.sin(radians);
             
             return (
               <line
@@ -110,7 +114,7 @@ const HealthGauge: React.FC<HealthGaugeProps> = ({
                 x2={x2}
                 y2={y2}
                 stroke={tick === 65 ? '#d32f2f' : '#666'}
-                strokeWidth={tick === 65 ? 3 : 2}
+                strokeWidth={tick === 65 ? 2 : 1}
               />
             );
           })}
@@ -119,10 +123,10 @@ const HealthGauge: React.FC<HealthGaugeProps> = ({
           <g transform={`translate(${config.width / 2}, ${config.height - config.thickness / 2})`}>
             <g transform={`rotate(${rotation})`}>
               <polygon
-                points={`0,-3 ${config.width / 2 - config.thickness - 10},0 0,3`}
+                points={`0,-2 ${config.width / 2 - config.thickness - 8},0 0,2`}
                 fill={color}
               />
-              <circle r="5" fill={color} />
+              <circle r="3" fill={color} />
             </g>
           </g>
         </svg>
@@ -147,13 +151,13 @@ const HealthGauge: React.FC<HealthGaugeProps> = ({
         </Box>
         
         {/* Zone labels */}
-        <Box sx={{ position: 'absolute', bottom: -5, left: 5 }}>
-          <Typography sx={{ fontSize: '0.625rem', color: '#4caf50' }}>
+        <Box sx={{ position: 'absolute', bottom: 0, left: 8 }}>
+          <Typography sx={{ fontSize: '0.5rem', color: '#4caf50', fontWeight: 500 }}>
             Safe
           </Typography>
         </Box>
-        <Box sx={{ position: 'absolute', bottom: -5, right: 5 }}>
-          <Typography sx={{ fontSize: '0.625rem', color: '#d32f2f' }}>
+        <Box sx={{ position: 'absolute', bottom: 0, right: 8 }}>
+          <Typography sx={{ fontSize: '0.5rem', color: '#d32f2f', fontWeight: 500 }}>
             Danger
           </Typography>
         </Box>
