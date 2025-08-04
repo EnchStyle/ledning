@@ -75,7 +75,7 @@ const LoanRiskCalculator: React.FC = () => {
   }, [collateralAmount, borrowAmount, testXpmPrice, marketData.xrpPriceUSD]);
 
   return (
-    <Paper sx={{ p: 4 }}>
+    <Paper sx={{ p: 4, maxWidth: 1200, mx: 'auto' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
         <CalculateIcon color="primary" />
         <Typography variant="h5">
@@ -89,7 +89,7 @@ const LoanRiskCalculator: React.FC = () => {
 
       <Grid container spacing={3}>
         {/* Input Section */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} lg={4}>
           <Paper sx={{ p: 2, bgcolor: 'background.default' }}>
             <Typography variant="h6" gutterBottom>
               Loan Parameters
@@ -136,7 +136,7 @@ const LoanRiskCalculator: React.FC = () => {
         </Grid>
 
         {/* Results Section */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} lg={8}>
           {calculations ? (
             <Box>
               <Paper sx={{ p: 2, mb: 2, bgcolor: 'background.default' }}>

@@ -97,7 +97,7 @@ const TrueRiskAnalysis: React.FC = () => {
   };
 
   return (
-    <Paper sx={{ p: 4 }}>
+    <Paper sx={{ p: 4, maxWidth: 1400, mx: 'auto' }}>
       <Typography variant="h5" gutterBottom>
         🎯 The Truth About Dual-Asset Risk
       </Typography>
@@ -137,8 +137,8 @@ const TrueRiskAnalysis: React.FC = () => {
         Complete Scenario Analysis
       </Typography>
 
-      <TableContainer>
-        <Table>
+      <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
+        <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
               <TableCell><strong>Scenario</strong></TableCell>

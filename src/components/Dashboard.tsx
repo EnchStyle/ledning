@@ -5,7 +5,12 @@ import MainTabs from './MainTabs';
 
 const Dashboard: React.FC = () => {
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      bgcolor: 'background.default',
+      maxWidth: '100vw',
+      overflow: 'hidden'
+    }}>
       <Header />
       <MainTabs />
     </Box>

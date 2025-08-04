@@ -15,7 +15,7 @@ const Header: React.FC = () => {
 
   return (
     <AppBar position="static" elevation={0} sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}>
-      <Toolbar>
+      <Toolbar sx={{ maxWidth: 1400, mx: 'auto', width: '100%' }}>
         <Typography variant="h5" component="div" sx={{ flexGrow: 1, color: 'primary.main', fontWeight: 'bold' }}>
           XRP Lending
         </Typography>

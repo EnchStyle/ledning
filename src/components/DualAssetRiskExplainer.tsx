@@ -60,7 +60,7 @@ const DualAssetRiskExplainer: React.FC = () => {
   ];
 
   return (
-    <Paper sx={{ p: 4 }}>
+    <Paper sx={{ p: 4, maxWidth: 1200, mx: 'auto' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
         <WarningIcon color="warning" />
         <Typography variant="h5">
@@ -83,8 +83,8 @@ const DualAssetRiskExplainer: React.FC = () => {
         Example: You deposit 150,000 XPM ($3,000) and borrow 500 XRP ($1,500) at 50% LTV
       </Typography>
 
-      <TableContainer>
-        <Table>
+      <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
+        <Table sx={{ minWidth: 600 }}>
           <TableHead>
             <TableRow>
               <TableCell>Scenario</TableCell>

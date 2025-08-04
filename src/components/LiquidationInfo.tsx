@@ -41,7 +41,7 @@ const LiquidationInfo: React.FC = () => {
   const remainingCollateral = exampleLoan.collateral - collateralToLiquidate;
 
   return (
-    <Box>
+    <Box sx={{ maxWidth: 1400, mx: 'auto' }}>
       <Paper sx={{ p: 3 }}>
         <Box display="flex" alignItems="center" gap={1} mb={2}>
           <InfoIcon color="info" />
