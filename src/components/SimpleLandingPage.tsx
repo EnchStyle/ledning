@@ -24,6 +24,7 @@ import {
 } from '@mui/material';
 import { useLending } from '../context/LendingContext';
 import { calculateMaxBorrowUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
+import HealthGauge from './HealthGauge';
 
 const SimpleLandingPage: React.FC = () => {
   const { createLoan, marketData } = useLending();
@@ -171,18 +172,14 @@ const SimpleLandingPage: React.FC = () => {
             </Box>
 
             {collateral > 0 && (
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Loan Health (50% LTV target)
-                </Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={76.9} // 50% of 65% liquidation threshold
-                  color="success"
-                  sx={{ height: 8, borderRadius: 1, mb: 1 }}
+              <Box sx={{ textAlign: 'center', mt: 2 }}>
+                <HealthGauge 
+                  value={50} // Initial LTV of 50%
+                  size="medium"
+                  label="Initial Loan Health"
                 />
-                <Typography variant="caption" color="text.secondary">
-                  Safe • {priceDropToLiquidation.toFixed(0)}% price drop buffer
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                  {priceDropToLiquidation.toFixed(0)}% price drop buffer to liquidation
                 </Typography>
               </Box>
             )}
@@ -329,6 +326,14 @@ const SimpleLandingPage: React.FC = () => {
             <Typography variant="body2" gutterBottom>
               • Liquidation if XPM drops to: ${liquidationPriceUSD.toFixed(4)}
             </Typography>
+            
+            <Box sx={{ textAlign: 'center', my: 2 }}>
+              <HealthGauge 
+                value={50} 
+                size="small"
+                label="Starting LTV"
+              />
+            </Box>
             
             <Alert severity="info" sx={{ mt: 2 }}>
               <Typography variant="body2">

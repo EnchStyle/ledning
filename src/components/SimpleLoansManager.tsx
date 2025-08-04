@@ -21,9 +21,11 @@ import {
   LinearProgress,
   Snackbar,
   Stack,
+  Grid,
 } from '@mui/material';
 import { useLending } from '../context/LendingContext';
 import { Loan } from '../types/lending';
+import HealthGauge from './HealthGauge';
 
 const SimpleLoansManager: React.FC = () => {
   const { loans, repayLoan, liquidateLoan, addCollateral, marketData, extendLoan, currentTime } = useLending();
@@ -225,23 +227,22 @@ const SimpleLoansManager: React.FC = () => {
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Box>
-                      <Typography variant="body2" color={`${healthColor}.main`} sx={{ fontWeight: 600 }}>
-                        {loan.currentLTV.toFixed(1)}%
-                      </Typography>
-                      <Chip 
-                        label={healthText} 
-                        color={healthColor} 
-                        size="small"
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <HealthGauge 
+                        value={loan.currentLTV} 
+                        size="small" 
+                        showLabel={false}
                       />
-                      {loan.status === 'active' && (
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={(loan.currentLTV / 65) * 100}
-                          color={healthColor}
-                          sx={{ mt: 1, height: 4, borderRadius: 1 }}
+                      <Box>
+                        <Typography variant="body2" color={`${healthColor}.main`} sx={{ fontWeight: 600 }}>
+                          {loan.currentLTV.toFixed(1)}%
+                        </Typography>
+                        <Chip 
+                          label={healthText} 
+                          color={healthColor} 
+                          size="small"
                         />
-                      )}
+                      </Box>
                     </Box>
                   </TableCell>
                   <TableCell>
@@ -355,20 +356,21 @@ const SimpleLoansManager: React.FC = () => {
 
               <Box sx={{ mb: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                  <Typography variant="caption" color="text.secondary">Loan Health</Typography>
-                  <Typography variant="body2" color={`${healthColor}.main`} fontWeight={600}>
-                    {loan.currentLTV.toFixed(1)}%
-                  </Typography>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">Loan Health</Typography>
+                    <Typography variant="body2" color={`${healthColor}.main`} fontWeight={600}>
+                      {loan.currentLTV.toFixed(1)}% • {healthText}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {loan.autoRenew ? 'Auto-renew' : 'Manual'} • {loan.extensionsUsed}/{loan.maxExtensions} ext.
+                    </Typography>
+                  </Box>
+                  <HealthGauge 
+                    value={loan.currentLTV} 
+                    size="small" 
+                    showLabel={false}
+                  />
                 </Box>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={(loan.currentLTV / 65) * 100}
-                  color={healthColor}
-                  sx={{ height: 6, borderRadius: 1 }}
-                />
-                <Typography variant="caption" color="text.secondary">
-                  {loan.autoRenew ? 'Auto-renew' : 'Manual'} • {loan.extensionsUsed}/{loan.maxExtensions} ext.
-                </Typography>
               </Box>
 
               {loan.status === 'active' && (
