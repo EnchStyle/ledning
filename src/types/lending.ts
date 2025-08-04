@@ -8,7 +8,13 @@ export interface Loan {
   createdAt: Date;
   liquidationPrice: number; // Price at which loan gets liquidated
   currentLTV: number; // Current Loan-to-Value ratio
-  status: 'active' | 'liquidated' | 'repaid';
+  status: 'active' | 'liquidated' | 'repaid' | 'matured';
+  // Term system
+  termDays: number; // 30, 60, 90 days
+  maturityDate: Date; // When loan must be repaid
+  autoRenew: boolean; // Allow automatic extensions
+  extensionsUsed: number; // Number of extensions used
+  maxExtensions: number; // Maximum allowed extensions (default: 3)
 }
 
 export interface LoanParams {
@@ -16,6 +22,8 @@ export interface LoanParams {
   borrowAmount: number;
   interestRate: number;
   liquidationThreshold: number; // LTV threshold for liquidation (e.g., 80%)
+  termDays: number; // 30, 60, 90 days
+  autoRenew: boolean; // Allow automatic extensions
 }
 
 export interface MarketData {

@@ -24,7 +24,7 @@ import { useLending } from '../context/LendingContext';
 import { Loan } from '../types/lending';
 
 const SimpleLoansManager: React.FC = () => {
-  const { loans, repayLoan, liquidateLoan, marketData } = useLending();
+  const { loans, repayLoan, liquidateLoan, marketData, extendLoan, currentTime } = useLending();
   const [repayDialog, setRepayDialog] = useState<{ open: boolean; loan: Loan | null }>({ open: false, loan: null });
   const [repayAmount, setRepayAmount] = useState('');
 
@@ -50,6 +50,20 @@ const SimpleLoansManager: React.FC = () => {
     if (ltv >= 55) return 'High Risk';
     if (ltv >= 40) return 'Medium Risk';
     return 'Healthy';
+  };
+
+  const getDaysUntilMaturity = (maturityDate: Date) => {
+    const diffTime = maturityDate.getTime() - currentTime.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const getMaturityStatus = (loan: Loan) => {
+    const daysLeft = getDaysUntilMaturity(loan.maturityDate);
+    if (daysLeft < 0) return { text: 'MATURED', color: 'error' };
+    if (daysLeft <= 3) return { text: `${daysLeft}d left`, color: 'warning' };
+    if (daysLeft <= 7) return { text: `${daysLeft}d left`, color: 'info' };
+    return { text: `${daysLeft}d left`, color: 'success' };
   };
 
   if (!hasLoans) {
@@ -119,6 +133,7 @@ const SimpleLoansManager: React.FC = () => {
               <TableCell>Interest</TableCell>
               <TableCell>Total Debt</TableCell>
               <TableCell>Health</TableCell>
+              <TableCell>Maturity</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -128,6 +143,8 @@ const SimpleLoansManager: React.FC = () => {
               const totalDebt = loan.borrowedAmount + loan.accruedInterest;
               const healthColor = getLoanHealthColor(loan.currentLTV);
               const healthText = getLoanHealthText(loan.currentLTV);
+              const maturityStatus = getMaturityStatus(loan);
+              const canExtend = loan.extensionsUsed < loan.maxExtensions && loan.currentLTV < 40;
               
               return (
                 <TableRow key={loan.id}>
@@ -177,15 +194,21 @@ const SimpleLoansManager: React.FC = () => {
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Chip 
-                      label={loan.status}
-                      color={loan.status === 'active' ? 'success' : loan.status === 'liquidated' ? 'error' : 'default'}
-                      size="small"
-                    />
+                    <Box>
+                      <Chip 
+                        label={maturityStatus.text}
+                        color={maturityStatus.color}
+                        size="small"
+                        sx={{ mb: 0.5 }}
+                      />
+                      <Typography variant="caption" display="block" color="text.secondary">
+                        {loan.autoRenew ? 'Auto-renew' : 'Manual'} • {loan.extensionsUsed}/{loan.maxExtensions} ext.
+                      </Typography>
+                    </Box>
                   </TableCell>
                   <TableCell>
                     {loan.status === 'active' && (
-                      <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                         <Button
                           size="small"
                           variant="outlined"
@@ -193,6 +216,16 @@ const SimpleLoansManager: React.FC = () => {
                         >
                           Repay
                         </Button>
+                        {canExtend && getDaysUntilMaturity(loan.maturityDate) <= 7 && (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="info"
+                            onClick={() => extendLoan(loan.id)}
+                          >
+                            Extend
+                          </Button>
+                        )}
                         {loan.currentLTV >= 65 && (
                           <Button
                             size="small"
@@ -219,6 +252,25 @@ const SimpleLoansManager: React.FC = () => {
           <Typography variant="body2">
             <strong>Risk Alert:</strong> You have loans at risk of liquidation. 
             Consider repaying or adding more collateral to improve loan health.
+          </Typography>
+        </Alert>
+      )}
+
+      {/* Maturity alerts */}
+      {activeLoans.some(loan => getDaysUntilMaturity(loan.maturityDate) <= 3) && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          <Typography variant="body2">
+            <strong>Maturity Alert:</strong> You have loans expiring soon. 
+            Repay or extend them before they mature to avoid additional fees.
+          </Typography>
+        </Alert>
+      )}
+
+      {activeLoans.some(loan => getDaysUntilMaturity(loan.maturityDate) <= 7 && getDaysUntilMaturity(loan.maturityDate) > 3) && (
+        <Alert severity="info" sx={{ mt: 2 }}>
+          <Typography variant="body2">
+            <strong>Extension Available:</strong> Some loans are approaching maturity. 
+            You can extend healthy loans (LTV &lt; 40%) for additional terms.
           </Typography>
         </Alert>
       )}

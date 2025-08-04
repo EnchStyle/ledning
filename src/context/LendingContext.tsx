@@ -28,6 +28,9 @@ interface LendingContextType {
   updateXrpPrice: (newPriceUSD: number) => void;
   updateMarketPrice: (newPrice: number) => void; // Backward compatibility
   checkMarginCalls: () => Loan[];
+  extendLoan: (loanId: string) => void;
+  checkMaturedLoans: () => Loan[];
+  processMaturedLoans: () => void;
 }
 
 const LendingContext = createContext<LendingContextType | undefined>(undefined);
@@ -83,6 +86,9 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       params.liquidationThreshold
     );
     
+    // Calculate maturity date
+    const maturityDate = new Date(currentTime.getTime() + params.termDays * 24 * 60 * 60 * 1000);
+    
     const newLoan: Loan = {
       id: Date.now().toString(),
       borrower: 'user1', // In real app, this would be wallet address
@@ -94,6 +100,12 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       liquidationPrice: liquidationPriceUSD,
       currentLTV: calculateLTV(collateralValueUSD, debtValueUSD),
       status: 'active',
+      // Term system fields
+      termDays: params.termDays,
+      maturityDate: maturityDate,
+      autoRenew: params.autoRenew,
+      extensionsUsed: 0,
+      maxExtensions: 3,
     };
     
     setLoans(prev => [...prev, newLoan]);
@@ -151,7 +163,9 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const newTime = new Date(currentTime.getTime() + days * 24 * 60 * 60 * 1000);
     setCurrentTime(newTime);
     updateLoansInterest(newTime);
-  }, [currentTime, updateLoansInterest]);
+    // Process matured loans after time simulation
+    setTimeout(() => processMaturedLoans(), 100);
+  }, [currentTime, updateLoansInterest, processMaturedLoans]);
 
   const updateXpmPrice = useCallback((newPriceUSD: number) => {
     setMarketData(prev => ({ 
@@ -188,6 +202,57 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     );
   }, [loans, marketData.xpmPriceUSD, marketData.xrpPriceUSD]);
 
+  const checkMaturedLoans = useCallback(() => {
+    return loans.filter(loan => 
+      loan.status === 'active' && 
+      currentTime >= loan.maturityDate
+    );
+  }, [loans, currentTime]);
+
+  const extendLoan = useCallback((loanId: string) => {
+    setLoans(prevLoans =>
+      prevLoans.map(loan => {
+        if (loan.id !== loanId || loan.status !== 'active') return loan;
+        
+        // Check if extension is allowed
+        if (loan.extensionsUsed >= loan.maxExtensions) return loan;
+        
+        // Check if loan is healthy enough for extension (LTV < 40%)
+        if (loan.currentLTV >= 40) return loan;
+        
+        // Extend maturity date by the original term
+        const newMaturityDate = new Date(loan.maturityDate.getTime() + loan.termDays * 24 * 60 * 60 * 1000);
+        
+        return {
+          ...loan,
+          maturityDate: newMaturityDate,
+          extensionsUsed: loan.extensionsUsed + 1
+        };
+      })
+    );
+  }, []);
+
+  const processMaturedLoans = useCallback(() => {
+    setLoans(prevLoans =>
+      prevLoans.map(loan => {
+        if (loan.status !== 'active' || currentTime < loan.maturityDate) return loan;
+        
+        // Auto-extend if enabled and loan is healthy
+        if (loan.autoRenew && loan.currentLTV < 40 && loan.extensionsUsed < loan.maxExtensions) {
+          const newMaturityDate = new Date(loan.maturityDate.getTime() + loan.termDays * 24 * 60 * 60 * 1000);
+          return {
+            ...loan,
+            maturityDate: newMaturityDate,
+            extensionsUsed: loan.extensionsUsed + 1
+          };
+        }
+        
+        // Otherwise, mark as matured
+        return { ...loan, status: 'matured' as const };
+      })
+    );
+  }, [currentTime]);
+
   const userPosition: UserPosition = {
     totalCollateral: loans
       .filter(l => l.status === 'active')
@@ -216,6 +281,9 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateXrpPrice,
         updateMarketPrice,
         checkMarginCalls,
+        extendLoan,
+        checkMaturedLoans,
+        processMaturedLoans,
       }}
     >
       {children}

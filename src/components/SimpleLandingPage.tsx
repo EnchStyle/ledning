@@ -10,6 +10,12 @@ import {
   Alert,
   Chip,
   LinearProgress,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Switch,
 } from '@mui/material';
 import { useLending } from '../context/LendingContext';
 import { calculateMaxBorrowUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
@@ -17,6 +23,8 @@ import { calculateMaxBorrowUSD, calculateLiquidationPriceUSD } from '../utils/le
 const SimpleLandingPage: React.FC = () => {
   const { createLoan, marketData } = useLending();
   const [collateralAmount, setCollateralAmount] = useState<string>('150000');
+  const [selectedTerm, setSelectedTerm] = useState<number>(60);
+  const [autoRenew, setAutoRenew] = useState<boolean>(true);
   
   const collateral = parseFloat(collateralAmount) || 0;
   const collateralValueUSD = collateral * marketData.xpmPriceUSD;
@@ -32,9 +40,17 @@ const SimpleLandingPage: React.FC = () => {
         borrowAmount: maxBorrowXRP,
         interestRate: 15,
         liquidationThreshold: 65,
+        termDays: selectedTerm,
+        autoRenew: autoRenew,
       });
     }
   };
+
+  const termOptions = [
+    { days: 30, label: '30 Days', rate: '14%' },
+    { days: 60, label: '60 Days', rate: '15%' }, 
+    { days: 90, label: '90 Days', rate: '16%' }
+  ];
 
   return (
     <Container maxWidth="md">
@@ -67,6 +83,52 @@ const SimpleLandingPage: React.FC = () => {
               inputProps={{ min: 0, step: 1000 }}
               helperText={`Worth $${collateralValueUSD.toFixed(0)} USD at current price`}
             />
+
+            {/* Loan Term Selection */}
+            <FormControl component="fieldset" sx={{ mb: 3 }}>
+              <FormLabel component="legend">Loan Term</FormLabel>
+              <RadioGroup
+                value={selectedTerm}
+                onChange={(e) => setSelectedTerm(Number(e.target.value))}
+                row
+              >
+                {termOptions.map((option) => (
+                  <FormControlLabel
+                    key={option.days}
+                    value={option.days}
+                    control={<Radio />}
+                    label={
+                      <Box>
+                        <Typography variant="body2">{option.label}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {option.rate} APR
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                ))}
+              </RadioGroup>
+            </FormControl>
+
+            {/* Auto-renewal option */}
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={autoRenew}
+                    onChange={(e) => setAutoRenew(e.target.checked)}
+                  />
+                }
+                label={
+                  <Box>
+                    <Typography variant="body2">Auto-renew loan</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Automatically extend if healthy (LTV &lt; 40%)
+                    </Typography>
+                  </Box>
+                }
+              />
+            </Box>
 
             {collateral > 0 && (
               <Box>
@@ -105,7 +167,10 @@ const SimpleLandingPage: React.FC = () => {
 
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Monthly interest: ~{(maxBorrowXRP * 0.15 / 12).toFixed(1)} XRP
+                    Term: {selectedTerm} days {autoRenew && '(auto-renew enabled)'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Total interest: ~{(maxBorrowXRP * (selectedTerm === 30 ? 0.14 : selectedTerm === 60 ? 0.15 : 0.16) * selectedTerm / 365).toFixed(2)} XRP
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Liquidation if XPM drops to: ${liquidationPriceUSD.toFixed(4)}
