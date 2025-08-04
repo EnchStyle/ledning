@@ -24,11 +24,11 @@ const LiquidationInfo: React.FC = () => {
 
   // Example calculation
   const exampleLoan = {
-    collateral: 1000, // XPM
+    collateral: 150000, // XPM
     borrowed: 200, // XRP
     interest: 5, // XRP
-    currentPrice: 0.5, // XPM/XRP
-    liquidationPrice: 0.315, // XPM/XRP
+    currentPrice: 0.00667, // XPM/XRP
+    liquidationPrice: 0.00432, // XPM/XRP (at 65% LTV liquidation threshold)
   };
 
   const totalDebt = exampleLoan.borrowed + exampleLoan.interest;
@@ -88,7 +88,7 @@ const LiquidationInfo: React.FC = () => {
               Example Scenario:
             </Typography>
             <Typography variant="body2" paragraph>
-              You deposit {exampleLoan.collateral} XPM and borrow {exampleLoan.borrowed} XRP at 0.5 XPM/XRP price.
+              You deposit {exampleLoan.collateral.toLocaleString()} XPM and borrow {exampleLoan.borrowed} XRP at {exampleLoan.currentPrice} XPM/XRP price.
               After some time, you've accrued {exampleLoan.interest} XRP in interest.
             </Typography>
 

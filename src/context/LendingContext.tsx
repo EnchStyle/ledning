@@ -35,7 +35,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [loans, setLoans] = useState<Loan[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [marketData, setMarketData] = useState<MarketData>({
-    xpmPrice: 0.5, // Initial XPM/XRP price
+    xpmPrice: 0.00667, // Initial XPM/XRP price (based on XPM=$0.02, XRP=$3.00)
     liquidationFee: 10, // 10% liquidation fee
   });
 

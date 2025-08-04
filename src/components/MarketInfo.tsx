@@ -19,7 +19,7 @@ const MarketInfo: React.FC = () => {
         XPM/XRP Price
       </Typography>
       <Typography variant="h4" gutterBottom>
-        {marketData.xpmPrice.toFixed(4)}
+        {marketData.xpmPrice.toFixed(5)}
       </Typography>
       
       <Typography variant="body2" color="text.secondary">
@@ -39,7 +39,7 @@ const MarketInfo: React.FC = () => {
         type="number"
         value={newPrice}
         onChange={(e) => setNewPrice(e.target.value)}
-        inputProps={{ step: 0.01 }}
+        inputProps={{ step: 0.001 }}
         fullWidth
         margin="dense"
       />
