@@ -108,10 +108,10 @@ const SimpleLoansManager: React.FC = () => {
 
   const getMaturityStatus = (loan: Loan) => {
     const daysLeft = getDaysUntilMaturity(loan.maturityDate);
-    if (daysLeft < 0) return { text: 'MATURED', color: 'error' };
-    if (daysLeft <= 3) return { text: `${daysLeft}d left`, color: 'warning' };
-    if (daysLeft <= 7) return { text: `${daysLeft}d left`, color: 'info' };
-    return { text: `${daysLeft}d left`, color: 'success' };
+    if (daysLeft < 0) return { text: 'MATURED', color: 'error' as const };
+    if (daysLeft <= 3) return { text: `${daysLeft}d left`, color: 'warning' as const };
+    if (daysLeft <= 7) return { text: `${daysLeft}d left`, color: 'info' as const };
+    return { text: `${daysLeft}d left`, color: 'success' as const };
   };
 
   if (!hasLoans) {
