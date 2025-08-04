@@ -41,11 +41,15 @@ const UserPositions: React.FC = () => {
   const getStatusColor = (status: Loan['status']) => {
     switch (status) {
       case 'active':
-        return 'success';
+        return 'success' as const;
       case 'liquidated':
-        return 'error';
+        return 'error' as const;
       case 'repaid':
-        return 'default';
+        return 'default' as const;
+      case 'matured':
+        return 'default' as const;
+      default:
+        return 'default' as const;
     }
   };
 
