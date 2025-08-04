@@ -15,6 +15,10 @@ import {
   Step,
   StepLabel,
   CircularProgress,
+  ToggleButton,
+  ToggleButtonGroup,
+  FormControlLabel,
+  Switch,
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import { useLending } from '../context/LendingContext';
@@ -27,6 +31,8 @@ const LoanCreation: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [step, setStep] = useState<number>(0);
+  const [selectedTerm, setSelectedTerm] = useState<number>(60); // Default to 60 days
+  const [autoRenew, setAutoRenew] = useState<boolean>(true); // Default to auto-renew enabled
 
   const maxBorrow = calculateMaxBorrowUSD(
     parseFloat(collateralAmount) || 0,
@@ -65,8 +71,10 @@ const LoanCreation: React.FC = () => {
     createLoan({
       collateralAmount: collateral,
       borrowAmount: maxBorrow,
-      interestRate: 15,
+      interestRate: selectedTerm === 30 ? 14 : selectedTerm === 60 ? 15 : 16,
       liquidationThreshold: 65,
+      termDays: selectedTerm,
+      autoRenew: autoRenew,
     });
     
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -150,6 +158,54 @@ const LoanCreation: React.FC = () => {
         />
       </Box>
       
+      <Box sx={{ mt: 3, mb: 2 }}>
+        <Typography gutterBottom>
+          Loan Term
+        </Typography>
+        <ToggleButtonGroup
+          value={selectedTerm}
+          exclusive
+          onChange={(_, value) => value && setSelectedTerm(value)}
+          fullWidth
+          disabled={isCreating}
+        >
+          <ToggleButton value={30}>
+            <Box>
+              <Typography variant="button">30 Days</Typography>
+              <Typography variant="caption" display="block">14% APR</Typography>
+            </Box>
+          </ToggleButton>
+          <ToggleButton value={60}>
+            <Box>
+              <Typography variant="button">60 Days</Typography>
+              <Typography variant="caption" display="block">15% APR</Typography>
+            </Box>
+          </ToggleButton>
+          <ToggleButton value={90}>
+            <Box>
+              <Typography variant="button">90 Days</Typography>
+              <Typography variant="caption" display="block">16% APR</Typography>
+            </Box>
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
+
+      <Box sx={{ mb: 3 }}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={autoRenew}
+              onChange={(e) => setAutoRenew(e.target.checked)}
+              disabled={isCreating}
+            />
+          }
+          label="Enable Auto-Renewal"
+        />
+        <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
+          Automatically extend your loan at maturity if health is good (LTV &lt; 40%)
+        </Typography>
+      </Box>
+      
       <Paper sx={{ p: 2, mt: 3, mb: 2, bgcolor: 'background.default' }}>
         <Typography variant="subtitle2" gutterBottom>
           Loan Summary
@@ -162,7 +218,15 @@ const LoanCreation: React.FC = () => {
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
           <Typography variant="body2">Interest rate:</Typography>
-          <Typography variant="body2">15% APR</Typography>
+          <Typography variant="body2">{selectedTerm === 30 ? 14 : selectedTerm === 60 ? 15 : 16}% APR</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+          <Typography variant="body2">Loan term:</Typography>
+          <Typography variant="body2">{selectedTerm} days</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+          <Typography variant="body2">Auto-renewal:</Typography>
+          <Typography variant="body2">{autoRenew ? 'Enabled' : 'Disabled'}</Typography>
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
           <Typography variant="body2">Liquidation threshold:</Typography>

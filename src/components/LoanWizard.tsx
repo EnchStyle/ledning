@@ -17,6 +17,10 @@ import {
   CardContent,
   InputAdornment,
   Collapse,
+  ToggleButton,
+  ToggleButtonGroup,
+  FormControlLabel,
+  Switch,
 } from '@mui/material';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -34,6 +38,8 @@ const LoanWizard: React.FC = () => {
   const [targetLTV, setTargetLTV] = useState<number>(40);
   const [isCreating, setIsCreating] = useState(false);
   const [showRiskDetails, setShowRiskDetails] = useState(false);
+  const [selectedTerm, setSelectedTerm] = useState<number>(60); // Default to 60 days
+  const [autoRenew, setAutoRenew] = useState<boolean>(true); // Default to auto-renew enabled
 
   const collateralValue = parseFloat(collateralAmount) || 0;
   const collateralValueUSD = collateralValue * marketData.xpmPriceUSD;
@@ -90,8 +96,10 @@ const LoanWizard: React.FC = () => {
     createLoan({
       collateralAmount: collateralValue,
       borrowAmount: maxBorrowXRP,
-      interestRate: 15,
+      interestRate: selectedTerm === 30 ? 14 : selectedTerm === 60 ? 15 : 16,
       liquidationThreshold: 65,
+      termDays: selectedTerm,
+      autoRenew: autoRenew,
     });
     
     setIsCreating(false);
@@ -162,6 +170,52 @@ const LoanWizard: React.FC = () => {
         />
       </Box>
 
+      <Box sx={{ mb: 3 }}>
+        <Typography gutterBottom>
+          Loan Term
+        </Typography>
+        <ToggleButtonGroup
+          value={selectedTerm}
+          exclusive
+          onChange={(_, value) => value && setSelectedTerm(value)}
+          fullWidth
+        >
+          <ToggleButton value={30}>
+            <Box>
+              <Typography variant="button">30 Days</Typography>
+              <Typography variant="caption" display="block">14% APR</Typography>
+            </Box>
+          </ToggleButton>
+          <ToggleButton value={60}>
+            <Box>
+              <Typography variant="button">60 Days</Typography>
+              <Typography variant="caption" display="block">15% APR</Typography>
+            </Box>
+          </ToggleButton>
+          <ToggleButton value={90}>
+            <Box>
+              <Typography variant="button">90 Days</Typography>
+              <Typography variant="caption" display="block">16% APR</Typography>
+            </Box>
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
+
+      <Box sx={{ mb: 3 }}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={autoRenew}
+              onChange={(e) => setAutoRenew(e.target.checked)}
+            />
+          }
+          label="Enable Auto-Renewal"
+        />
+        <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
+          Automatically extend your loan at maturity if health is good (LTV &lt; 40%)
+        </Typography>
+      </Box>
+
       <Card sx={{ mb: 3, bgcolor: 'background.default' }}>
         <CardContent>
           <Grid container spacing={2}>
@@ -178,7 +232,7 @@ const LoanWizard: React.FC = () => {
                 Monthly interest
               </Typography>
               <Typography variant="h6">
-                {(maxBorrowXRP * 0.15 / 12).toFixed(2)} XRP
+                {(maxBorrowXRP * (selectedTerm === 30 ? 0.14 : selectedTerm === 60 ? 0.15 : 0.16) / 12).toFixed(2)} XRP
               </Typography>
             </Grid>
           </Grid>
@@ -247,11 +301,19 @@ const LoanWizard: React.FC = () => {
             </Box>
             <Box sx={{ mb: 1 }}>
               <Typography variant="body2" color="text.secondary">Interest Rate:</Typography>
-              <Typography variant="body1">15% APR</Typography>
+              <Typography variant="body1">{selectedTerm === 30 ? 14 : selectedTerm === 60 ? 15 : 16}% APR</Typography>
             </Box>
-            <Box>
+            <Box sx={{ mb: 1 }}>
               <Typography variant="body2" color="text.secondary">LTV Ratio:</Typography>
               <Typography variant="body1">{targetLTV}%</Typography>
+            </Box>
+            <Box sx={{ mb: 1 }}>
+              <Typography variant="body2" color="text.secondary">Loan Term:</Typography>
+              <Typography variant="body1">{selectedTerm} Days</Typography>
+            </Box>
+            <Box>
+              <Typography variant="body2" color="text.secondary">Auto-Renewal:</Typography>
+              <Typography variant="body1">{autoRenew ? 'Enabled' : 'Disabled'}</Typography>
             </Box>
           </Paper>
         </Grid>

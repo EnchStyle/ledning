@@ -187,6 +187,27 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     );
   }, [marketData]);
 
+  const processMaturedLoans = useCallback(() => {
+    setLoans(prevLoans =>
+      prevLoans.map(loan => {
+        if (loan.status !== 'active' || currentTime < loan.maturityDate) return loan;
+        
+        // Auto-extend if enabled and loan is healthy
+        if (loan.autoRenew && loan.currentLTV < 40 && loan.extensionsUsed < loan.maxExtensions) {
+          const newMaturityDate = new Date(loan.maturityDate.getTime() + loan.termDays * 24 * 60 * 60 * 1000);
+          return {
+            ...loan,
+            maturityDate: newMaturityDate,
+            extensionsUsed: loan.extensionsUsed + 1
+          };
+        }
+        
+        // Otherwise, mark as matured
+        return { ...loan, status: 'matured' as const };
+      })
+    );
+  }, [currentTime]);
+
   const simulateTime = useCallback((days: number) => {
     const newTime = new Date(currentTime.getTime() + days * 24 * 60 * 60 * 1000);
     setCurrentTime(newTime);
@@ -259,27 +280,6 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       })
     );
   }, []);
-
-  const processMaturedLoans = useCallback(() => {
-    setLoans(prevLoans =>
-      prevLoans.map(loan => {
-        if (loan.status !== 'active' || currentTime < loan.maturityDate) return loan;
-        
-        // Auto-extend if enabled and loan is healthy
-        if (loan.autoRenew && loan.currentLTV < 40 && loan.extensionsUsed < loan.maxExtensions) {
-          const newMaturityDate = new Date(loan.maturityDate.getTime() + loan.termDays * 24 * 60 * 60 * 1000);
-          return {
-            ...loan,
-            maturityDate: newMaturityDate,
-            extensionsUsed: loan.extensionsUsed + 1
-          };
-        }
-        
-        // Otherwise, mark as matured
-        return { ...loan, status: 'matured' as const };
-      })
-    );
-  }, [currentTime]);
 
   const userPosition: UserPosition = {
     totalCollateral: loans
