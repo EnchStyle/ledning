@@ -1,46 +1,102 @@
-# Getting Started with Create React App
+# XRP Lending Platform MVP
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A centralized lending dApp built on XRP Ledger where users can deposit XPM tokens as collateral to borrow XRP.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Collateral Deposit**: Deposit XPM tokens as collateral
+- **Borrow XRP**: Borrow XRP against your XPM collateral with adjustable LTV
+- **Interest Tracking**: Real-time interest accrual at 15% APR
+- **Time Simulation**: Fast-forward time to test interest accumulation
+- **Price Simulation**: Change XPM/XRP price to test margin calls
+- **Margin Calls**: Automatic alerts when loans approach liquidation (65% LTV)
+- **Liquidation**: Force liquidation with 10% penalty fee
+- **Loan Repayment**: Partial or full loan repayment
+- **Liquidation Preview**: See potential liquidation impact for at-risk loans
 
-### `npm start`
+## Getting Started
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+1. Install dependencies:
+```bash
+npm install
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+2. Start the development server:
+```bash
+npm start
+```
 
-### `npm test`
+3. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Deploying to Netlify
 
-### `npm run build`
+### Option 1: Deploy via Netlify CLI
+```bash
+npm install -g netlify-cli
+npm run build
+netlify deploy --prod --dir=build
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Option 2: Deploy via GitHub
+1. Push your code to GitHub
+2. Connect your GitHub repository to Netlify
+3. Netlify will automatically deploy on every push to main
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Option 3: Manual Deploy
+1. Run `npm run build`
+2. Drag and drop the `build` folder to [Netlify Drop](https://app.netlify.com/drop)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## How to Use
 
-### `npm run eject`
+### Creating a Loan
+1. Enter the amount of XPM tokens you want to use as collateral
+2. Adjust the LTV slider (10-50%) to determine how much XRP to borrow
+3. Click "Create Loan" to borrow XRP
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Managing Loans
+- **View Active Loans**: See all your loans in the Active Loans table
+- **Repay Loans**: Click "Repay" to pay back part or all of your loan
+- **Monitor LTV**: Watch your LTV ratio - loans liquidate at 65% LTV
+- **View Liquidation Preview**: Expand at-risk loans (>55% LTV) to see liquidation impact
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Testing Features
+- **Time Simulation**: Use the Time Simulator to advance time and see interest accumulate
+- **Price Changes**: Adjust the XPM/XRP price to test margin calls and liquidations
+- **Liquidation**: When a loan reaches 65% LTV, you can force liquidate it
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Key Metrics for Altcoin Lending
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+- **Interest Rate**: 15% APR (higher due to altcoin volatility)
+- **Max Initial LTV**: 50% (conservative for altcoins)
+- **Liquidation Threshold**: 65% LTV (lower than BTC/ETH)
+- **Liquidation Penalty**: 10% of total debt
 
-## Learn More
+## Liquidation Mechanism
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+When a loan reaches 65% LTV:
+1. The loan becomes eligible for liquidation
+2. A liquidator can trigger the liquidation
+3. The system calculates:
+   - Total debt = Principal + Accrued Interest
+   - Liquidation penalty = Total debt × 10%
+   - Collateral to liquidate = (Total debt + Penalty) / Current XPM price
+4. Remaining collateral is returned to the borrower
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Technical Stack
+
+- React with TypeScript
+- Material-UI (MUI) for UI components
+- XRP Ledger integration (ready for connection)
+- Context API for state management
+- Optimized for Netlify deployment
+
+## Production Considerations
+
+This is an MVP. For production:
+- Connect to actual XRP Ledger
+- Implement real wallet authentication
+- Add proper transaction signing
+- Store loan data on-chain or in a database
+- Implement automated liquidation bots
+- Add price oracles for real-time pricing
+- Implement proper security audits
