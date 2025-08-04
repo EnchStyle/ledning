@@ -68,10 +68,11 @@ const DualAssetRiskExplainer: React.FC = () => {
         </Typography>
       </Box>
 
-      <Alert severity="info" sx={{ mb: 3 }}>
+      <Alert severity="warning" sx={{ mb: 3 }}>
         <Typography variant="body2">
-          <strong>Key Insight:</strong> While both XPM and XRP are volatile, only XPM price changes affect your liquidation risk. 
-          Your debt is fixed in XRP tokens, so XRP price movements don't directly impact your loan safety.
+          <strong>Critical Update:</strong> Both XPM and XRP price changes affect your liquidation risk! 
+          While your debt is fixed in XRP tokens, liquidation calculations use USD values as the reference, 
+          meaning XRP price movements directly impact your loan safety.
         </Typography>
       </Alert>
 
@@ -132,22 +133,23 @@ const DualAssetRiskExplainer: React.FC = () => {
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2, mt: 2 }}>
           <Paper sx={{ p: 2, bgcolor: 'error.dark', color: 'error.contrastText' }}>
             <Typography variant="subtitle2" gutterBottom>
-              ⚠️ Only XPM Price Matters for Liquidation
+              ⚠️ Both Asset Prices Affect Liquidation Risk
             </Typography>
             <Typography variant="body2">
-              If XPM falls to <strong>$0.0133</strong>, your loan gets liquidated
-              (33% drop from $0.02). XRP price changes don't affect liquidation risk.
+              Liquidation occurs when LTV ≥ 65%. This can happen from:<br/>
+              • XPM price falling (reduces collateral value)<br/>
+              • XRP price rising (increases debt value in USD)
             </Typography>
           </Paper>
         </Box>
       </Box>
 
-      <Alert severity="info" sx={{ mt: 3 }}>
+      <Alert severity="warning" sx={{ mt: 3 }}>
         <Typography variant="body2">
-          <strong>Protection Strategy:</strong> Monitor both asset prices and consider:
-          <br />• Repaying loans early when either asset moves against you
-          <br />• Maintaining lower LTV ratios (30-40%) for safety margin
-          <br />• Adding more collateral if XPM drops or XRP rises
+          <strong>Protection Strategy:</strong> Monitor both asset prices carefully:
+          <br />• Repay loans when XRP rises significantly (increases your debt value)
+          <br />• Add collateral when XPM falls (reduces your collateral value)
+          <br />• Maintain lower LTV ratios (30-40%) for dual-asset volatility protection
         </Typography>
       </Alert>
     </Paper>

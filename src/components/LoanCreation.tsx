@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import { useLending } from '../context/LendingContext';
-import { calculateMaxBorrow } from '../utils/lendingCalculations';
+import { calculateMaxBorrowUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
 
 const LoanCreation: React.FC = () => {
   const { createLoan, marketData } = useLending();
@@ -28,14 +28,20 @@ const LoanCreation: React.FC = () => {
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [step, setStep] = useState<number>(0);
 
-  const maxBorrow = calculateMaxBorrow(
+  const maxBorrow = calculateMaxBorrowUSD(
     parseFloat(collateralAmount) || 0,
-    marketData.xpmPrice,
+    marketData.xpmPriceUSD,
+    marketData.xrpPriceUSD,
     ltv
   );
 
-  const collateralValue = (parseFloat(collateralAmount) || 0) * marketData.xpmPrice;
-  const liquidationPrice = maxBorrow > 0 ? (maxBorrow * 1.538) / (parseFloat(collateralAmount) || 1) : 0; // 65% threshold
+  const collateralValueUSD = (parseFloat(collateralAmount) || 0) * marketData.xpmPriceUSD;
+  const liquidationPriceUSD = maxBorrow > 0 ? calculateLiquidationPriceUSD(
+    maxBorrow,
+    parseFloat(collateralAmount) || 1,
+    marketData.xrpPriceUSD,
+    65 // 65% liquidation threshold
+  ) : 0;
 
   const handleCreateLoan = async () => {
     const collateral = parseFloat(collateralAmount);
@@ -112,7 +118,7 @@ const LoanCreation: React.FC = () => {
             </InputAdornment>
           ),
         }}
-        helperText={`≈ ${collateralValue.toFixed(2)} XRP value`}
+        helperText={`≈ $${collateralValueUSD.toFixed(2)} USD value`}
       />
       
       <Box sx={{ mt: 3 }}>
@@ -166,7 +172,7 @@ const LoanCreation: React.FC = () => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Typography variant="body2">Liquidation price:</Typography>
           <Typography variant="body2" color="error.main">
-            ${(liquidationPrice * 3).toFixed(4)} per XPM
+            ${liquidationPriceUSD.toFixed(4)} per XPM
           </Typography>
         </Box>
       </Paper>

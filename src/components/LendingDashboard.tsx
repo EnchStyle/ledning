@@ -19,9 +19,12 @@ import MarginCallAlert from './MarginCallAlert';
 
 const LendingDashboard: React.FC = () => {
   const { userPosition, marketData } = useLending();
-  const totalCollateralValue = userPosition.totalCollateral * marketData.xpmPrice;
-  const totalDebt = userPosition.totalBorrowed + userPosition.totalInterest;
-  const utilizationRate = totalCollateralValue > 0 ? (totalDebt / totalCollateralValue) * 100 : 0;
+  
+  // Use USD-based calculations for accurate dual-asset risk assessment
+  const totalCollateralValueUSD = userPosition.totalCollateral * marketData.xpmPriceUSD;
+  const totalDebtXRP = userPosition.totalBorrowed + userPosition.totalInterest;
+  const totalDebtUSD = totalDebtXRP * marketData.xrpPriceUSD;
+  const utilizationRate = totalCollateralValueUSD > 0 ? (totalDebtUSD / totalCollateralValueUSD) * 100 : 0;
 
   return (
     <Container maxWidth="lg">
@@ -98,7 +101,7 @@ const LendingDashboard: React.FC = () => {
                       {userPosition.totalCollateral.toLocaleString()} XPM
                     </Typography>
                     <Typography color="text.secondary" variant="body2">
-                      ≈ {totalCollateralValue.toFixed(2)} XRP
+                      ≈ ${totalCollateralValueUSD.toFixed(2)} USD
                     </Typography>
                   </Box>
                 </Grid>
@@ -109,10 +112,10 @@ const LendingDashboard: React.FC = () => {
                       Outstanding Debt
                     </Typography>
                     <Typography variant="h5">
-                      {totalDebt.toFixed(2)} XRP
+                      {totalDebtXRP.toFixed(2)} XRP
                     </Typography>
                     <Typography color="text.secondary" variant="body2">
-                      Principal + Interest
+                      ≈ ${totalDebtUSD.toFixed(2)} USD
                     </Typography>
                   </Box>
                 </Grid>
@@ -123,7 +126,7 @@ const LendingDashboard: React.FC = () => {
                       Available to Borrow
                     </Typography>
                     <Typography variant="h5" color="success.main">
-                      {Math.max(0, (totalCollateralValue * 0.5) - totalDebt).toFixed(2)} XRP
+                      {Math.max(0, ((totalCollateralValueUSD * 0.5) / marketData.xrpPriceUSD) - totalDebtXRP).toFixed(2)} XRP
                     </Typography>
                     <Typography color="text.secondary" variant="body2">
                       At 50% LTV

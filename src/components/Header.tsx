@@ -22,12 +22,12 @@ const Header: React.FC = () => {
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Chip
-            label={`XPM: $${(marketData.xpmPrice * 3).toFixed(4)}`}
+            label={`XPM: $${marketData.xpmPriceUSD.toFixed(4)}`}
             color="secondary"
             size="small"
           />
           <Chip
-            label="XRP: $3.00"
+            label={`XRP: $${marketData.xrpPriceUSD.toFixed(2)}`}
             color="primary"
             size="small"
           />

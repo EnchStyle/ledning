@@ -2,6 +2,13 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Loan, LoanParams, MarketData, UserPosition } from '../types/lending';
 import { 
   calculateLTV, 
+  calculateCollateralValueUSD,
+  calculateDebtValueUSD,
+  calculateCompoundInterest,
+  calculateLiquidationPriceUSD,
+  isEligibleForLiquidationUSD,
+  calculateLiquidationReturnUSD,
+  // Legacy functions for backward compatibility
   calculateInterest, 
   calculateLiquidationPrice,
   isEligibleForLiquidation,
@@ -49,21 +56,33 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (loan.status !== 'active') return loan;
         
         const timeDiff = (newTime.getTime() - loan.createdAt.getTime()) / (1000 * 60 * 60 * 24);
-        const interest = calculateInterest(loan.borrowedAmount, loan.interestRate, timeDiff);
+        const interest = calculateCompoundInterest(loan.borrowedAmount, loan.interestRate, timeDiff);
+        
+        // Use USD-based LTV calculation for accurate dual-asset risk
+        const collateralValueUSD = calculateCollateralValueUSD(loan.collateralAmount, marketData.xpmPriceUSD);
+        const totalDebtXRP = loan.borrowedAmount + interest;
+        const debtValueUSD = calculateDebtValueUSD(totalDebtXRP, marketData.xrpPriceUSD);
         
         return {
           ...loan,
           accruedInterest: interest,
-          currentLTV: calculateLTV(
-            loan.collateralAmount * marketData.xpmPrice,
-            loan.borrowedAmount + interest
-          ),
+          currentLTV: calculateLTV(collateralValueUSD, debtValueUSD),
         };
       })
     );
-  }, [marketData.xpmPrice]);
+  }, [marketData.xpmPriceUSD, marketData.xrpPriceUSD]);
 
   const createLoan = useCallback((params: LoanParams) => {
+    // Use USD-based calculations for accurate dual-asset risk
+    const collateralValueUSD = calculateCollateralValueUSD(params.collateralAmount, marketData.xpmPriceUSD);
+    const debtValueUSD = calculateDebtValueUSD(params.borrowAmount, marketData.xrpPriceUSD);
+    const liquidationPriceUSD = calculateLiquidationPriceUSD(
+      params.borrowAmount,
+      params.collateralAmount,
+      marketData.xrpPriceUSD,
+      params.liquidationThreshold
+    );
+    
     const newLoan: Loan = {
       id: Date.now().toString(),
       borrower: 'user1', // In real app, this would be wallet address
@@ -72,20 +91,13 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       interestRate: params.interestRate,
       accruedInterest: 0,
       createdAt: currentTime,
-      liquidationPrice: calculateLiquidationPrice(
-        params.borrowAmount,
-        params.collateralAmount,
-        params.liquidationThreshold
-      ),
-      currentLTV: calculateLTV(
-        params.collateralAmount * marketData.xpmPrice,
-        params.borrowAmount
-      ),
+      liquidationPrice: liquidationPriceUSD,
+      currentLTV: calculateLTV(collateralValueUSD, debtValueUSD),
       status: 'active',
     };
     
     setLoans(prev => [...prev, newLoan]);
-  }, [currentTime, marketData.xpmPrice]);
+  }, [currentTime, marketData.xpmPriceUSD, marketData.xrpPriceUSD]);
 
   const repayLoan = useCallback((loanId: string, amount: number) => {
     setLoans(prevLoans =>
@@ -101,27 +113,29 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const paidInterest = Math.min(amount, loan.accruedInterest);
         const paidPrincipal = amount - paidInterest;
         
+        // Use USD-based LTV calculation
+        const collateralValueUSD = calculateCollateralValueUSD(loan.collateralAmount, marketData.xpmPriceUSD);
+        const remainingDebtUSD = calculateDebtValueUSD(remainingDebt, marketData.xrpPriceUSD);
+        
         return {
           ...loan,
           borrowedAmount: loan.borrowedAmount - paidPrincipal,
           accruedInterest: loan.accruedInterest - paidInterest,
-          currentLTV: calculateLTV(
-            loan.collateralAmount * marketData.xpmPrice,
-            remainingDebt
-          ),
+          currentLTV: calculateLTV(collateralValueUSD, remainingDebtUSD),
         };
       })
     );
-  }, [marketData.xpmPrice]);
+  }, [marketData.xpmPriceUSD, marketData.xrpPriceUSD]);
 
   const liquidateLoan = useCallback((loanId: string) => {
     setLoans(prevLoans =>
       prevLoans.map(loan => {
         if (loan.id !== loanId || loan.status !== 'active') return loan;
         
-        const liquidationResult = calculateLiquidationReturn(
+        const liquidationResult = calculateLiquidationReturnUSD(
           loan,
-          marketData.xpmPrice,
+          marketData.xpmPriceUSD,
+          marketData.xrpPriceUSD,
           marketData.liquidationFee
         );
         
@@ -165,9 +179,14 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const checkMarginCalls = useCallback(() => {
     return loans.filter(loan => 
       loan.status === 'active' && 
-      isEligibleForLiquidation(loan, marketData.xpmPrice, 65) // 65% LTV threshold for altcoins
+      isEligibleForLiquidationUSD(
+        loan, 
+        marketData.xpmPriceUSD, 
+        marketData.xrpPriceUSD, 
+        65 // 65% LTV threshold for altcoins
+      )
     );
-  }, [loans, marketData.xpmPrice]);
+  }, [loans, marketData.xpmPriceUSD, marketData.xrpPriceUSD]);
 
   const userPosition: UserPosition = {
     totalCollateral: loans

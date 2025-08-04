@@ -29,18 +29,20 @@ const LoanRiskCalculator: React.FC = () => {
       return null;
     }
 
-    // Current values
+    // Current values using USD for accurate dual-asset risk
     const collateralValueUSD = collateral * xpmPrice;
-    const debtValueUSD = borrowed * xrpPrice; // Note: This is just for display, actual debt is in XRP
+    const debtValueUSD = borrowed * xrpPrice;
     const currentLTV = (debtValueUSD / collateralValueUSD) * 100;
 
     // Liquidation calculations (65% LTV threshold)
     const liquidationThreshold = 65;
-    const liquidationPriceXPM = (borrowed * xrpPrice) / collateral * (100 / liquidationThreshold);
+    // Correct liquidation price: when LTV = 65%, what XPM price triggers liquidation?
+    const liquidationPriceXPM = (debtValueUSD / collateral) * (100 / liquidationThreshold);
     const priceDropToLiquidation = ((xpmPrice - liquidationPriceXPM) / xpmPrice) * 100;
 
-    // Safety margins
-    const maxSafeBorrow = (collateralValueUSD * 0.5) / xrpPrice; // 50% max LTV
+    // Safety margins using USD calculations
+    const maxSafeBorrowUSD = collateralValueUSD * 0.5; // 50% max LTV in USD
+    const maxSafeBorrow = maxSafeBorrowUSD / xrpPrice; // Convert to XRP
     const availableBorrow = Math.max(0, maxSafeBorrow - borrowed);
 
     // Risk level
@@ -275,10 +277,11 @@ const LoanRiskCalculator: React.FC = () => {
 
       <Divider sx={{ my: 3 }} />
 
-      <Alert severity="info">
+      <Alert severity="warning">
         <Typography variant="body2">
-          <strong>Key Insight:</strong> Only XPM price changes affect your liquidation risk. 
-          XRP price movements don't matter because your debt is fixed in XRP tokens, not USD value.
+          <strong>Critical Insight:</strong> Both XPM and XRP price changes affect your liquidation risk! 
+          While your debt is fixed in XRP tokens, liquidation is based on USD values - so XRP price movements 
+          directly impact your liquidation threshold.
         </Typography>
       </Alert>
     </Paper>
