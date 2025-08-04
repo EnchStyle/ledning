@@ -4,14 +4,11 @@ export interface Loan {
   collateralAmount: number; // XPM amount
   borrowedAmount: number; // XRP amount
   interestRate: number; // Annual percentage rate
-  accruedInterest: number; // Accumulated interest in XRP
+  accruedInterest: number; // Accumulated interest
   createdAt: Date;
-  liquidationPrice: number; // XPM price at which loan gets liquidated (in USD)
-  currentLTV: number; // Current Loan-to-Value ratio (USD-based)
+  liquidationPrice: number; // Price at which loan gets liquidated
+  currentLTV: number; // Current Loan-to-Value ratio
   status: 'active' | 'liquidated' | 'repaid';
-  // Store initial prices for reference
-  initialXpmPrice: number; // USD price when loan was created
-  initialXrpPrice: number; // USD price when loan was created
 }
 
 export interface LoanParams {
@@ -25,8 +22,7 @@ export interface MarketData {
   xpmPriceUSD: number; // XPM price in USD
   xrpPriceUSD: number; // XRP price in USD
   liquidationFee: number; // Fee charged on liquidation (e.g., 10%)
-  // Computed property for backward compatibility
-  get xpmPrice(): number; // XPM/XRP ratio for existing code
+  xpmPrice: number; // XPM/XRP ratio for backward compatibility
 }
 
 export interface UserPosition {

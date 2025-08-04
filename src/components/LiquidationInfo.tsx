@@ -18,6 +18,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import InfoIcon from '@mui/icons-material/Info';
 import { useLending } from '../context/LendingContext';
 import DualAssetRiskExplainer from './DualAssetRiskExplainer';
+import LoanRiskCalculator from './LoanRiskCalculator';
+import TrueRiskAnalysis from './TrueRiskAnalysis';
 
 const LiquidationInfo: React.FC = () => {
   const { marketData } = useLending();
@@ -167,6 +169,14 @@ const LiquidationInfo: React.FC = () => {
         </ul>
         </Box>
       </Paper>
+      
+      <Box sx={{ mt: 4 }}>
+        <LoanRiskCalculator />
+      </Box>
+      
+      <Box sx={{ mt: 4 }}>
+        <TrueRiskAnalysis />
+      </Box>
       
       <Box sx={{ mt: 4 }}>
         <DualAssetRiskExplainer />

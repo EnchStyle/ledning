@@ -42,18 +42,18 @@ const DualAssetRiskExplainer: React.FC = () => {
       xpmPrice: '$0.02',
       xrpPrice: '$3.60',
       collateralValue: '$3,000',
-      debtValue: '$1,800',
-      ltv: '60%',
-      status: 'Moderate Risk',
-      color: 'warning' as const,
+      debtValue: '$1,500*',
+      ltv: '50%',
+      status: 'No Change',
+      color: 'success' as const,
     },
     {
-      scenario: 'Both move against you',
+      scenario: 'XPM drops (worst case)',
       xpmPrice: '$0.016',
       xrpPrice: '$3.30',
       collateralValue: '$2,400',
-      debtValue: '$1,650',
-      ltv: '69%',
+      debtValue: '$1,500*',
+      ltv: '63%',
       status: 'High Risk',
       color: 'error' as const,
     },
@@ -68,10 +68,10 @@ const DualAssetRiskExplainer: React.FC = () => {
         </Typography>
       </Box>
 
-      <Alert severity="error" sx={{ mb: 3 }}>
+      <Alert severity="info" sx={{ mb: 3 }}>
         <Typography variant="body2">
-          <strong>Critical Risk:</strong> Both XPM and XRP are volatile assets! 
-          Your liquidation risk is affected by BOTH price movements, not just XPM.
+          <strong>Key Insight:</strong> While both XPM and XRP are volatile, only XPM price changes affect your liquidation risk. 
+          Your debt is fixed in XRP tokens, so XRP price movements don't directly impact your loan safety.
         </Typography>
       </Alert>
 
@@ -120,29 +120,23 @@ const DualAssetRiskExplainer: React.FC = () => {
         </Table>
       </TableContainer>
 
+      <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+        *Debt stays at $1,500 (500 XRP) regardless of XRP price changes
+      </Typography>
+
       <Box sx={{ mt: 4 }}>
         <Typography variant="h6" gutterBottom>
           Key Liquidation Triggers
         </Typography>
         
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 2 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 2, mt: 2 }}>
           <Paper sx={{ p: 2, bgcolor: 'error.dark', color: 'error.contrastText' }}>
             <Typography variant="subtitle2" gutterBottom>
-              XPM Price Drops
+              ⚠️ Only XPM Price Matters for Liquidation
             </Typography>
             <Typography variant="body2">
               If XPM falls to <strong>$0.0133</strong>, your loan gets liquidated
-              (33% drop from $0.02)
-            </Typography>
-          </Paper>
-          
-          <Paper sx={{ p: 2, bgcolor: 'error.dark', color: 'error.contrastText' }}>
-            <Typography variant="subtitle2" gutterBottom>
-              XRP Price Rises
-            </Typography>
-            <Typography variant="body2">
-              If XRP rises to <strong>$4.62</strong>, your loan gets liquidated
-              (54% increase from $3.00)
+              (33% drop from $0.02). XRP price changes don't affect liquidation risk.
             </Typography>
           </Paper>
         </Box>

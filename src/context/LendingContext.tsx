@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { Loan, LoanParams, UserPosition } from '../types/lending';
-import { MarketDataClass } from '../utils/marketData';
+import { Loan, LoanParams, MarketData, UserPosition } from '../types/lending';
 import { 
   calculateLTV, 
   calculateInterest, 
@@ -11,7 +10,7 @@ import {
 
 interface LendingContextType {
   loans: Loan[];
-  marketData: MarketDataClass;
+  marketData: MarketData;
   userPosition: UserPosition;
   currentTime: Date;
   createLoan: (params: LoanParams) => void;
@@ -37,13 +36,12 @@ export const useLending = () => {
 export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [marketData, setMarketData] = useState<MarketDataClass>(
-    new MarketDataClass(
-      0.02, // XPM price in USD
-      3.00, // XRP price in USD
-      10    // 10% liquidation fee
-    )
-  );
+  const [marketData, setMarketData] = useState<MarketData>({
+    xpmPriceUSD: 0.02,
+    xrpPriceUSD: 3.00,
+    liquidationFee: 10,
+    xpmPrice: 0.00667, // XPM/XRP ratio
+  });
 
   const updateLoansInterest = useCallback((newTime: Date) => {
     setLoans(prevLoans => 
@@ -141,6 +139,24 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     updateLoansInterest(newTime);
   }, [currentTime, updateLoansInterest]);
 
+  const updateXpmPrice = useCallback((newPriceUSD: number) => {
+    setMarketData(prev => ({ 
+      ...prev, 
+      xpmPriceUSD: newPriceUSD,
+      xpmPrice: newPriceUSD / prev.xrpPriceUSD 
+    }));
+    updateLoansInterest(currentTime);
+  }, [currentTime, updateLoansInterest]);
+
+  const updateXrpPrice = useCallback((newPriceUSD: number) => {
+    setMarketData(prev => ({ 
+      ...prev, 
+      xrpPriceUSD: newPriceUSD,
+      xpmPrice: prev.xpmPriceUSD / newPriceUSD 
+    }));
+    updateLoansInterest(currentTime);
+  }, [currentTime, updateLoansInterest]);
+
   const updateMarketPrice = useCallback((newPrice: number) => {
     setMarketData(prev => ({ ...prev, xpmPrice: newPrice }));
     updateLoansInterest(currentTime);
@@ -177,6 +193,8 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         repayLoan,
         liquidateLoan,
         simulateTime,
+        updateXpmPrice,
+        updateXrpPrice,
         updateMarketPrice,
         checkMarginCalls,
       }}
