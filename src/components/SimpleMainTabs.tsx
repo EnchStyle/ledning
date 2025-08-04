@@ -4,6 +4,7 @@ import SimpleLandingPage from './SimpleLandingPage';
 import SimpleLoansManager from './SimpleLoansManager';
 import SimpleHelp from './SimpleHelp';
 import MarketInfo from './MarketInfo';
+import AdminDashboard from './AdminDashboard';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -55,6 +56,7 @@ const SimpleMainTabs: React.FC = () => {
             <Tab label="My Loans" />
             <Tab label="Help" />
             <Tab label="Market" />
+            <Tab label="Admin" />
           </Tabs>
         </Container>
       </Box>
@@ -77,6 +79,10 @@ const SimpleMainTabs: React.FC = () => {
             <MarketInfo />
           </Box>
         </Container>
+      </TabPanel>
+      
+      <TabPanel value={value} index={4}>
+        <AdminDashboard />
       </TabPanel>
     </Box>
   );
