@@ -25,7 +25,7 @@ import {
 } from '@mui/material';
 import { useLending } from '../context/LendingContext';
 import { Loan } from '../types/lending';
-import HealthGauge from './HealthGauge';
+import SimpleHealthGauge from './SimpleHealthGauge';
 
 const SimpleLoansManager: React.FC = () => {
   const { loans, repayLoan, liquidateLoan, addCollateral, marketData, extendLoan, currentTime } = useLending();
@@ -200,7 +200,7 @@ const SimpleLoansManager: React.FC = () => {
               const canExtend = loan.extensionsUsed < loan.maxExtensions && loan.currentLTV < 40;
               
               return (
-                <TableRow key={loan.id} sx={{ height: 120 }}>
+                <TableRow key={loan.id}>
                   <TableCell>
                     <Box>
                       <Typography variant="body2">
@@ -226,30 +226,12 @@ const SimpleLoansManager: React.FC = () => {
                       {totalDebt.toFixed(2)} XRP
                     </Typography>
                   </TableCell>
-                  <TableCell sx={{ minWidth: 200, textAlign: 'center' }}>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      flexDirection: 'column',
-                      alignItems: 'center', 
-                      gap: 1,
-                      py: 1
-                    }}>
-                      <HealthGauge 
-                        value={loan.currentLTV} 
-                        size="small" 
-                        showLabel={false}
-                      />
-                      <Box sx={{ textAlign: 'center' }}>
-                        <Typography variant="body2" color={`${healthColor}.main`} sx={{ fontWeight: 600 }}>
-                          {loan.currentLTV.toFixed(1)}%
-                        </Typography>
-                        <Chip 
-                          label={healthText} 
-                          color={healthColor} 
-                          size="small"
-                        />
-                      </Box>
-                    </Box>
+                  <TableCell sx={{ minWidth: 120, textAlign: 'center' }}>
+                    <SimpleHealthGauge 
+                      value={loan.currentLTV} 
+                      size="small" 
+                      showLabel={false}
+                    />
                   </TableCell>
                   <TableCell>
                     <Box>
@@ -361,41 +343,22 @@ const SimpleLoansManager: React.FC = () => {
               </Grid>
 
               <Box sx={{ 
-                mb: 3, 
+                mb: 2, 
                 p: 2,
                 bgcolor: 'background.default',
                 borderRadius: 2,
                 border: '1px solid',
-                borderColor: 'divider'
+                borderColor: 'divider',
+                textAlign: 'center'
               }}>
-                <Typography variant="subtitle2" color="text.secondary" gutterBottom textAlign="center">
-                  Loan Health Status
+                <SimpleHealthGauge 
+                  value={loan.currentLTV} 
+                  size="medium" 
+                  showLabel={true}
+                />
+                <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
+                  {loan.autoRenew ? 'Auto-renew enabled' : 'Manual renewal'} • {loan.extensionsUsed}/{loan.maxExtensions} extensions used
                 </Typography>
-                <Box sx={{ 
-                  display: 'flex',
-                  justifyContent: 'center',
-                  my: 2
-                }}>
-                  <HealthGauge 
-                    value={loan.currentLTV} 
-                    size="medium" 
-                    showLabel={false}
-                  />
-                </Box>
-                <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h6" color={`${healthColor}.main`} fontWeight={600} gutterBottom>
-                    {loan.currentLTV.toFixed(1)}% LTV
-                  </Typography>
-                  <Chip 
-                    label={healthText} 
-                    color={healthColor} 
-                    size="small"
-                    sx={{ mb: 1 }}
-                  />
-                  <Typography variant="caption" color="text.secondary" display="block">
-                    {loan.autoRenew ? 'Auto-renew enabled' : 'Manual renewal'} • {loan.extensionsUsed}/{loan.maxExtensions} extensions used
-                  </Typography>
-                </Box>
               </Box>
 
               {loan.status === 'active' && (
