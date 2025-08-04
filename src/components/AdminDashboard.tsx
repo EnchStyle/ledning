@@ -113,10 +113,10 @@ const AdminDashboard: React.FC = () => {
           </Alert>
         )}
 
-        <Grid container spacing={4}>
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
           {/* Time Simulation */}
-          <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 3, height: 'fit-content' }}>
+          <Grid item xs={12} lg={4}>
+            <Paper sx={{ p: { xs: 2, sm: 3 }, height: 'fit-content' }}>
               <Typography variant="h6" gutterBottom>
                 ⏰ Time Simulator
               </Typography>
@@ -129,7 +129,7 @@ const AdminDashboard: React.FC = () => {
           </Grid>
 
           {/* Market Price Simulation */}
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} lg={8}>
             <DualAssetMarketSimulator
               currentXpmPrice={marketData.xpmPriceUSD}
               currentXrpPrice={marketData.xrpPriceUSD}

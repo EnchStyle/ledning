@@ -28,6 +28,13 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  };
+}
+
 const SimpleMainTabs: React.FC = () => {
   const [value, setValue] = useState(0);
 
@@ -42,21 +49,29 @@ const SimpleMainTabs: React.FC = () => {
           <Tabs 
             value={value} 
             onChange={handleChange} 
+            variant="scrollable"
+            scrollButtons="auto"
             centered
             sx={{
               '& .MuiTab-root': {
-                minWidth: 120,
+                minWidth: { xs: 80, sm: 120 },
                 textTransform: 'none',
-                fontSize: '1rem',
-                fontWeight: 500
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+                fontWeight: 500,
+                px: { xs: 1, sm: 2 }
+              },
+              '& .MuiTabs-centered': {
+                '@media (max-width: 600px)': {
+                  justifyContent: 'flex-start'
+                }
               }
             }}
           >
-            <Tab label="Borrow" />
-            <Tab label="My Loans" />
-            <Tab label="Help" />
-            <Tab label="Market" />
-            <Tab label="Admin" />
+            <Tab label="Borrow" {...a11yProps(0)} />
+            <Tab label="My Loans" {...a11yProps(1)} />
+            <Tab label="Help" {...a11yProps(2)} />
+            <Tab label="Market" {...a11yProps(3)} />
+            <Tab label="Admin" {...a11yProps(4)} />
           </Tabs>
         </Container>
       </Box>

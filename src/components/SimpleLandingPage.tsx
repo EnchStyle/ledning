@@ -42,7 +42,7 @@ const SimpleLandingPage: React.FC = () => {
   const priceDropToLiquidation = collateral > 0 ? ((marketData.xpmPriceUSD - liquidationPriceUSD) / marketData.xpmPriceUSD) * 100 : 0;
 
   const handleCreateLoan = () => {
-    if (collateral > 0) {
+    if (collateral >= 1000 && collateral <= 10000000) {
       setConfirmDialog(true);
     }
   };
@@ -73,17 +73,28 @@ const SimpleLandingPage: React.FC = () => {
     <Container maxWidth="md">
       {/* Simple Header */}
       <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Typography variant="h3" gutterBottom sx={{ fontWeight: 600 }}>
+        <Typography 
+          variant="h3" 
+          gutterBottom 
+          sx={{ 
+            fontWeight: 600,
+            fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3rem' }
+          }}
+        >
           Borrow XRP with XPM Collateral
         </Typography>
-        <Typography variant="h6" color="text.secondary">
+        <Typography 
+          variant="h6" 
+          color="text.secondary"
+          sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
+        >
           15% APR • Up to 50% LTV • Instant loans
         </Typography>
       </Box>
 
       {/* Main Loan Calculator */}
-      <Paper sx={{ p: 4, mb: 4 }}>
-        <Grid container spacing={4}>
+      <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4 }}>
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
           {/* Input Section */}
           <Grid item xs={12} md={6}>
             <Typography variant="h6" gutterBottom>
@@ -97,8 +108,15 @@ const SimpleLandingPage: React.FC = () => {
               value={collateralAmount}
               onChange={(e) => setCollateralAmount(e.target.value)}
               sx={{ mb: 3 }}
-              inputProps={{ min: 0, step: 1000 }}
-              helperText={`Worth $${collateralValueUSD.toFixed(0)} USD at current price`}
+              inputProps={{ min: 1000, step: 1000 }}
+              helperText={
+                collateral < 1000 
+                  ? "Minimum 1,000 XPM required" 
+                  : collateral > 10000000 
+                    ? "Maximum 10,000,000 XPM allowed"
+                    : `Worth $${collateralValueUSD.toFixed(0)} USD at current price`
+              }
+              error={collateral > 0 && (collateral < 1000 || collateral > 10000000)}
             />
 
             {/* Loan Term Selection */}
@@ -107,7 +125,12 @@ const SimpleLandingPage: React.FC = () => {
               <RadioGroup
                 value={selectedTerm}
                 onChange={(e) => setSelectedTerm(Number(e.target.value))}
-                row
+                row={false}
+                sx={{
+                  '& .MuiFormControlLabel-root': {
+                    mb: 1
+                  }
+                }}
               >
                 {termOptions.map((option) => (
                   <FormControlLabel
@@ -199,7 +222,12 @@ const SimpleLandingPage: React.FC = () => {
                   size="large"
                   fullWidth
                   onClick={handleCreateLoan}
-                  sx={{ py: 1.5 }}
+                  sx={{ 
+                    py: 1.5,
+                    fontSize: { xs: '1rem', sm: '1.125rem' },
+                    fontWeight: 600
+                  }}
+                  disabled={collateral < 1000 || collateral > 10000000}
                 >
                   Create Loan
                 </Button>
