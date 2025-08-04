@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { Loan, LoanParams, MarketData, UserPosition } from '../types/lending';
+import { Loan, LoanParams, UserPosition } from '../types/lending';
+import { MarketDataClass } from '../utils/marketData';
 import { 
   calculateLTV, 
   calculateInterest, 
@@ -10,14 +11,16 @@ import {
 
 interface LendingContextType {
   loans: Loan[];
-  marketData: MarketData;
+  marketData: MarketDataClass;
   userPosition: UserPosition;
   currentTime: Date;
   createLoan: (params: LoanParams) => void;
   repayLoan: (loanId: string, amount: number) => void;
   liquidateLoan: (loanId: string) => void;
   simulateTime: (days: number) => void;
-  updateMarketPrice: (newPrice: number) => void;
+  updateXpmPrice: (newPriceUSD: number) => void;
+  updateXrpPrice: (newPriceUSD: number) => void;
+  updateMarketPrice: (newPrice: number) => void; // Backward compatibility
   checkMarginCalls: () => Loan[];
 }
 
@@ -34,10 +37,13 @@ export const useLending = () => {
 export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [marketData, setMarketData] = useState<MarketData>({
-    xpmPrice: 0.00667, // Initial XPM/XRP price (based on XPM=$0.02, XRP=$3.00)
-    liquidationFee: 10, // 10% liquidation fee
-  });
+  const [marketData, setMarketData] = useState<MarketDataClass>(
+    new MarketDataClass(
+      0.02, // XPM price in USD
+      3.00, // XRP price in USD
+      10    // 10% liquidation fee
+    )
+  );
 
   const updateLoansInterest = useCallback((newTime: Date) => {
     setLoans(prevLoans => 

@@ -17,6 +17,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import InfoIcon from '@mui/icons-material/Info';
 import { useLending } from '../context/LendingContext';
+import DualAssetRiskExplainer from './DualAssetRiskExplainer';
 
 const LiquidationInfo: React.FC = () => {
   const { marketData } = useLending();
@@ -38,11 +39,12 @@ const LiquidationInfo: React.FC = () => {
   const remainingCollateral = exampleLoan.collateral - collateralToLiquidate;
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Box display="flex" alignItems="center" gap={1} mb={2}>
-        <InfoIcon color="info" />
-        <Typography variant="h5">Liquidation Mechanism</Typography>
-      </Box>
+    <Box>
+      <Paper sx={{ p: 3 }}>
+        <Box display="flex" alignItems="center" gap={1} mb={2}>
+          <InfoIcon color="info" />
+          <Typography variant="h5">Liquidation Mechanism</Typography>
+        </Box>
 
       <Alert severity="info" sx={{ mb: 2 }}>
         <Typography variant="body2">
@@ -163,8 +165,13 @@ const LiquidationInfo: React.FC = () => {
           <li><Typography variant="body2">65% liquidation threshold (vs 80-85% for BTC/ETH) protects lenders</Typography></li>
           <li><Typography variant="body2">50% max initial LTV prevents immediate liquidation risk</Typography></li>
         </ul>
+        </Box>
+      </Paper>
+      
+      <Box sx={{ mt: 4 }}>
+        <DualAssetRiskExplainer />
       </Box>
-    </Paper>
+    </Box>
   );
 };
 
