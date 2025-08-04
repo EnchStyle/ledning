@@ -13,6 +13,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Loan } from '../types/lending';
 import LiquidationPreview from './LiquidationPreview';
+import RiskMeter from './RiskMeter';
 
 interface LoanRowProps {
   loan: Loan;
@@ -93,6 +94,9 @@ const LoanRow: React.FC<LoanRowProps> = ({
           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}>
             <Collapse in={open} timeout="auto" unmountOnExit>
               <Box sx={{ margin: 1 }}>
+                <Box sx={{ mb: 3 }}>
+                  <RiskMeter loan={loan} />
+                </Box>
                 <LiquidationPreview loan={loan} />
               </Box>
             </Collapse>

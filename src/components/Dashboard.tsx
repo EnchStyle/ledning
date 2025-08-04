@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box } from '@mui/material';
 import Header from './Header';
-import MainTabs from './MainTabs';
+import EnhancedMainTabs from './EnhancedMainTabs';
 
 const Dashboard: React.FC = () => {
   return (
@@ -12,7 +12,7 @@ const Dashboard: React.FC = () => {
       overflow: 'hidden'
     }}>
       <Header />
-      <MainTabs />
+      <EnhancedMainTabs />
     </Box>
   );
 };

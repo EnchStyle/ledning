@@ -9,6 +9,9 @@ import {
   CardContent,
   Alert,
   LinearProgress,
+  Button,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import SecurityIcon from '@mui/icons-material/Security';
@@ -16,15 +19,22 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import { useLending } from '../context/LendingContext';
 import LoanCreation from './LoanCreation';
 import MarginCallAlert from './MarginCallAlert';
+import HeroCalculator from './HeroCalculator';
+import LoanWizard from './LoanWizard';
+import TrustElements from './TrustElements';
+import SmartTooltip from './SmartTooltip';
 
 const LendingDashboard: React.FC = () => {
   const { userPosition, marketData } = useLending();
+  const [currentTab, setCurrentTab] = React.useState(0);
   
   // Use USD-based calculations for accurate dual-asset risk assessment
   const totalCollateralValueUSD = userPosition.totalCollateral * marketData.xpmPriceUSD;
   const totalDebtXRP = userPosition.totalBorrowed + userPosition.totalInterest;
   const totalDebtUSD = totalDebtXRP * marketData.xrpPriceUSD;
   const utilizationRate = totalCollateralValueUSD > 0 ? (totalDebtUSD / totalCollateralValueUSD) * 100 : 0;
+  
+  const hasExistingLoans = userPosition.totalCollateral > 0;
 
   return (
     <Container maxWidth="lg">
