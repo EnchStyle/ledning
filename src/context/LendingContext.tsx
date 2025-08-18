@@ -7,6 +7,7 @@
  * - User positions and portfolio tracking
  * - Time simulation for testing
  * - Loan maturity and extension logic
+ * - Real-time market simulation with configurable volatility
  */
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { Loan, LoanParams, MarketData, UserPosition } from '../types/lending';
