@@ -54,6 +54,14 @@ interface LendingContextType {
   priceHistory: PriceHistoryPoint[];
   /** Simulation settings */
   simulationSettings: SimulationSettings;
+  /** Liquidation events */
+  liquidationEvents: Array<{
+    loanId: string;
+    timestamp: Date;
+    price: number;
+    collateral: number;
+    debt: number;
+  }>;
   /** Create a new loan with specified parameters */
   createLoan: (params: LoanParams) => void;
   /** Repay part or all of a loan */
@@ -247,6 +255,23 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [marketData.xpmPriceUSD, updateLoansLTV]);
 
   /**
+   * Check for liquidations when price changes during simulation
+   */
+  useEffect(() => {
+    if (simulationSettings.isActive && loans.length > 0) {
+      const eligibleForLiquidation = loans.filter(loan => 
+        loan.status === 'active' && 
+        isEligibleForLiquidationRLUSD(loan, marketData.xpmPriceUSD, 65)
+      );
+      
+      eligibleForLiquidation.forEach(loan => {
+        console.log(`Auto-liquidating loan ${loan.id} at LTV ${loan.currentLTV?.toFixed(1)}%`);
+        liquidateLoan(loan.id);
+      });
+    }
+  }, [marketData.xpmPriceUSD, simulationSettings.isActive, loans, liquidateLoan]);
+
+  /**
    * Create a new loan with the specified parameters
    * Validates LTV, calculates liquidation price, and sets maturity date
    * Simplified for RLUSD since debt is already in USD
@@ -363,6 +388,15 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         //   marketData.xpmPriceUSD,
         //   marketData.liquidationFee
         // );
+        
+        // Track liquidation event
+        setLiquidationEvents(prev => [...prev.slice(-49), {
+          loanId: loan.id,
+          timestamp: new Date(),
+          price: marketData.xpmPriceUSD,
+          collateral: loan.collateralAmount,
+          debt: loan.borrowedAmount + loan.fixedInterestAmount,
+        }]);
         
         return {
           ...loan,

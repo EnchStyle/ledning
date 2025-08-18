@@ -22,7 +22,7 @@ import { useLending } from '../context/LendingContext';
 import SimulationControls from './SimulationControls';
 
 const AnalyticsPage: React.FC = () => {
-  const { userLoans, marketData } = useLending();
+  const { userLoans, marketData, liquidationEvents } = useLending();
 
   // Market analytics and user portfolio metrics
   const xpmPrice24hChange = 2.34; // Demo data - in real app would come from price API

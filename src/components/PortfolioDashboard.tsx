@@ -45,6 +45,7 @@ import {
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
 import PortfolioChart from './PortfolioChart';
+import LiquidationAlert from './LiquidationAlert';
 
 interface ActionDialog {
   open: boolean;
@@ -475,6 +476,9 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
           </Alert>
         )}
       </Box>
+
+      {/* Liquidation Alert */}
+      <LiquidationAlert />
 
       {/* Portfolio Overview */}
       <PortfolioOverview />
