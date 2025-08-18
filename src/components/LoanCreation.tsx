@@ -31,6 +31,7 @@ import {
 import InfoIcon from '@mui/icons-material/Info';
 import { useLending } from '../context/LendingContext';
 import { calculateMaxBorrowUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
+import { LoanTermDays } from '../types/lending';
 
 /**
  * Loan creation form component
@@ -45,7 +46,7 @@ const LoanCreation: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [step, setStep] = useState<number>(0); // Creation process step
-  const [selectedTerm, setSelectedTerm] = useState<number>(60); // Default 60-day term
+  const [selectedTerm, setSelectedTerm] = useState<LoanTermDays>(60); // Default 60-day term
 
   // Calculate loan parameters based on inputs
   const maxBorrow = calculateMaxBorrowUSD(

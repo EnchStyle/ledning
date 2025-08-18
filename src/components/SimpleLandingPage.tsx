@@ -24,11 +24,12 @@ import {
 } from '@mui/material';
 import { useLending } from '../context/LendingContext';
 import { calculateMaxBorrowUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
+import { LoanTermDays } from '../types/lending';
 
 const SimpleLandingPage: React.FC = () => {
   const { createLoan, marketData } = useLending();
   const [collateralAmount, setCollateralAmount] = useState<string>('150000');
-  const [selectedTerm, setSelectedTerm] = useState<number>(60);
+  const [selectedTerm, setSelectedTerm] = useState<LoanTermDays>(60);
   const [confirmDialog, setConfirmDialog] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);

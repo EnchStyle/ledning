@@ -28,6 +28,7 @@ import SecurityIcon from '@mui/icons-material/Security';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useLending } from '../context/LendingContext';
 import { calculateMaxBorrowUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
+import { LoanTermDays } from '../types/lending';
 import RiskMeter from './RiskMeter';
 
 const LoanWizard: React.FC = () => {
@@ -38,7 +39,7 @@ const LoanWizard: React.FC = () => {
   const [targetLTV, setTargetLTV] = useState<number>(40);
   const [isCreating, setIsCreating] = useState(false);
   const [showRiskDetails, setShowRiskDetails] = useState(false);
-  const [selectedTerm, setSelectedTerm] = useState<number>(60); // Default to 60 days
+  const [selectedTerm, setSelectedTerm] = useState<LoanTermDays>(60); // Default to 60 days
 
   const collateralValue = parseFloat(collateralAmount) || 0;
   const collateralValueUSD = collateralValue * marketData.xpmPriceUSD;
