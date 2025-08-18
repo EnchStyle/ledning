@@ -11,6 +11,7 @@ import {
   Divider,
   IconButton,
   Tooltip,
+  Alert,
 } from '@mui/material';
 import {
   PlayArrow as PlayIcon,
@@ -64,7 +65,7 @@ const SimulationControls: React.FC = React.memo(() => {
       </Box>
 
       {/* Current Status */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Chip 
           label={simulationSettings.isActive ? "Simulation Active" : "Simulation Paused"}
           color={simulationSettings.isActive ? "success" : "default"}
@@ -76,9 +77,45 @@ const SimulationControls: React.FC = React.memo(() => {
         <Typography variant="body2" color="text.secondary">
           Data Points: <strong>{priceHistory.length}</strong>
         </Typography>
+        {simulationSettings.speed >= 8 && (
+          <Chip 
+            label="Ultra Speed" 
+            color="warning" 
+            size="small"
+            icon={<SpeedIcon />}
+          />
+        )}
+        {simulationSettings.volatility >= 0.15 && (
+          <Chip 
+            label="Extreme Volatility" 
+            color="error" 
+            size="small"
+            icon={<TrendingUpIcon />}
+          />
+        )}
       </Box>
 
       <Divider sx={{ my: 2 }} />
+
+      {/* Extreme Settings Warning */}
+      {(simulationSettings.speed >= 8 || simulationSettings.volatility >= 0.15) && (
+        <Alert 
+          severity="warning" 
+          sx={{ mb: 2 }}
+          icon={<TrendingUpIcon />}
+        >
+          <Typography variant="body2">
+            <strong>Extreme Settings Active!</strong>
+            {simulationSettings.speed >= 8 && (
+              <> Speed is at {simulationSettings.speed}x - updates every {(10 / simulationSettings.speed).toFixed(1)} seconds.</>
+            )}
+            {simulationSettings.speed >= 8 && simulationSettings.volatility >= 0.15 && ' '}
+            {simulationSettings.volatility >= 0.15 && (
+              <>Volatility is at {(simulationSettings.volatility * 100).toFixed(0)}% - expect large price swings!</>
+            )}
+          </Typography>
+        </Alert>
+      )}
 
       {/* Controls */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3, alignItems: 'end' }}>
@@ -177,8 +214,11 @@ const SimulationControls: React.FC = React.memo(() => {
       <Box sx={{ mt: 3, p: 2, bgcolor: 'surface.main', borderRadius: 2 }}>
         <Typography variant="body2" color="text.secondary">
           <strong>How it works:</strong> The simulation generates realistic price movements every 10 seconds (adjustable by speed). 
-          Watch how your loans react to market volatility and track performance over time. 
-          Use different volatility settings to test various market conditions.
+          Watch how your loans react to market volatility and track performance over time.
+          <br /><br />
+          <strong>Speed Settings:</strong> 0.5x-4x for normal testing, 6x-10x for rapid stress testing.
+          <br />
+          <strong>Volatility Settings:</strong> 0.5-5% for normal markets, 10-20% for extreme conditions.
         </Typography>
       </Box>
     </Paper>
