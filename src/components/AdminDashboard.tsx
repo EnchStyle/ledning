@@ -20,7 +20,6 @@ const AdminDashboard: React.FC = () => {
     loans,
     checkMarginCalls,
     checkMaturedLoans,
-    processMaturedLoans,
     currentTime
   } = useLending();
 
