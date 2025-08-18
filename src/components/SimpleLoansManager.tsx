@@ -52,7 +52,7 @@ const SimpleLoansManager: React.FC = () => {
       if (amount >= totalDebt) {
         setSuccessMessage('Loan fully repaid! Collateral will be returned.');
       } else {
-        setSuccessMessage(`Successfully repaid ${amount.toFixed(4)} XRP. Remaining debt: ${(totalDebt - amount).toFixed(4)} XRP`);
+        setSuccessMessage(`Successfully repaid ${amount.toFixed(4)} RLUSD. Remaining debt: ${(totalDebt - amount).toFixed(4)} RLUSD`);
       }
       setShowSuccess(true);
     }
@@ -116,7 +116,7 @@ const SimpleLoansManager: React.FC = () => {
             No loans yet
           </Typography>
           <Typography variant="body1" color="text.secondary" paragraph>
-            Create your first loan to start borrowing XRP against your XPM collateral.
+            Create your first loan to start borrowing RLUSD against your XPM collateral.
           </Typography>
           <Button variant="contained" size="large">
             Create First Loan
@@ -156,7 +156,7 @@ const SimpleLoansManager: React.FC = () => {
               Total Borrowed
             </Typography>
             <Typography variant="h6">
-              {loans.reduce((sum, loan) => sum + (loan.status === 'active' ? loan.borrowedAmount + loan.fixedInterestAmount : 0), 0).toFixed(2)} XRP
+              {loans.reduce((sum, loan) => sum + (loan.status === 'active' ? loan.borrowedAmount + loan.fixedInterestAmount : 0), 0).toFixed(2)} RLUSD
             </Typography>
           </Box>
           <Box>
@@ -206,17 +206,17 @@ const SimpleLoansManager: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {loan.borrowedAmount.toFixed(2)} XRP
+                      {loan.borrowedAmount.toFixed(2)} RLUSD
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {loan.fixedInterestAmount.toFixed(4)} XRP
+                      {loan.fixedInterestAmount.toFixed(4)} RLUSD
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {totalDebt.toFixed(2)} XRP
+                      {totalDebt.toFixed(2)} RLUSD
                     </Typography>
                   </TableCell>
                   <TableCell sx={{ minWidth: 120, textAlign: 'center' }}>
@@ -311,10 +311,10 @@ const SimpleLoansManager: React.FC = () => {
                 <Grid item xs={6}>
                   <Typography variant="caption" color="text.secondary">Total Debt</Typography>
                   <Typography variant="body2" fontWeight={500}>
-                    {totalDebt.toFixed(2)} XRP
+                    {totalDebt.toFixed(2)} RLUSD
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Interest: {loan.fixedInterestAmount.toFixed(4)} XRP
+                    Interest: {loan.fixedInterestAmount.toFixed(4)} RLUSD
                   </Typography>
                 </Grid>
               </Grid>
@@ -401,12 +401,12 @@ const SimpleLoansManager: React.FC = () => {
           {repayDialog.loan && (
             <Box sx={{ pt: 2 }}>
               <Typography variant="body2" gutterBottom>
-                Total debt: {(repayDialog.loan.borrowedAmount + repayDialog.loan.fixedInterestAmount).toFixed(4)} XRP
+                Total debt: {(repayDialog.loan.borrowedAmount + repayDialog.loan.fixedInterestAmount).toFixed(4)} RLUSD
               </Typography>
               <TextField
                 autoFocus
                 fullWidth
-                label="Repay Amount (XRP)"
+                label="Repay Amount (RLUSD)"
                 type="number"
                 value={repayAmount}
                 onChange={(e) => setRepayAmount(e.target.value)}

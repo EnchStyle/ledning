@@ -16,7 +16,6 @@ const AdminDashboard: React.FC = () => {
   const { 
     marketData, 
     updateXpmPrice, 
-    updateXrpPrice, 
     loans,
     checkMarginCalls,
     checkMaturedLoans,
@@ -31,8 +30,8 @@ const AdminDashboard: React.FC = () => {
   const totalCollateralUSD = activeLoans.reduce((sum, loan) => 
     sum + (loan.collateralAmount * marketData.xpmPriceUSD), 0
   );
-  const totalDebtUSD = activeLoans.reduce((sum, loan) => 
-    sum + ((loan.borrowedAmount + loan.fixedInterestAmount) * marketData.xrpPriceUSD), 0
+  const totalDebtRLUSD = activeLoans.reduce((sum, loan) => 
+    sum + (loan.borrowedAmount + loan.fixedInterestAmount), 0
   );
   const avgLTV = activeLoans.length > 0 
     ? activeLoans.reduce((sum, loan) => sum + loan.currentLTV, 0) / activeLoans.length 
@@ -77,9 +76,9 @@ const AdminDashboard: React.FC = () => {
           <Grid item xs={12} sm={6} md={3}>
             <Paper sx={{ p: 2, textAlign: 'center' }}>
               <Typography variant="h6" color="warning.main">
-                ${totalDebtUSD.toFixed(0)}
+                {totalDebtRLUSD.toFixed(0)} RLUSD
               </Typography>
-              <Typography variant="caption">Total Debt USD</Typography>
+              <Typography variant="caption">Total Debt</Typography>
             </Paper>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -129,12 +128,22 @@ const AdminDashboard: React.FC = () => {
 
           {/* Market Price Simulation */}
           <Grid item xs={12} lg={8}>
-            <DualAssetMarketSimulator
-              currentXpmPrice={marketData.xpmPriceUSD}
-              currentXrpPrice={marketData.xrpPriceUSD}
-              onXpmPriceChange={updateXpmPrice}
-              onXrpPriceChange={updateXrpPrice}
-            />
+            {/* Simple XPM Price Controls since RLUSD is stable at $1 */}
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>XPM Price Control</Typography>
+              <Typography variant="body2" color="text.secondary" paragraph>
+                Simulate XPM price changes. RLUSD remains stable at $1.00
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
+                <Typography variant="body2">Current: ${marketData.xpmPriceUSD.toFixed(4)}</Typography>
+                <button onClick={() => updateXpmPrice(marketData.xpmPriceUSD * 0.9)}>
+                  -10%
+                </button>
+                <button onClick={() => updateXpmPrice(marketData.xpmPriceUSD * 1.1)}>
+                  +10%
+                </button>
+              </Box>
+            </Paper>
           </Grid>
         </Grid>
 

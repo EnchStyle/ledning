@@ -21,7 +21,7 @@ import {
   Snackbar,
 } from '@mui/material';
 import { useLending } from '../context/LendingContext';
-import { calculateMaxBorrowUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
+import { calculateMaxBorrowRLUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
 import { LoanTermDays } from '../types/lending';
 
 const SimpleLandingPage: React.FC = () => {
@@ -34,9 +34,9 @@ const SimpleLandingPage: React.FC = () => {
   
   const collateral = parseFloat(collateralAmount) || 0;
   const collateralValueUSD = collateral * marketData.xpmPriceUSD;
-  const maxBorrowXRP = calculateMaxBorrowUSD(collateral, marketData.xpmPriceUSD, marketData.xrpPriceUSD, 50);
-  const borrowValueUSD = maxBorrowXRP * marketData.xrpPriceUSD;
-  const liquidationPriceUSD = calculateLiquidationPriceUSD(maxBorrowXRP, collateral, marketData.xrpPriceUSD, 65);
+  const maxBorrowRLUSD = calculateMaxBorrowRLUSD(collateral, marketData.xpmPriceUSD, 50);
+  const borrowValueUSD = maxBorrowRLUSD; // RLUSD is 1:1 USD
+  const liquidationPriceUSD = calculateLiquidationPriceUSD(maxBorrowRLUSD, collateral, 65);
   const priceDropToLiquidation = collateral > 0 ? ((marketData.xpmPriceUSD - liquidationPriceUSD) / marketData.xpmPriceUSD) * 100 : 0;
 
   const handleCreateLoan = () => {
@@ -48,13 +48,13 @@ const SimpleLandingPage: React.FC = () => {
   const confirmCreateLoan = () => {
     createLoan({
       collateralAmount: collateral,
-      borrowAmount: maxBorrowXRP,
+      borrowAmount: maxBorrowRLUSD,
       interestRate: selectedTerm === 30 ? 14 : selectedTerm === 60 ? 15 : 16,
       liquidationThreshold: 65,
       termDays: selectedTerm,
     });
     setConfirmDialog(false);
-    setSuccessMessage(`Loan created successfully! You received ${maxBorrowXRP.toFixed(0)} XRP for ${selectedTerm} days.`);
+    setSuccessMessage(`Loan created successfully! You received ${maxBorrowRLUSD.toFixed(0)} RLUSD for ${selectedTerm} days.`);
     setShowSuccess(true);
     // Reset form
     setCollateralAmount('150000');
@@ -78,7 +78,7 @@ const SimpleLandingPage: React.FC = () => {
             fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3rem' }
           }}
         >
-          Borrow XRP with XPM Collateral
+          Borrow RLUSD with XPM Collateral
         </Typography>
         <Typography 
           variant="h6" 
@@ -176,10 +176,10 @@ const SimpleLandingPage: React.FC = () => {
                 
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="h3" color="primary.main" sx={{ fontWeight: 600 }}>
-                    {maxBorrowXRP.toFixed(0)}
+                    {maxBorrowRLUSD.toFixed(0)}
                   </Typography>
                   <Typography variant="h6" color="text.secondary">
-                    XRP (≈ ${borrowValueUSD.toFixed(0)} USD)
+                    RLUSD (=${borrowValueUSD.toFixed(0)} USD)
                   </Typography>
                 </Box>
 
@@ -188,7 +188,7 @@ const SimpleLandingPage: React.FC = () => {
                     Term: {selectedTerm} days
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Total interest: ~{(maxBorrowXRP * (selectedTerm === 30 ? 0.14 : selectedTerm === 60 ? 0.15 : 0.16) * selectedTerm / 365).toFixed(2)} XRP
+                    Total interest: ~{(maxBorrowRLUSD * (selectedTerm === 30 ? 0.14 : selectedTerm === 60 ? 0.15 : 0.16) * selectedTerm / 365).toFixed(2)} RLUSD
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Liquidation if XPM drops to: ${liquidationPriceUSD.toFixed(4)}
@@ -246,8 +246,8 @@ const SimpleLandingPage: React.FC = () => {
       {/* Risk Warning */}
       <Alert severity="warning" sx={{ mb: 4 }}>
         <Typography variant="body2">
-          <strong>Important:</strong> Your loan will be liquidated if XPM price falls too much or XRP price rises significantly. 
-          Both asset prices affect your loan health. Monitor your position regularly.
+          <strong>Important:</strong> Your loan will be liquidated if XPM price falls too much. 
+          Since RLUSD is stable at $1, only XPM price affects your loan health. Monitor your position regularly.
         </Typography>
       </Alert>
 
@@ -269,7 +269,7 @@ const SimpleLandingPage: React.FC = () => {
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="h6" color="primary.main">2</Typography>
               <Typography variant="body2">
-                Receive XRP instantly at 15% APR
+                Receive RLUSD instantly at 15% APR
               </Typography>
             </Box>
           </Grid>
@@ -296,7 +296,7 @@ const SimpleLandingPage: React.FC = () => {
               • Collateral: {collateral.toLocaleString()} XPM (${collateralValueUSD.toFixed(0)} USD)
             </Typography>
             <Typography variant="body2" gutterBottom>
-              • You'll receive: {maxBorrowXRP.toFixed(0)} XRP (${borrowValueUSD.toFixed(0)} USD)
+              • You'll receive: {maxBorrowRLUSD.toFixed(0)} RLUSD (${borrowValueUSD.toFixed(0)} USD)
             </Typography>
             <Typography variant="body2" gutterBottom>
               • Term: {selectedTerm} days ({selectedTerm === 30 ? '14%' : selectedTerm === 60 ? '15%' : '16%'} APR)
@@ -308,8 +308,8 @@ const SimpleLandingPage: React.FC = () => {
             
             <Alert severity="info" sx={{ mt: 2 }}>
               <Typography variant="body2">
-                By confirming, you agree to deposit the collateral and receive the XRP loan. 
-                Interest will accrue daily at the specified rate.
+                By confirming, you agree to deposit the collateral and receive the RLUSD loan. 
+                Fixed interest is calculated upfront for the full term.
               </Typography>
             </Alert>
           </Box>

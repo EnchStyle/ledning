@@ -1,25 +1,25 @@
 /**
  * Lending Calculations Utility Module
  * 
- * Core mathematical functions for the XRP Lending Platform
+ * Core mathematical functions for the RLUSD Lending Platform
  * Handles all financial calculations including:
  * - Loan-to-Value (LTV) ratios
  * - Interest calculations (simple and compound)
  * - Liquidation thresholds and prices
- * - Dual-asset risk assessment (XPM collateral, XRP debt)
+ * - Single-asset risk assessment (XPM collateral, RLUSD debt at 1:1 USD)
  */
 import { Loan } from '../types/lending';
 
 /**
  * Calculate Loan-to-Value ratio using USD values
- * Essential for accurate risk assessment in dual-asset systems
+ * Simplified for RLUSD since debt is already in USD (1:1)
  * @param collateralValueUSD - Total collateral value in USD
- * @param debtValueUSD - Total debt value in USD
+ * @param debtValueRLUSD - Total debt value in RLUSD (equals USD)
  * @returns LTV percentage (0-100+)
  */
-export const calculateLTV = (collateralValueUSD: number, debtValueUSD: number): number => {
+export const calculateLTV = (collateralValueUSD: number, debtValueRLUSD: number): number => {
   if (collateralValueUSD === 0) return 0;
-  return (debtValueUSD / collateralValueUSD) * 100;
+  return (debtValueRLUSD / collateralValueUSD) * 100; // RLUSD is 1:1 USD
 };
 
 /**
@@ -33,13 +33,12 @@ export const calculateCollateralValueUSD = (collateralAmount: number, xpmPriceUS
 };
 
 /**
- * Convert XRP debt amount to USD value
- * @param debtAmountXRP - Amount of XRP owed
- * @param xrpPriceUSD - Current XRP price in USD
- * @returns Debt value in USD
+ * Get RLUSD debt value in USD (simplified since RLUSD is 1:1 USD)
+ * @param debtAmountRLUSD - Amount of RLUSD owed
+ * @returns Debt value in USD (same as input since 1:1)
  */
-export const calculateDebtValueUSD = (debtAmountXRP: number, xrpPriceUSD: number): number => {
-  return debtAmountXRP * xrpPriceUSD;
+export const calculateDebtValueUSD = (debtAmountRLUSD: number): number => {
+  return debtAmountRLUSD; // RLUSD is 1:1 USD
 };
 
 // Legacy function for backward compatibility
@@ -48,23 +47,20 @@ export const calculateCollateralValue = (collateralAmount: number, xpmPrice: num
 };
 
 /**
- * Calculate maximum borrowable XRP amount based on collateral
- * Uses USD values for accurate cross-asset calculation
+ * Calculate maximum borrowable RLUSD amount based on collateral
+ * Simplified since RLUSD is 1:1 USD - no conversion needed
  * @param collateralAmount - XPM tokens to use as collateral
  * @param xpmPriceUSD - Current XPM price in USD
- * @param xrpPriceUSD - Current XRP price in USD
  * @param maxLTV - Maximum allowed LTV percentage
- * @returns Maximum XRP amount that can be borrowed
+ * @returns Maximum RLUSD amount that can be borrowed
  */
-export const calculateMaxBorrowUSD = (
+export const calculateMaxBorrowRLUSD = (
   collateralAmount: number,
   xpmPriceUSD: number,
-  xrpPriceUSD: number,
   maxLTV: number
 ): number => {
   const collateralValueUSD = calculateCollateralValueUSD(collateralAmount, xpmPriceUSD);
-  const maxBorrowValueUSD = (collateralValueUSD * maxLTV) / 100;
-  return maxBorrowValueUSD / xrpPriceUSD; // Convert USD to XRP amount
+  return (collateralValueUSD * maxLTV) / 100; // Direct USD amount = RLUSD amount
 };
 
 // Legacy function for backward compatibility
@@ -80,7 +76,7 @@ export const calculateMaxBorrow = (
 /**
  * Calculate fixed interest amount for a loan
  * Interest is calculated upfront based on the full term, regardless of early repayment
- * @param principal - Borrowed amount in XRP
+ * @param principal - Borrowed amount in RLUSD
  * @param rate - Annual interest rate (as percentage)
  * @param termDays - Loan term in days (30, 60, or 90)
  * @returns Fixed interest amount to be paid
@@ -108,15 +104,14 @@ export const calculateInterest = (
   return principal * dailyRate * timeInDays;
 };
 
-// Calculate XPM liquidation price in USD
+// Calculate XPM liquidation price in USD (simplified for RLUSD)
 export const calculateLiquidationPriceUSD = (
-  borrowedAmountXRP: number,
+  borrowedAmountRLUSD: number,
   collateralAmountXPM: number,
-  xrpPriceUSD: number,
   liquidationThreshold: number
 ): number => {
-  const debtValueUSD = borrowedAmountXRP * xrpPriceUSD;
-  return (debtValueUSD / collateralAmountXPM) * (100 / liquidationThreshold);
+  // RLUSD debt is already in USD, no conversion needed
+  return (borrowedAmountRLUSD / collateralAmountXPM) * (100 / liquidationThreshold);
 };
 
 // Legacy function - calculates liquidation price in XPM/XRP ratio
@@ -128,16 +123,15 @@ export const calculateLiquidationPrice = (
   return (borrowedAmount / collateralAmount) * (100 / liquidationThreshold);
 };
 
-// Check liquidation eligibility using USD values
-export const isEligibleForLiquidationUSD = (
+// Check liquidation eligibility (simplified for RLUSD)
+export const isEligibleForLiquidationRLUSD = (
   loan: Loan,
   xpmPriceUSD: number,
-  xrpPriceUSD: number,
   liquidationThreshold: number
 ): boolean => {
   const collateralValueUSD = calculateCollateralValueUSD(loan.collateralAmount, xpmPriceUSD);
-  const totalDebtXRP = loan.borrowedAmount + loan.fixedInterestAmount;
-  const totalDebtUSD = calculateDebtValueUSD(totalDebtXRP, xrpPriceUSD);
+  const totalDebtRLUSD = loan.borrowedAmount + loan.fixedInterestAmount;
+  const totalDebtUSD = calculateDebtValueUSD(totalDebtRLUSD); // 1:1 conversion
   const currentLTV = calculateLTV(collateralValueUSD, totalDebtUSD);
   return currentLTV >= liquidationThreshold;
 };
@@ -154,31 +148,29 @@ export const isEligibleForLiquidation = (
   return currentLTV >= liquidationThreshold;
 };
 
-// Calculate liquidation return using USD values
-export const calculateLiquidationReturnUSD = (
+// Calculate liquidation return (simplified for RLUSD)
+export const calculateLiquidationReturnRLUSD = (
   loan: Loan,
   xpmPriceUSD: number,
-  xrpPriceUSD: number,
   liquidationFee: number
 ): {
   collateralToReturnXPM: number;
-  liquidationPenaltyUSD: number;
-  totalDebtUSD: number;
+  liquidationPenaltyRLUSD: number;
+  totalDebtRLUSD: number;
   borrowerGetsBackXPM: number;
 } => {
-  const totalDebtXRP = loan.borrowedAmount + loan.fixedInterestAmount;
-  const totalDebtUSD = totalDebtXRP * xrpPriceUSD;
-  const liquidationPenaltyUSD = totalDebtUSD * (liquidationFee / 100);
-  const totalToRecoverUSD = totalDebtUSD + liquidationPenaltyUSD;
-  const collateralToReturnXPM = totalToRecoverUSD / xpmPriceUSD;
+  const totalDebtRLUSD = loan.borrowedAmount + loan.fixedInterestAmount;
+  const liquidationPenaltyRLUSD = totalDebtRLUSD * (liquidationFee / 100);
+  const totalToRecoverRLUSD = totalDebtRLUSD + liquidationPenaltyRLUSD;
+  const collateralToReturnXPM = totalToRecoverRLUSD / xpmPriceUSD; // Convert RLUSD to XPM
   
   const actualCollateralUsed = Math.min(collateralToReturnXPM, loan.collateralAmount);
   const borrowerGetsBackXPM = Math.max(0, loan.collateralAmount - actualCollateralUsed);
   
   return {
     collateralToReturnXPM: actualCollateralUsed,
-    liquidationPenaltyUSD,
-    totalDebtUSD,
+    liquidationPenaltyRLUSD,
+    totalDebtRLUSD,
     borrowerGetsBackXPM
   };
 };
@@ -204,3 +196,8 @@ export const calculateLiquidationReturn = (
     totalDebt
   };
 };
+
+// Backward compatibility aliases
+export const calculateMaxBorrowUSD = calculateMaxBorrowRLUSD;
+export const isEligibleForLiquidationUSD = isEligibleForLiquidationRLUSD;
+export const calculateLiquidationReturnUSD = calculateLiquidationReturnRLUSD;

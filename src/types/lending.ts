@@ -1,7 +1,8 @@
 /**
- * Type definitions for the XRP Lending Platform
+ * Type definitions for the RLUSD Lending Platform
  * 
  * Core data structures that define the lending protocol's state and operations
+ * Uses XPM collateral to borrow RLUSD (1:1 USD-backed stablecoin)
  */
 
 /**
@@ -29,7 +30,7 @@ export interface Loan {
   /** Amount of XPM tokens deposited as collateral */
   collateralAmount: number;
   
-  /** Amount of XRP borrowed */
+  /** Amount of RLUSD borrowed */
   borrowedAmount: number;
   
   /** Fixed total interest amount to be paid */
@@ -63,7 +64,7 @@ export interface LoanParams {
   /** XPM tokens to deposit as collateral */
   collateralAmount: number;
   
-  /** XRP amount to borrow */
+  /** RLUSD amount to borrow */
   borrowAmount: number;
   
   /** Annual interest rate for calculating fixed interest */
@@ -80,19 +81,14 @@ export interface LoanParams {
  * MarketData - Current market prices and protocol parameters
  * 
  * Real-time pricing data used for risk calculations and liquidations
+ * RLUSD is 1:1 USD, so no separate pricing needed
  */
 export interface MarketData {
   /** Current XPM token price in USD */
   xpmPriceUSD: number;
   
-  /** Current XRP price in USD */
-  xrpPriceUSD: number;
-  
   /** Fee percentage charged on liquidations (e.g., 10%) */
   liquidationFee: number;
-  
-  /** XPM/XRP price ratio (legacy field for backward compatibility) */
-  xpmPrice: number;
 }
 
 /**
@@ -104,7 +100,7 @@ export interface UserPosition {
   /** Total XPM tokens locked as collateral */
   totalCollateral: number;
   
-  /** Total XRP borrowed across all loans */
+  /** Total RLUSD borrowed across all loans */
   totalBorrowed: number;
   
   /** Total fixed interest across all loans */
@@ -128,8 +124,8 @@ export type MarketScenario = 'crash' | 'correction' | 'stable' | 'rally' | 'cust
  * Price change event for market simulation
  */
 export interface PriceChangeEvent {
-  /** Asset being changed (XPM or XRP) */
-  asset: 'XPM' | 'XRP';
+  /** Asset being changed (only XPM since RLUSD is 1:1 USD) */
+  asset: 'XPM';
   
   /** New price in USD */
   newPriceUSD: number;
