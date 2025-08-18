@@ -32,11 +32,11 @@ const SimulationControls: React.FC = () => {
     priceHistory 
   } = useLending();
 
-  const handleSpeedChange = (_, value: number | number[]) => {
+  const handleSpeedChange = (_event: Event, value: number | number[]) => {
     updateSimulationSettings({ speed: value as number });
   };
 
-  const handleVolatilityChange = (_, value: number | number[]) => {
+  const handleVolatilityChange = (_event: Event, value: number | number[]) => {
     updateSimulationSettings({ volatility: (value as number) / 100 });
   };
 
