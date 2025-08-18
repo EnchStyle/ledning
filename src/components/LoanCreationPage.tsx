@@ -51,7 +51,11 @@ interface LoanParameters {
   termDays: LoanTermDays;
 }
 
-const LoanCreationPage: React.FC = () => {
+interface LoanCreationPageProps {
+  onNavigateToPortfolio?: () => void;
+}
+
+const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfolio }) => {
   const { createLoan, marketData } = useLending();
   const [activeStep, setActiveStep] = useState(0);
   const [parameters, setParameters] = useState<LoanParameters>({
@@ -65,6 +69,7 @@ const LoanCreationPage: React.FC = () => {
   const [agreedToRisks, setAgreedToRisks] = useState(false);
   const [isCreatingLoan, setIsCreatingLoan] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   // Demo wallet balance (2M XPM)
   const walletBalance = 2000000;
@@ -137,19 +142,7 @@ const LoanCreationPage: React.FC = () => {
 
       setConfirmationOpen(false);
       setShowSuccessMessage(true);
-      
-      // Reset form after success
-      setTimeout(() => {
-        setActiveStep(0);
-        setParameters({
-          collateralAmount: 150000,
-          targetLTV: 40,
-          termDays: 60,
-        });
-        setAgreedToTerms(false);
-        setAgreedToRisks(false);
-        setShowSuccessMessage(false);
-      }, 3000);
+      setShowSuccessDialog(true);
       
     } catch (error) {
       console.error('Failed to create loan:', error);
@@ -597,18 +590,121 @@ const LoanCreationPage: React.FC = () => {
       {/* Success Message */}
       <Snackbar
         open={showSuccessMessage}
-        autoHideDuration={3000}
+        autoHideDuration={6000}
         onClose={() => setShowSuccessMessage(false)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{ zIndex: 9999 }}
       >
-        <Alert severity="success" onClose={() => setShowSuccessMessage(false)}>
-          <Typography variant="body2">
-            <strong>Loan Created Successfully!</strong>
+        <Alert 
+          severity="success" 
+          onClose={() => setShowSuccessMessage(false)}
+          sx={{ 
+            fontSize: '1.1rem', 
+            minWidth: 400,
+            '& .MuiAlert-icon': { fontSize: '1.5rem' },
+            boxShadow: 4
+          }}
+        >
+          <Typography variant="body1" sx={{ fontWeight: 600 }}>
+            🎉 Loan Created Successfully!
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            You received <strong>{targetBorrowAmount.toFixed(0)} RLUSD</strong> for {parameters.termDays} days.
             <br />
-            You received {targetBorrowAmount.toFixed(0)} RLUSD for {parameters.termDays} days.
+            Check your Portfolio tab to view the new loan.
           </Typography>
         </Alert>
       </Snackbar>
+
+      {/* Success Dialog */}
+      <Dialog 
+        open={showSuccessDialog} 
+        onClose={() => {
+          setShowSuccessDialog(false);
+          setShowSuccessMessage(false);
+          // Reset form when dialog is closed
+          setActiveStep(0);
+          setParameters({
+            collateralAmount: 150000,
+            targetLTV: 40,
+            termDays: 60,
+          });
+          setAgreedToTerms(false);
+          setAgreedToRisks(false);
+          // Navigate to portfolio if handler provided
+          if (onNavigateToPortfolio) {
+            onNavigateToPortfolio();
+          }
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', color: 'success.main' }}>
+            <CheckIcon sx={{ mr: 2, fontSize: 32 }} />
+            <Typography variant="h5" sx={{ fontWeight: 600 }}>
+              🎉 Loan Created Successfully!
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ py: 2 }}>
+            <Typography variant="body1" gutterBottom>
+              Your loan has been created and funded successfully.
+            </Typography>
+            
+            <Box sx={{ bgcolor: 'surface.main', p: 2, borderRadius: 2, my: 2 }}>
+              <Typography variant="body2" gutterBottom>
+                <strong>Loan Details:</strong>
+              </Typography>
+              <Typography variant="body2">
+                • Amount received: <strong>{targetBorrowAmount.toFixed(0)} RLUSD</strong> (≈ ${targetBorrowAmount.toFixed(0)} USD)
+              </Typography>
+              <Typography variant="body2">
+                • Collateral locked: <strong>{parameters.collateralAmount.toLocaleString()} XPM</strong>
+              </Typography>
+              <Typography variant="body2">
+                • Term: <strong>{parameters.termDays} days</strong> at {interestRate}% APR
+              </Typography>
+              <Typography variant="body2">
+                • Total to repay: <strong>{totalRepayment.toFixed(2)} RLUSD</strong>
+              </Typography>
+            </Box>
+            
+            <Alert severity="info" sx={{ mt: 2 }}>
+              <Typography variant="body2">
+                You can view and manage your loan in the <strong>Portfolio</strong> tab.
+                Make sure to repay before the maturity date to avoid penalties.
+              </Typography>
+            </Alert>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => {
+              setShowSuccessDialog(false);
+              setShowSuccessMessage(false);
+              // Reset form
+              setActiveStep(0);
+              setParameters({
+                collateralAmount: 150000,
+                targetLTV: 40,
+                termDays: 60,
+              });
+              setAgreedToTerms(false);
+              setAgreedToRisks(false);
+              // Navigate to portfolio if handler provided
+              if (onNavigateToPortfolio) {
+                onNavigateToPortfolio();
+              }
+            }}
+            variant="contained" 
+            size="large"
+          >
+            View My Portfolio
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

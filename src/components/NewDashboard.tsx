@@ -84,7 +84,7 @@ const NewDashboard: React.FC = () => {
       case 'portfolio':
         return <PortfolioDashboard onNavigateToBorrow={() => setActiveTab('borrow')} />;
       case 'borrow':
-        return <LoanCreationPage />;
+        return <LoanCreationPage onNavigateToPortfolio={() => setActiveTab('portfolio')} />;
       case 'analytics':
         return <AnalyticsPage />;
       default:
