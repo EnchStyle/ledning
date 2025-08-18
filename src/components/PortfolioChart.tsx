@@ -23,9 +23,11 @@ const PortfolioChart: React.FC = () => {
     for (let i = 29; i >= 0; i--) {
       const timestamp = new Date(now - (i * dayMs)).toISOString().split('T')[0];
       
-      // Simulate price fluctuations
-      const priceVariation = 1 + (Math.sin(i * 0.3) * 0.1) + (Math.random() - 0.5) * 0.05;
-      const historicalXmpPrice = marketData.xpmPriceUSD * priceVariation;
+      // Simulate realistic price fluctuations (±10% range with some trend)
+      const baseVariation = 1 + (Math.sin(i * 0.2) * 0.08); // Smoother sine wave
+      const trendVariation = 1 + (i - 15) * 0.001; // Slight upward trend
+      const randomVariation = 1 + (Math.sin(i * 1.7) * 0.02); // Small random component
+      const historicalXpmPrice = marketData.xpmPriceUSD * baseVariation * trendVariation * randomVariation;
       
       // Calculate portfolio values
       const totalCollateral = userLoans.reduce((sum, loan) => sum + loan.collateralAmount, 0);
@@ -52,19 +54,27 @@ const PortfolioChart: React.FC = () => {
   const innerWidth = chartWidth - padding.left - padding.right;
   const innerHeight = chartHeight - padding.top - padding.bottom;
 
-  // Data ranges
+  // Data ranges with better scaling
   const maxCollateralValue = Math.max(...chartData.map(d => d.collateralValue));
   const maxDebtValue = Math.max(...chartData.map(d => d.debtValue));
-  const maxValue = Math.max(maxCollateralValue, maxDebtValue);
-  const minValue = 0;
+  const maxValue = Math.max(maxCollateralValue, maxDebtValue) * 1.1; // Add 10% padding
+  const minValue = Math.min(0, Math.min(...chartData.map(d => Math.min(d.collateralValue, d.debtValue)))) * 0.9;
   
-  const maxLTV = Math.max(...chartData.map(d => d.ltv));
+  const maxLTV = Math.max(65, Math.max(...chartData.map(d => d.ltv))); // Ensure liquidation line is visible
   const minLTV = 0;
 
-  // Scale functions
-  const xScale = (index: number) => (index / (chartData.length - 1)) * innerWidth;
-  const yScale = (value: number) => innerHeight - ((value - minValue) / (maxValue - minValue)) * innerHeight;
-  const ltvScale = (ltv: number) => innerHeight - ((ltv - minLTV) / (Math.max(maxLTV, 65) - minLTV)) * innerHeight;
+  // Scale functions with better handling of edge cases
+  const xScale = (index: number) => (index / Math.max(chartData.length - 1, 1)) * innerWidth;
+  const yScale = (value: number) => {
+    const range = maxValue - minValue;
+    if (range === 0) return innerHeight / 2;
+    return innerHeight - ((value - minValue) / range) * innerHeight;
+  };
+  const ltvScale = (ltv: number) => {
+    const range = maxLTV - minLTV;
+    if (range === 0) return innerHeight / 2;
+    return innerHeight - ((ltv - minLTV) / range) * innerHeight;
+  };
 
   // Generate path strings
   const collateralPath = chartData
@@ -103,7 +113,7 @@ const PortfolioChart: React.FC = () => {
           fill={theme.palette.text.secondary}
           fontSize="12"
         >
-          ${(value / 1000).toFixed(0)}k
+          ${value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value.toFixed(0)}
         </text>
       </g>
     );
@@ -136,20 +146,27 @@ const PortfolioChart: React.FC = () => {
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        bgcolor: 'surface.main',
+        bgcolor: 'background.paper',
         borderRadius: 2,
+        border: '1px solid',
+        borderColor: 'divider'
       }}>
-        <Typography color="text.secondary">
-          No loan data to display
-        </Typography>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No Portfolio Data
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Create your first loan to see portfolio performance
+          </Typography>
+        </Box>
       </Box>
     );
   }
 
   return (
     <Box sx={{ width: '100%', overflow: 'auto' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-        <Box sx={{ display: 'flex', gap: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: { xs: 2, md: 3 }, flexWrap: 'wrap', justifyContent: 'center' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ width: 16, height: 2, bgcolor: theme.palette.primary.main, mr: 1 }} />
             <Typography variant="body2">Collateral Value</Typography>
@@ -165,8 +182,19 @@ const PortfolioChart: React.FC = () => {
         </Box>
       </Box>
 
-      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-        <svg width={chartWidth} height={chartHeight} style={{ background: theme.palette.surface.main, borderRadius: 8 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', overflow: 'auto' }}>
+        <svg 
+          width={chartWidth} 
+          height={chartHeight} 
+          viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+          style={{ 
+            background: theme.palette.background.paper, 
+            borderRadius: 8,
+            border: `1px solid ${theme.palette.divider}`,
+            maxWidth: '100%',
+            height: 'auto'
+          }}
+        >
           {/* Grid */}
           {yGridLines}
 

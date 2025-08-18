@@ -23,11 +23,17 @@ import { useLending } from '../context/LendingContext';
 const AnalyticsPage: React.FC = () => {
   const { userLoans, marketData } = useLending();
 
-  // Market analytics
-  const xpmPrice24hChange = 2.34; // Demo data
+  // Market analytics and user portfolio metrics
+  const xpmPrice24hChange = 2.34; // Demo data - in real app would come from price API
   const totalVolumeUSD = 1250000; // Demo data
   const activeLoansCount = userLoans.length;
   const totalTVL = 45600000; // Total Value Locked demo data
+  
+  // Calculate user portfolio metrics
+  const userTotalCollateral = userLoans.reduce((sum, loan) => sum + loan.collateralAmount, 0);
+  const userTotalDebt = userLoans.reduce((sum, loan) => sum + loan.borrowedAmount + (loan.fixedInterestAmount || 0), 0);
+  const userCollateralValue = userTotalCollateral * marketData.xpmPriceUSD;
+  const userAvgLTV = userCollateralValue > 0 ? (userTotalDebt / userCollateralValue) * 100 : 0;
 
   // Protocol statistics
   const protocolStats = {
@@ -234,8 +240,8 @@ const AnalyticsPage: React.FC = () => {
             Your Portfolio Performance
           </Typography>
           
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={4}>
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} sm={3}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h3" color="primary.main" sx={{ fontWeight: 700 }}>
                   {activeLoansCount}
@@ -246,28 +252,55 @@ const AnalyticsPage: React.FC = () => {
               </Box>
             </Grid>
             
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={3}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h3" color="success.main" sx={{ fontWeight: 700 }}>
-                  0
+                  ${userCollateralValue.toFixed(0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Liquidations
+                  Collateral Value
                 </Typography>
               </Box>
             </Grid>
             
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={3}>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h3" color="info.main" sx={{ fontWeight: 700 }}>
-                  {(Math.random() * 500).toFixed(0)}
+                <Typography variant="h3" color="warning.main" sx={{ fontWeight: 700 }}>
+                  {userAvgLTV.toFixed(1)}%
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Interest Paid (RLUSD)
+                  Average LTV
+                </Typography>
+              </Box>
+            </Grid>
+            
+            <Grid item xs={12} sm={3}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="h3" color="info.main" sx={{ fontWeight: 700 }}>
+                  {userLoans.reduce((sum, loan) => sum + (loan.fixedInterestAmount || 0), 0).toFixed(0)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Total Interest
                 </Typography>
               </Box>
             </Grid>
           </Grid>
+          
+          {/* Portfolio health indicator */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, bgcolor: 'surface.main', borderRadius: 2 }}>
+            <Typography variant="body2">
+              Portfolio Health:
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {userAvgLTV < 30 ? (
+                <><CheckIcon color="success" sx={{ mr: 1 }} /><Typography color="success.main">Excellent</Typography></>
+              ) : userAvgLTV < 50 ? (
+                <><SpeedIcon color="warning" sx={{ mr: 1 }} /><Typography color="warning.main">Good</Typography></>
+              ) : (
+                <><WarningIcon color="error" sx={{ mr: 1 }} /><Typography color="error.main">At Risk</Typography></>
+              )}
+            </Box>
+          </Box>
         </Paper>
       )}
 
