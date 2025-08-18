@@ -28,10 +28,10 @@ const LendingDashboard: React.FC = () => {
   const { userPosition, marketData } = useLending();
   const [currentTab, setCurrentTab] = React.useState(0);
   
-  // Use USD-based calculations for accurate dual-asset risk assessment
+  // Use USD-based calculations for risk assessment
   const totalCollateralValueUSD = userPosition.totalCollateral * marketData.xpmPriceUSD;
-  const totalDebtXRP = userPosition.totalBorrowed + userPosition.totalFixedInterest;
-  const totalDebtUSD = totalDebtXRP * marketData.xrpPriceUSD;
+  const totalDebtRLUSD = userPosition.totalBorrowed + userPosition.totalFixedInterest;
+  const totalDebtUSD = totalDebtRLUSD; // RLUSD is 1:1 USD
   const utilizationRate = totalCollateralValueUSD > 0 ? (totalDebtUSD / totalCollateralValueUSD) * 100 : 0;
   
   const hasExistingLoans = userPosition.totalCollateral > 0;
@@ -43,7 +43,7 @@ const LendingDashboard: React.FC = () => {
       {/* Hero Section */}
       <Box sx={{ textAlign: 'center', mb: 4 }}>
         <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
-          Borrow XRP with XPM Collateral
+          Borrow RLUSD with XPM Collateral
         </Typography>
         <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
           Unlock liquidity from your XPM holdings with competitive rates
@@ -88,7 +88,7 @@ const LendingDashboard: React.FC = () => {
                 Instant Loans
               </Typography>
               <Typography color="text.secondary">
-                Get XRP liquidity immediately upon collateral deposit
+                Get RLUSD liquidity immediately upon collateral deposit
               </Typography>
             </CardContent>
           </Card>
@@ -122,7 +122,7 @@ const LendingDashboard: React.FC = () => {
                       Outstanding Debt
                     </Typography>
                     <Typography variant="h5">
-                      {totalDebtXRP.toFixed(2)} XRP
+                      {totalDebtRLUSD.toFixed(2)} RLUSD
                     </Typography>
                     <Typography color="text.secondary" variant="body2">
                       ≈ ${totalDebtUSD.toFixed(2)} USD
@@ -136,7 +136,7 @@ const LendingDashboard: React.FC = () => {
                       Available to Borrow
                     </Typography>
                     <Typography variant="h5" color="success.main">
-                      {Math.max(0, ((totalCollateralValueUSD * 0.5) / marketData.xrpPriceUSD) - totalDebtXRP).toFixed(2)} XRP
+                      {Math.max(0, (totalCollateralValueUSD * 0.5) - totalDebtRLUSD).toFixed(2)} RLUSD
                     </Typography>
                     <Typography color="text.secondary" variant="body2">
                       At 50% LTV
@@ -173,7 +173,7 @@ const LendingDashboard: React.FC = () => {
             </Typography>
             <Alert severity="info" sx={{ mb: 3 }}>
               <Typography variant="body2">
-                <strong>How it works:</strong> Deposit XPM tokens as collateral to borrow XRP instantly. 
+                <strong>How it works:</strong> Deposit XPM tokens as collateral to borrow RLUSD instantly. 
                 Your loan will be liquidated if the value drops below 65% LTV.
               </Typography>
             </Alert>

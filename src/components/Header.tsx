@@ -26,7 +26,7 @@ const Header: React.FC = () => {
             fontSize: { xs: '1.25rem', sm: '1.5rem' }
           }}
         >
-          XRP Lending
+          RLUSD Lending
         </Typography>
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1, md: 2 } }}>
@@ -37,7 +37,7 @@ const Header: React.FC = () => {
               size="small"
             />
             <Chip
-              label={`XRP: $${marketData.xrpPriceUSD.toFixed(2)}`}
+              label={`RLUSD: $1.00`}
               color="primary"
               size="small"
             />
@@ -49,7 +49,7 @@ const Header: React.FC = () => {
               XPM: ${marketData.xpmPriceUSD.toFixed(4)}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              XRP: ${marketData.xrpPriceUSD.toFixed(2)}
+              RLUSD: $1.00
             </Typography>
           </Box>
           

@@ -23,13 +23,13 @@ const LiquidationPreview: React.FC<LiquidationPreviewProps> = ({ loan }) => {
   
   const liquidationResult = calculateLiquidationReturn(
     loan,
-    marketData.xpmPrice,
+    marketData.xpmPriceUSD,
     marketData.liquidationFee
   );
 
-  const collateralValue = loan.collateralAmount * marketData.xpmPrice;
+  const collateralValue = loan.collateralAmount * marketData.xpmPriceUSD;
   const remainingCollateral = loan.collateralAmount - liquidationResult.collateralToReturn;
-  const remainingValue = remainingCollateral * marketData.xpmPrice;
+  const remainingValue = remainingCollateral * marketData.xpmPriceUSD;
 
   return (
     <Paper sx={{ p: 2, mt: 2 }}>
@@ -46,15 +46,15 @@ const LiquidationPreview: React.FC<LiquidationPreviewProps> = ({ loan }) => {
             </TableRow>
             <TableRow>
               <TableCell>Collateral Value</TableCell>
-              <TableCell align="right">{collateralValue.toFixed(2)} XRP</TableCell>
+              <TableCell align="right">${collateralValue.toFixed(2)} USD</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>Total Debt</TableCell>
-              <TableCell align="right">{liquidationResult.totalDebt.toFixed(2)} XRP</TableCell>
+              <TableCell align="right">{liquidationResult.totalDebt.toFixed(2)} RLUSD</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>Liquidation Penalty ({marketData.liquidationFee}%)</TableCell>
-              <TableCell align="right">{liquidationResult.liquidationPenalty.toFixed(2)} XRP</TableCell>
+              <TableCell align="right">{liquidationResult.liquidationPenalty.toFixed(2)} RLUSD</TableCell>
             </TableRow>
             <TableRow sx={{ bgcolor: 'action.hover' }}>
               <TableCell><strong>Collateral to Liquidate</strong></TableCell>
@@ -65,7 +65,7 @@ const LiquidationPreview: React.FC<LiquidationPreviewProps> = ({ loan }) => {
             <TableRow>
               <TableCell>Remaining Collateral</TableCell>
               <TableCell align="right">
-                {remainingCollateral.toFixed(2)} XPM ({remainingValue.toFixed(2)} XRP)
+                {remainingCollateral.toFixed(2)} XPM (${remainingValue.toFixed(2)} USD)
               </TableCell>
             </TableRow>
           </TableBody>

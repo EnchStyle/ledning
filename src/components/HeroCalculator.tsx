@@ -16,7 +16,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import SecurityIcon from '@mui/icons-material/Security';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import { useLending } from '../context/LendingContext';
-import { calculateMaxBorrowUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
+import { calculateMaxBorrowRLUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
 
 const HeroCalculator: React.FC = () => {
   const { marketData } = useLending();
@@ -25,18 +25,16 @@ const HeroCalculator: React.FC = () => {
 
   const calculations = useMemo(() => {
     const collateralValueUSD = collateralAmount * marketData.xpmPriceUSD;
-    const maxBorrowXRP = calculateMaxBorrowUSD(
+    const maxBorrowRLUSD = calculateMaxBorrowRLUSD(
       collateralAmount,
       marketData.xpmPriceUSD,
-      marketData.xrpPriceUSD,
       targetLTV
     );
-    const borrowValueUSD = maxBorrowXRP * marketData.xrpPriceUSD;
+    const borrowValueUSD = maxBorrowRLUSD; // RLUSD is 1:1 USD
     
     const liquidationPriceUSD = calculateLiquidationPriceUSD(
-      maxBorrowXRP,
+      maxBorrowRLUSD,
       collateralAmount,
-      marketData.xrpPriceUSD,
       65
     );
     
@@ -44,16 +42,16 @@ const HeroCalculator: React.FC = () => {
     
     // Calculate potential monthly interest
     const monthlyInterestRate = 15 / 12 / 100;
-    const monthlyInterestXRP = maxBorrowXRP * monthlyInterestRate;
-    const monthlyInterestUSD = monthlyInterestXRP * marketData.xrpPriceUSD;
+    const monthlyInterestRLUSD = maxBorrowRLUSD * monthlyInterestRate;
+    const monthlyInterestUSD = monthlyInterestRLUSD; // RLUSD is 1:1 USD
 
     return {
       collateralValueUSD,
-      maxBorrowXRP,
+      maxBorrowRLUSD,
       borrowValueUSD,
       liquidationPriceUSD,
       priceDropToLiquidation: Math.max(0, priceDropToLiquidation),
-      monthlyInterestXRP,
+      monthlyInterestRLUSD,
       monthlyInterestUSD,
       riskLevel: targetLTV <= 30 ? 'low' : targetLTV <= 45 ? 'medium' : 'high',
       riskColor: targetLTV <= 30 ? 'success' : targetLTV <= 45 ? 'warning' : 'error'
@@ -172,10 +170,10 @@ const HeroCalculator: React.FC = () => {
 
               <Box sx={{ mb: 3 }}>
                 <Typography variant="h4" sx={{ color: '#4caf50', fontWeight: 'bold' }}>
-                  {calculations.maxBorrowXRP.toFixed(0)} XRP
+                  {calculations.maxBorrowRLUSD.toFixed(0)} RLUSD
                 </Typography>
                 <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                  ≈ ${calculations.borrowValueUSD.toFixed(0)} USD you'll receive
+                  = ${calculations.borrowValueUSD.toFixed(0)} USD value
                 </Typography>
               </Box>
 
@@ -185,10 +183,10 @@ const HeroCalculator: React.FC = () => {
                     Monthly Cost
                   </Typography>
                   <Typography variant="h6" sx={{ color: 'white' }}>
-                    {calculations.monthlyInterestXRP.toFixed(2)} XRP
+                    {calculations.monthlyInterestRLUSD.toFixed(2)} RLUSD
                   </Typography>
                   <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
-                    ≈ ${calculations.monthlyInterestUSD.toFixed(2)} USD
+                    = ${calculations.monthlyInterestUSD.toFixed(2)} USD
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>

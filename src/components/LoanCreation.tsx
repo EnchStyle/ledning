@@ -30,7 +30,7 @@ import {
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import { useLending } from '../context/LendingContext';
-import { calculateMaxBorrowUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
+import { calculateMaxBorrowRLUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
 import { LoanTermDays } from '../types/lending';
 
 /**
@@ -49,10 +49,9 @@ const LoanCreation: React.FC = () => {
   const [selectedTerm, setSelectedTerm] = useState<LoanTermDays>(60); // Default 60-day term
 
   // Calculate loan parameters based on inputs
-  const maxBorrow = calculateMaxBorrowUSD(
+  const maxBorrow = calculateMaxBorrowRLUSD(
     parseFloat(collateralAmount) || 0,
     marketData.xpmPriceUSD,
-    marketData.xrpPriceUSD,
     ltv
   );
 
@@ -61,7 +60,6 @@ const LoanCreation: React.FC = () => {
   const liquidationPriceUSD = maxBorrow > 0 ? calculateLiquidationPriceUSD(
     maxBorrow,
     parseFloat(collateralAmount) || 1,
-    marketData.xrpPriceUSD,
     65 // 65% liquidation threshold for altcoin collateral
   ) : 0;
 
@@ -220,7 +218,7 @@ const LoanCreation: React.FC = () => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
           <Typography variant="body2">You'll receive:</Typography>
           <Typography variant="body2" fontWeight="bold" color="success.main">
-            {maxBorrow.toFixed(2)} XRP
+            {maxBorrow.toFixed(2)} RLUSD
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
