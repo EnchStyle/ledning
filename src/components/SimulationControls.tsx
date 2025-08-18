@@ -22,7 +22,7 @@ import {
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
 
-const SimulationControls: React.FC = () => {
+const SimulationControls: React.FC = React.memo(() => {
   const { 
     simulationSettings, 
     toggleSimulation, 
@@ -183,6 +183,6 @@ const SimulationControls: React.FC = () => {
       </Box>
     </Paper>
   );
-};
+});
 
 export default SimulationControls;

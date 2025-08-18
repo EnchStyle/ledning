@@ -238,6 +238,15 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [marketData.xpmPriceUSD]);
 
   /**
+   * Update LTVs when price changes
+   */
+  useEffect(() => {
+    if (loans.length > 0) {
+      updateLoansLTV();
+    }
+  }, [marketData.xpmPriceUSD, updateLoansLTV]);
+
+  /**
    * Create a new loan with the specified parameters
    * Validates LTV, calculates liquidation price, and sets maturity date
    * Simplified for RLUSD since debt is already in USD
