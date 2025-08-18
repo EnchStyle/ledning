@@ -29,11 +29,11 @@ const SimpleHelp: React.FC = () => {
       answer: (
         <Box>
           <Typography paragraph>
-            You deposit XPM tokens as collateral and receive XRP instantly. The process is simple:
+            You deposit XPM tokens as collateral and receive RLUSD instantly. The process is simple:
           </Typography>
           <Box component="ol" sx={{ pl: 2 }}>
             <li>Deposit XPM tokens (locked as collateral)</li>
-            <li>Receive XRP immediately (up to 50% of collateral value)</li>
+            <li>Receive RLUSD immediately (up to 50% of collateral value)</li>
             <li>Pay 15% annual interest</li>
             <li>Repay anytime to unlock your XPM</li>
           </Box>
@@ -54,11 +54,11 @@ const SimpleHelp: React.FC = () => {
             LTV (Loan-to-Value) is how "full" your loan is, calculated in USD:
           </Typography>
           <Typography paragraph sx={{ fontFamily: 'monospace', bgcolor: 'grey.100', p: 1, borderRadius: 1 }}>
-            LTV = (XRP Debt Value ÷ XPM Collateral Value) × 100
+            LTV = (RLUSD Debt Value ÷ XPM Collateral Value) × 100
           </Typography>
           <Typography paragraph>
-            <strong>Example:</strong> You deposit 150,000 XPM ($3,000) and borrow 500 XRP ($1,500):
-            <br />LTV = ($1,500 ÷ $3,000) × 100 = 50%
+            <strong>Example:</strong> You deposit 150,000 XPM ($3,000) and borrow 500 RLUSD ($500):
+            <br />LTV = ($500 ÷ $3,000) × 100 = 16.7%
           </Typography>
           <Box sx={{ mt: 2 }}>
             <Chip label="0-40% = Healthy" color="success" sx={{ mr: 1, mb: 1 }} />
@@ -82,7 +82,7 @@ const SimpleHelp: React.FC = () => {
           </Typography>
           <Box component="ol" sx={{ pl: 2 }}>
             <li>Your XPM collateral is automatically sold</li>
-            <li>The XRP loan + 10% fee is recovered</li>
+            <li>The RLUSD loan + 10% fee is recovered</li>
             <li>Any remaining XPM is returned to you</li>
           </Box>
           <Alert severity="error" sx={{ mt: 2 }}>
@@ -95,11 +95,11 @@ const SimpleHelp: React.FC = () => {
     },
     {
       id: 'dual-risk',
-      question: 'Why do both XPM and XRP prices affect my loan?',
+      question: 'How does XPM price affect my loan?',
       answer: (
         <Box>
           <Typography paragraph>
-            Since LTV is calculated in USD, both asset prices impact your loan health:
+            Since RLUSD is pegged 1:1 to USD, only XPM price changes affect your loan health:
           </Typography>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12} sm={6}>
@@ -109,7 +109,7 @@ const SimpleHelp: React.FC = () => {
                 </Typography>
                 <Typography variant="body2">
                   • XPM price falls<br />
-                  • XRP price rises
+                  • (RLUSD price stable)
                 </Typography>
               </Paper>
             </Grid>
@@ -120,14 +120,14 @@ const SimpleHelp: React.FC = () => {
                 </Typography>
                 <Typography variant="body2">
                   • XPM price rises<br />
-                  • XRP price falls
+                  • (RLUSD price stable)
                 </Typography>
               </Paper>
             </Grid>
           </Grid>
           <Typography paragraph sx={{ mt: 2 }}>
-            <strong>Example:</strong> If XRP doubles from $3 to $6, your $1,500 debt becomes $3,000, 
-            potentially pushing you to liquidation even if XPM price stays the same.
+            <strong>Example:</strong> If XPM falls from $0.02 to $0.015, your $3,000 collateral becomes $2,250, 
+            increasing your LTV and potentially triggering liquidation. RLUSD debt remains stable at $500.
           </Typography>
         </Box>
       )
@@ -149,10 +149,10 @@ const SimpleHelp: React.FC = () => {
             <strong>Examples:</strong>
           </Typography>
           <Box sx={{ fontFamily: 'monospace', bgcolor: 'grey.100', p: 2, borderRadius: 1 }}>
-            500 XRP loan:<br />
-            • 1 month: ~6.2 XRP interest<br />
-            • 6 months: ~38.9 XRP interest<br />
-            • 1 year: ~80.9 XRP interest
+            500 RLUSD loan:<br />
+            • 1 month: ~6.2 RLUSD interest<br />
+            • 6 months: ~38.9 RLUSD interest<br />
+            • 1 year: ~80.9 RLUSD interest
           </Box>
         </Box>
       )
@@ -199,8 +199,8 @@ const SimpleHelp: React.FC = () => {
             <Typography variant="h6">${marketData.xpmPriceUSD.toFixed(4)}</Typography>
           </Box>
           <Box>
-            <Typography variant="body2">XRP Price</Typography>
-            <Typography variant="h6">${marketData.xrpPriceUSD.toFixed(2)}</Typography>
+            <Typography variant="body2">RLUSD Price</Typography>
+            <Typography variant="h6">$1.00</Typography>
           </Box>
           <Box>
             <Typography variant="body2">Interest Rate</Typography>

@@ -45,12 +45,12 @@ const ScenarioPlayground: React.FC = () => {
 
   const predefinedScenarios: Scenario[] = [
     {
-      name: "XRP Moon 🚀",
-      description: "XRP doubles in value",
+      name: "Market Stable 📊",
+      description: "RLUSD maintains 1:1 peg",
       xpmPriceChange: 0,
-      xrpPriceChange: 100,
+      xrpPriceChange: 0,
       icon: <TrendingUpIcon />,
-      color: '#f44336'
+      color: '#2196f3'
     },
     {
       name: "XPM Crash 📉",
@@ -85,21 +85,21 @@ const ScenarioPlayground: React.FC = () => {
       color: '#4caf50'
     },
     {
-      name: "XRP Dip, XPM Stable",
-      description: "XRP falls 20%, XPM holds",
-      xpmPriceChange: 0,
-      xrpPriceChange: -20,
-      icon: <TrendingDownIcon />,
+      name: "XPM Surge 🚀",
+      description: "XPM gains 30%, RLUSD stable",
+      xpmPriceChange: 30,
+      xrpPriceChange: 0,
+      icon: <TrendingUpIcon />,
       color: '#4caf50'
     }
   ];
 
   const calculateScenarioImpact = (xpmChange: number, xrpChange: number) => {
     const newXpmPrice = marketData.xpmPriceUSD * (1 + xpmChange / 100);
-    const newXrpPrice = marketData.xrpPriceUSD * (1 + xrpChange / 100);
+    const newRlusdPrice = 1; // RLUSD is always 1:1 USD
     
     const newCollateralValueUSD = baseLoan.collateralAmount * newXpmPrice;
-    const newDebtValueUSD = baseLoan.borrowedAmount * newXrpPrice;
+    const newDebtValueUSD = baseLoan.borrowedAmount * newRlusdPrice; // RLUSD is 1:1 USD
     const newLTV = (newDebtValueUSD / newCollateralValueUSD) * 100;
     
     const liquidationThreshold = 65;
@@ -108,7 +108,7 @@ const ScenarioPlayground: React.FC = () => {
     
     return {
       newXpmPrice,
-      newXrpPrice,
+      newRlusdPrice,
       newCollateralValueUSD,
       newDebtValueUSD,
       newLTV,
@@ -173,9 +173,9 @@ const ScenarioPlayground: React.FC = () => {
                 color={scenario.xpmPriceChange >= 0 ? 'success' : 'error'}
               />
               <Chip 
-                label={`XRP: ${scenario.xrpPriceChange >= 0 ? '+' : ''}${scenario.xrpPriceChange}%`}
+                label={`RLUSD: Stable (1:1 USD)`}
                 size="small"
-                color={scenario.xrpPriceChange >= 0 ? 'success' : 'error'}
+                color="default"
               />
             </Box>
           </Box>
@@ -235,22 +235,13 @@ const ScenarioPlayground: React.FC = () => {
           
           <Grid item xs={12} md={6}>
             <Typography gutterBottom>
-              XRP Price Change: {customXrpChange}%
+              RLUSD Price: Stable at $1.00 (1:1 USD peg)
             </Typography>
-            <Slider
-              value={customXrpChange}
-              onChange={(_, value) => setCustomXrpChange(value as number)}
-              min={-50}
-              max={100}
-              step={5}
-              marks={[
-                { value: -50, label: '-50%' },
-                { value: 0, label: '0%' },
-                { value: 50, label: '+50%' },
-                { value: 100, label: '+100%' }
-              ]}
-              color={customXrpChange >= 0 ? 'success' : 'error'}
-            />
+            <Alert severity="info">
+              <Typography variant="body2">
+                RLUSD maintains a 1:1 peg with USD, eliminating one source of volatility risk.
+              </Typography>
+            </Alert>
           </Grid>
         </Grid>
         
@@ -271,10 +262,10 @@ const ScenarioPlayground: React.FC = () => {
               </Grid>
               <Grid item xs={6} sm={3}>
                 <Typography variant="body2" color="text.secondary">
-                  New XRP Price
+                  New RLUSD Price
                 </Typography>
                 <Typography variant="h6">
-                  ${impact.newXrpPrice.toFixed(2)}
+                  $1.00
                 </Typography>
               </Grid>
               <Grid item xs={6} sm={3}>
@@ -322,7 +313,7 @@ const ScenarioPlayground: React.FC = () => {
       
       <Typography variant="body2" color="text.secondary" paragraph>
         Explore how different market conditions would affect your loan. 
-        Based on a 150,000 XPM / 500 XRP loan at 50% LTV.
+        Based on a 150,000 XPM / 500 RLUSD loan at 50% LTV.
       </Typography>
       
       <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value)} sx={{ mb: 3 }}>

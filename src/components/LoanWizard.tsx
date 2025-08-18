@@ -27,7 +27,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import SecurityIcon from '@mui/icons-material/Security';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useLending } from '../context/LendingContext';
-import { calculateMaxBorrowUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
+import { calculateMaxBorrowRLUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
 import { LoanTermDays } from '../types/lending';
 import RiskMeter from './RiskMeter';
 
@@ -43,16 +43,14 @@ const LoanWizard: React.FC = () => {
 
   const collateralValue = parseFloat(collateralAmount) || 0;
   const collateralValueUSD = collateralValue * marketData.xpmPriceUSD;
-  const maxBorrowXRP = calculateMaxBorrowUSD(
+  const maxBorrowRLUSD = calculateMaxBorrowRLUSD(
     collateralValue,
     marketData.xpmPriceUSD,
-    marketData.xrpPriceUSD,
     targetLTV
   );
   const liquidationPriceUSD = calculateLiquidationPriceUSD(
-    maxBorrowXRP,
+    maxBorrowRLUSD,
     collateralValue,
-    marketData.xrpPriceUSD,
     65
   );
 
@@ -63,7 +61,7 @@ const LoanWizard: React.FC = () => {
       icon: <AccountBalanceWalletIcon />
     },
     {
-      label: 'How much XRP do you need?',
+      label: 'How much RLUSD do you need?',
       description: 'Set your borrowing amount',
       icon: <TrendingUpIcon />
     },
@@ -95,7 +93,7 @@ const LoanWizard: React.FC = () => {
     
     createLoan({
       collateralAmount: collateralValue,
-      borrowAmount: maxBorrowXRP,
+      borrowAmount: maxBorrowRLUSD,
       interestRate: selectedTerm === 30 ? 14 : selectedTerm === 60 ? 15 : 16,
       liquidationThreshold: 65,
       termDays: selectedTerm,
@@ -147,7 +145,7 @@ const LoanWizard: React.FC = () => {
   const StepTwo = () => (
     <Box>
       <Typography variant="body1" gutterBottom>
-        Choose how much XRP you want to borrow. Lower amounts are safer for beginners.
+        Choose how much RLUSD you want to borrow. Lower amounts are safer for beginners.
       </Typography>
 
       <Box sx={{ mt: 3, mb: 3 }}>
@@ -209,7 +207,7 @@ const LoanWizard: React.FC = () => {
                 You'll receive
               </Typography>
               <Typography variant="h5" color="success.main">
-                {maxBorrowXRP.toFixed(0)} XRP
+                {maxBorrowRLUSD.toFixed(0)} RLUSD
               </Typography>
             </Grid>
             <Grid item xs={6}>
@@ -217,7 +215,7 @@ const LoanWizard: React.FC = () => {
                 Monthly interest
               </Typography>
               <Typography variant="h6">
-                {(maxBorrowXRP * (selectedTerm === 30 ? 0.14 : selectedTerm === 60 ? 0.15 : 0.16) / 12).toFixed(2)} XRP
+                {(maxBorrowRLUSD * (selectedTerm === 30 ? 0.14 : selectedTerm === 60 ? 0.15 : 0.16) / 12).toFixed(2)} RLUSD
               </Typography>
             </Grid>
           </Grid>
@@ -281,7 +279,7 @@ const LoanWizard: React.FC = () => {
             <Box sx={{ mb: 1 }}>
               <Typography variant="body2" color="text.secondary">Borrow Amount:</Typography>
               <Typography variant="body1" color="success.main">
-                {maxBorrowXRP.toFixed(2)} XRP
+                {maxBorrowRLUSD.toFixed(2)} RLUSD
               </Typography>
             </Box>
             <Box sx={{ mb: 1 }}>
@@ -331,7 +329,7 @@ const LoanWizard: React.FC = () => {
           
           <Paper sx={{ p: 3, mb: 3, bgcolor: 'success.light', color: 'success.contrastText' }}>
             <Typography variant="h4" gutterBottom>
-              {maxBorrowXRP.toFixed(0)} XRP
+              {maxBorrowRLUSD.toFixed(0)} RLUSD
             </Typography>
             <Typography variant="body1">
               Will be transferred to your wallet immediately
@@ -372,7 +370,7 @@ const LoanWizard: React.FC = () => {
         Loan Created Successfully!
       </Typography>
       <Typography variant="body1" gutterBottom>
-        {maxBorrowXRP.toFixed(2)} XRP has been transferred to your wallet.
+        {maxBorrowRLUSD.toFixed(2)} RLUSD has been transferred to your wallet.
       </Typography>
       
       <Alert severity="success" sx={{ mt: 3, mb: 3 }}>

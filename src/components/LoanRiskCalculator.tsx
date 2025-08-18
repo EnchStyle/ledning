@@ -23,7 +23,7 @@ const LoanRiskCalculator: React.FC = () => {
     const collateral = parseFloat(collateralAmount) || 0;
     const borrowed = parseFloat(borrowAmount) || 0;
     const xpmPrice = parseFloat(testXpmPrice) || 0;
-    const xrpPrice = marketData.xrpPriceUSD;
+    const rlusdPrice = 1; // RLUSD is 1:1 USD
 
     if (collateral <= 0 || borrowed <= 0 || xpmPrice <= 0) {
       return null;
@@ -31,7 +31,7 @@ const LoanRiskCalculator: React.FC = () => {
 
     // Current values using USD for accurate dual-asset risk
     const collateralValueUSD = collateral * xpmPrice;
-    const debtValueUSD = borrowed * xrpPrice;
+    const debtValueUSD = borrowed * rlusdPrice; // RLUSD is 1:1 USD
     const currentLTV = (debtValueUSD / collateralValueUSD) * 100;
 
     // Liquidation calculations (65% LTV threshold)
@@ -42,7 +42,7 @@ const LoanRiskCalculator: React.FC = () => {
 
     // Safety margins using USD calculations
     const maxSafeBorrowUSD = collateralValueUSD * 0.5; // 50% max LTV in USD
-    const maxSafeBorrow = maxSafeBorrowUSD / xrpPrice; // Convert to XRP
+    const maxSafeBorrow = maxSafeBorrowUSD / rlusdPrice; // Convert to RLUSD (1:1 USD)
     const availableBorrow = Math.max(0, maxSafeBorrow - borrowed);
 
     // Risk level
@@ -74,7 +74,7 @@ const LoanRiskCalculator: React.FC = () => {
       riskLevel,
       riskColor,
     };
-  }, [collateralAmount, borrowAmount, testXpmPrice, marketData.xrpPriceUSD]);
+  }, [collateralAmount, borrowAmount, testXpmPrice]);
 
   return (
     <Paper sx={{ p: 4, maxWidth: 1200, mx: 'auto' }}>
@@ -109,7 +109,7 @@ const LoanRiskCalculator: React.FC = () => {
             
             <TextField
               fullWidth
-              label="Borrow Amount (XRP)"
+              label="Borrow Amount (RLUSD)"
               type="number"
               value={borrowAmount}
               onChange={(e) => setBorrowAmount(e.target.value)}
@@ -131,7 +131,7 @@ const LoanRiskCalculator: React.FC = () => {
 
             <Box sx={{ mt: 2 }}>
               <Typography variant="caption" color="text.secondary">
-                XRP Price (Fixed): ${marketData.xrpPriceUSD.toFixed(2)}
+                RLUSD Price (Fixed): $1.00
               </Typography>
             </Box>
           </Paper>
@@ -242,7 +242,7 @@ const LoanRiskCalculator: React.FC = () => {
                       Max Safe Borrow (50% LTV)
                     </Typography>
                     <Typography variant="h6">
-                      {calculations.maxSafeBorrow.toFixed(0)} XRP
+                      {calculations.maxSafeBorrow.toFixed(0)} RLUSD
                     </Typography>
                   </Grid>
                   
@@ -251,7 +251,7 @@ const LoanRiskCalculator: React.FC = () => {
                       Additional Available
                     </Typography>
                     <Typography variant="h6" color="success.main">
-                      {calculations.availableBorrow.toFixed(0)} XRP
+                      {calculations.availableBorrow.toFixed(0)} RLUSD
                     </Typography>
                   </Grid>
                 </Grid>
@@ -261,7 +261,7 @@ const LoanRiskCalculator: React.FC = () => {
                 <Alert severity="warning" sx={{ mt: 2 }}>
                   <Typography variant="body2">
                     <strong>High LTV Warning:</strong> Your loan exceeds the recommended 50% LTV. 
-                    Consider repaying {(parseFloat(borrowAmount) - calculations.maxSafeBorrow).toFixed(0)} XRP 
+                    Consider repaying {(parseFloat(borrowAmount) - calculations.maxSafeBorrow).toFixed(0)} RLUSD 
                     to reach a safer level.
                   </Typography>
                 </Alert>
@@ -279,9 +279,9 @@ const LoanRiskCalculator: React.FC = () => {
 
       <Alert severity="warning">
         <Typography variant="body2">
-          <strong>Critical Insight:</strong> Both XPM and XRP price changes affect your liquidation risk! 
-          While your debt is fixed in XRP tokens, liquidation is based on USD values - so XRP price movements 
-          directly impact your liquidation threshold.
+          <strong>Critical Insight:</strong> XPM price changes directly affect your liquidation risk! 
+          Since RLUSD is pegged 1:1 to USD, only XPM price movements impact your liquidation threshold, 
+          providing more predictable risk management.
         </Typography>
       </Alert>
     </Paper>
