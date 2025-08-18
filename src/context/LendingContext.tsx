@@ -8,8 +8,23 @@
  * - Time simulation for testing
  * - Loan maturity and extension logic
  */
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { Loan, LoanParams, MarketData, UserPosition } from '../types/lending';
+
+// Price history tracking
+interface PriceHistoryPoint {
+  timestamp: Date;
+  xpmPrice: number;
+  portfolioValue: number;
+  totalDebt: number;
+  avgLTV: number;
+}
+
+interface SimulationSettings {
+  isActive: boolean;
+  speed: number; // multiplier (1x, 2x, 4x, etc.)
+  volatility: number; // price change variance (0.01 = 1%)
+}
 import { 
   calculateLTV, 
   calculateCollateralValueUSD,
@@ -34,6 +49,10 @@ interface LendingContextType {
   userPosition: UserPosition;
   /** Current simulation time (for testing) */
   currentTime: Date;
+  /** Price history for charts */
+  priceHistory: PriceHistoryPoint[];
+  /** Simulation settings */
+  simulationSettings: SimulationSettings;
   /** Create a new loan with specified parameters */
   createLoan: (params: LoanParams) => void;
   /** Repay part or all of a loan */
@@ -52,6 +71,12 @@ interface LendingContextType {
   checkMarginCalls: () => Loan[];
   /** Get all loans past maturity date */
   checkMaturedLoans: () => Loan[];
+  /** Start/stop price simulation */
+  toggleSimulation: () => void;
+  /** Update simulation settings */
+  updateSimulationSettings: (settings: Partial<SimulationSettings>) => void;
+  /** Clear price history */
+  clearPriceHistory: () => void;
 }
 
 const LendingContext = createContext<LendingContextType | undefined>(undefined);
@@ -82,9 +107,111 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     xpmPriceUSD: 0.5234,    // XPM token price in USD (demo price)
     liquidationFee: 10,     // Fee percentage for liquidations
   });
+  /** Price history for charting */
+  const [priceHistory, setPriceHistory] = useState<PriceHistoryPoint[]>([]);
+  /** Simulation settings */
+  const [simulationSettings, setSimulationSettings] = useState<SimulationSettings>({
+    isActive: false,
+    speed: 1, // 1x speed (10 seconds per update)
+    volatility: 0.02, // 2% max price change per update
+  });
+  /** Simulation timer reference */
+  const simulationTimer = useRef<NodeJS.Timeout | null>(null);
 
   // Demo wallet balance: 2M XPM for demo purposes
   const demoWalletBalance = 2000000;
+
+  /**
+   * Generate a random price change based on volatility settings
+   * Uses a more realistic price movement model
+   */
+  const generatePriceChange = useCallback(() => {
+    const { volatility } = simulationSettings;
+    // Use normal distribution for more realistic price movements
+    const random1 = Math.random();
+    const random2 = Math.random();
+    const normalRandom = Math.sqrt(-2 * Math.log(random1)) * Math.cos(2 * Math.PI * random2);
+    
+    // Scale to volatility range and add slight mean reversion
+    const priceChange = normalRandom * volatility * 0.5; // Reduce extreme movements
+    const meanReversion = (0.5234 - marketData.xpmPriceUSD) * 0.001; // Gentle pull towards starting price
+    
+    return priceChange + meanReversion;
+  }, [simulationSettings.volatility, marketData.xpmPriceUSD]);
+
+  /**
+   * Add current state to price history
+   */
+  const addPriceHistoryPoint = useCallback(() => {
+    const activeLoans = loans.filter(l => l.status === 'active');
+    const portfolioValue = activeLoans.reduce((sum, loan) => 
+      sum + (loan.collateralAmount * marketData.xpmPriceUSD), 0
+    );
+    const totalDebt = activeLoans.reduce((sum, loan) => 
+      sum + loan.borrowedAmount + (loan.fixedInterestAmount || 0), 0
+    );
+    const avgLTV = portfolioValue > 0 ? (totalDebt / portfolioValue) * 100 : 0;
+
+    const newPoint: PriceHistoryPoint = {
+      timestamp: new Date(currentTime),
+      xpmPrice: marketData.xpmPriceUSD,
+      portfolioValue,
+      totalDebt,
+      avgLTV,
+    };
+
+    setPriceHistory(prev => {
+      const updated = [...prev, newPoint];
+      // Keep only last 100 points to prevent memory issues
+      return updated.slice(-100);
+    });
+  }, [loans, marketData.xpmPriceUSD, currentTime]);
+
+  /**
+   * Simulation tick - update price and time
+   */
+  const simulationTick = useCallback(() => {
+    if (!simulationSettings.isActive) return;
+
+    // Generate new price
+    const priceChange = generatePriceChange();
+    const newPrice = Math.max(0.01, marketData.xpmPriceUSD * (1 + priceChange));
+    
+    // Update market data
+    setMarketData(prev => ({
+      ...prev,
+      xpmPriceUSD: newPrice,
+    }));
+
+    // Advance time by ~10 minutes per tick (for demo purposes)
+    setCurrentTime(prev => new Date(prev.getTime() + 10 * 60 * 1000));
+
+    // Add to price history
+    setTimeout(() => {
+      addPriceHistoryPoint();
+    }, 100); // Small delay to ensure state updates
+  }, [simulationSettings.isActive, generatePriceChange, marketData.xpmPriceUSD, addPriceHistoryPoint]);
+
+  /**
+   * Start/stop simulation timer
+   */
+  useEffect(() => {
+    if (simulationSettings.isActive) {
+      const interval = 10000 / simulationSettings.speed; // Base 10 seconds, adjusted by speed
+      simulationTimer.current = setInterval(simulationTick, interval);
+    } else {
+      if (simulationTimer.current) {
+        clearInterval(simulationTimer.current);
+        simulationTimer.current = null;
+      }
+    }
+
+    return () => {
+      if (simulationTimer.current) {
+        clearInterval(simulationTimer.current);
+      }
+    };
+  }, [simulationSettings.isActive, simulationSettings.speed, simulationTick]);
 
   /**
    * Update LTV for all active loans based on current market prices
@@ -267,7 +394,32 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Assumes the price is XPM price in USD
     setMarketData(prev => ({ ...prev, xpmPriceUSD: newPrice }));
     updateLoansLTV();
-  }, [updateLoansLTV]);
+    addPriceHistoryPoint();
+  }, [updateLoansLTV, addPriceHistoryPoint]);
+
+  /**
+   * Toggle simulation on/off
+   */
+  const toggleSimulation = useCallback(() => {
+    setSimulationSettings(prev => ({
+      ...prev,
+      isActive: !prev.isActive,
+    }));
+  }, []);
+
+  /**
+   * Update simulation settings
+   */
+  const updateSimulationSettings = useCallback((settings: Partial<SimulationSettings>) => {
+    setSimulationSettings(prev => ({ ...prev, ...settings }));
+  }, []);
+
+  /**
+   * Clear price history
+   */
+  const clearPriceHistory = useCallback(() => {
+    setPriceHistory([]);
+  }, []);
 
   /**
    * Check for loans that have exceeded liquidation threshold
@@ -319,6 +471,8 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         marketData,
         userPosition,
         currentTime,
+        priceHistory,
+        simulationSettings,
         createLoan,
         repayLoan,
         addCollateral,
@@ -328,6 +482,9 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateMarketPrice,
         checkMarginCalls,
         checkMaturedLoans,
+        toggleSimulation,
+        updateSimulationSettings,
+        clearPriceHistory,
       }}
     >
       {children}
