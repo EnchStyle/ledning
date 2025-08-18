@@ -30,6 +30,7 @@ import {
 import { useLending } from '../context/LendingContext';
 import LoanCreationPage from './LoanCreationPage';
 import PortfolioDashboard from './PortfolioDashboard';
+import AnalyticsPage from './AnalyticsPage';
 
 type TabType = 'portfolio' | 'borrow' | 'analytics';
 
@@ -81,20 +82,11 @@ const NewDashboard: React.FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'portfolio':
-        return <PortfolioDashboard />;
+        return <PortfolioDashboard onNavigateToBorrow={() => setActiveTab('borrow')} />;
       case 'borrow':
         return <LoanCreationPage />;
       case 'analytics':
-        return (
-          <Box sx={{ p: 4, textAlign: 'center' }}>
-            <Typography variant="h5" color="text.secondary">
-              Analytics Coming Soon
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              Advanced market analytics and loan performance insights
-            </Typography>
-          </Box>
-        );
+        return <AnalyticsPage />;
       default:
         return <PortfolioDashboard />;
     }

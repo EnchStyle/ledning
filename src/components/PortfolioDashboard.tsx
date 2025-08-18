@@ -26,6 +26,8 @@ import {
   Tooltip,
   IconButton,
   Paper,
+  CircularProgress,
+  Snackbar,
 } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
@@ -51,7 +53,11 @@ interface ActionDialog {
   loanIndex: number;
 }
 
-const PortfolioDashboard: React.FC = () => {
+interface PortfolioDashboardProps {
+  onNavigateToBorrow?: () => void;
+}
+
+const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBorrow }) => {
   const { userLoans, marketData, repayLoan, addCollateral } = useLending();
   const [actionDialog, setActionDialog] = useState<ActionDialog>({
     open: false,
@@ -61,6 +67,9 @@ const PortfolioDashboard: React.FC = () => {
   });
   const [repayAmount, setRepayAmount] = useState<string>('');
   const [collateralAmount, setCollateralAmount] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   // Demo wallet balance
   const walletBalance = 2000000;
@@ -83,24 +92,50 @@ const PortfolioDashboard: React.FC = () => {
     setActionDialog({ open: true, type, loanId, loanIndex });
   };
 
-  const executeAction = () => {
-    const { type, loanId } = actionDialog;
-    
-    if (type === 'repay' && repayAmount) {
-      const amount = parseFloat(repayAmount);
-      if (amount > 0) {
-        repayLoan(loanId, amount);
-      }
-    } else if (type === 'add_collateral' && collateralAmount) {
-      const amount = parseFloat(collateralAmount);
-      if (amount > 0) {
-        addCollateral(loanId, amount);
-      }
-    }
+  const handleFullRepayment = (loanId: string, loanIndex: number, totalDebt: number) => {
+    setActionDialog({ open: true, type: 'repay', loanId, loanIndex });
+    setRepayAmount(totalDebt.toString());
+  };
 
-    setActionDialog({ open: false, type: null, loanId: '', loanIndex: -1 });
-    setRepayAmount('');
-    setCollateralAmount('');
+  const executeAction = async () => {
+    const { type, loanId, loanIndex } = actionDialog;
+    setIsProcessing(true);
+    
+    try {
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (type === 'repay') {
+        const amount = repayAmount ? parseFloat(repayAmount) : undefined;
+        const loan = userLoans[loanIndex];
+        const totalDebt = loan.borrowedAmount + (loan.fixedInterestAmount || 0);
+        
+        if (amount && (amount <= 0 || amount > totalDebt)) {
+          setErrorMessage('Invalid repayment amount');
+          return;
+        }
+        
+        repayLoan(loanId, amount);
+        setSuccessMessage(amount ? `Repaid ${amount.toFixed(2)} RLUSD` : 'Loan fully repaid!');
+      } else if (type === 'add_collateral' && collateralAmount) {
+        const amount = parseFloat(collateralAmount);
+        if (amount <= 0 || amount > walletBalance) {
+          setErrorMessage('Invalid collateral amount');
+          return;
+        }
+        
+        addCollateral(loanId, amount);
+        setSuccessMessage(`Added ${amount.toLocaleString()} XPM collateral`);
+      }
+
+      setActionDialog({ open: false, type: null, loanId: '', loanIndex: -1 });
+      setRepayAmount('');
+      setCollateralAmount('');
+    } catch (error) {
+      setErrorMessage('Transaction failed. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const getLoanHealth = (loan: any) => {
@@ -380,7 +415,7 @@ const PortfolioDashboard: React.FC = () => {
                   variant="contained"
                   size="small"
                   color="success"
-                  onClick={() => handleAction('repay', loan.id || `loan-${index}`, index)}
+                  onClick={() => handleFullRepayment(loan.id || `loan-${index}`, index, totalDebt)}
                 >
                   Full Repayment
                 </Button>
@@ -409,7 +444,11 @@ const PortfolioDashboard: React.FC = () => {
             <br />
             You have {walletBalance.toLocaleString()} XPM available as collateral.
           </Typography>
-          <Button variant="contained" size="large">
+          <Button 
+            variant="contained" 
+            size="large"
+            onClick={onNavigateToBorrow}
+          >
             Create Your First Loan
           </Button>
         </Paper>
@@ -491,7 +530,23 @@ const PortfolioDashboard: React.FC = () => {
                 value={repayAmount}
                 onChange={(e) => setRepayAmount(e.target.value)}
                 sx={{ mb: 2 }}
-                helperText="Leave empty for full repayment"
+                error={(() => {
+                  if (!repayAmount) return false;
+                  const amount = parseFloat(repayAmount);
+                  const loan = userLoans[actionDialog.loanIndex];
+                  const totalDebt = loan ? loan.borrowedAmount + (loan.fixedInterestAmount || 0) : 0;
+                  return amount > totalDebt || amount <= 0;
+                })()}
+                helperText={(() => {
+                  if (!repayAmount) return "Leave empty for full repayment";
+                  const amount = parseFloat(repayAmount);
+                  const loan = userLoans[actionDialog.loanIndex];
+                  const totalDebt = loan ? loan.borrowedAmount + (loan.fixedInterestAmount || 0) : 0;
+                  if (amount > totalDebt) return "Amount exceeds total debt";
+                  if (amount <= 0) return "Amount must be greater than 0";
+                  return `Repaying ${repayAmount} RLUSD of ${totalDebt.toFixed(2)} total debt`;
+                })()}
+                inputProps={{ min: 0, step: 0.01 }}
               />
               <Alert severity="info">
                 Partial repayments reduce your debt and improve loan health
@@ -509,7 +564,19 @@ const PortfolioDashboard: React.FC = () => {
                 value={collateralAmount}
                 onChange={(e) => setCollateralAmount(e.target.value)}
                 sx={{ mb: 2 }}
-                helperText={`Available: ${walletBalance.toLocaleString()} XPM`}
+                error={(() => {
+                  if (!collateralAmount) return false;
+                  const amount = parseFloat(collateralAmount);
+                  return amount > walletBalance || amount <= 0;
+                })()}
+                helperText={(() => {
+                  if (!collateralAmount) return `Available: ${walletBalance.toLocaleString()} XPM`;
+                  const amount = parseFloat(collateralAmount);
+                  if (amount > walletBalance) return "Insufficient balance";
+                  if (amount <= 0) return "Amount must be greater than 0";
+                  return `Adding ${collateralAmount} XPM (${walletBalance.toLocaleString()} available)`;
+                })()}
+                inputProps={{ min: 0, step: 0.01 }}
               />
               <Alert severity="info">
                 Adding collateral reduces your LTV and liquidation risk
@@ -521,11 +588,52 @@ const PortfolioDashboard: React.FC = () => {
           <Button onClick={() => setActionDialog({ open: false, type: null, loanId: '', loanIndex: -1 })}>
             Cancel
           </Button>
-          <Button onClick={executeAction} variant="contained">
-            Confirm
+          <Button 
+            onClick={executeAction} 
+            variant="contained"
+            disabled={isProcessing || (() => {
+              if (actionDialog.type === 'repay') {
+                if (!repayAmount) return false; // Allow empty for full repayment
+                const amount = parseFloat(repayAmount);
+                const loan = userLoans[actionDialog.loanIndex];
+                const totalDebt = loan ? loan.borrowedAmount + (loan.fixedInterestAmount || 0) : 0;
+                return amount > totalDebt || amount <= 0;
+              } else if (actionDialog.type === 'add_collateral') {
+                if (!collateralAmount) return true;
+                const amount = parseFloat(collateralAmount);
+                return amount > walletBalance || amount <= 0;
+              }
+              return false;
+            })()}
+            startIcon={isProcessing ? <CircularProgress size={20} /> : null}
+          >
+            {isProcessing ? 'Processing...' : 'Confirm'}
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Success/Error Messages */}
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={3000}
+        onClose={() => setSuccessMessage('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" onClose={() => setSuccessMessage('')}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={!!errorMessage}
+        autoHideDuration={4000}
+        onClose={() => setErrorMessage('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={() => setErrorMessage('')}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

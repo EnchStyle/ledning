@@ -29,6 +29,8 @@ import {
   Grid,
   Card,
   CardContent,
+  CircularProgress,
+  Snackbar,
 } from '@mui/material';
 import {
   Help as HelpIcon,
@@ -61,6 +63,8 @@ const LoanCreationPage: React.FC = () => {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [agreedToRisks, setAgreedToRisks] = useState(false);
+  const [isCreatingLoan, setIsCreatingLoan] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   // Demo wallet balance (2M XPM)
   const walletBalance = 2000000;
@@ -115,26 +119,43 @@ const LoanCreationPage: React.FC = () => {
     setActiveStep(prev => prev - 1);
   };
 
-  const handleCreateLoan = () => {
+  const handleCreateLoan = async () => {
     if (!agreedToTerms || !agreedToRisks) return;
 
-    createLoan({
-      collateralAmount: parameters.collateralAmount,
-      borrowAmount: targetBorrowAmount,
-      interestRate: interestRate,
-      liquidationThreshold: 65,
-      termDays: parameters.termDays,
-    });
+    setIsCreatingLoan(true);
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
+      
+      createLoan({
+        collateralAmount: parameters.collateralAmount,
+        borrowAmount: targetBorrowAmount,
+        interestRate: interestRate,
+        liquidationThreshold: 65,
+        termDays: parameters.termDays,
+      });
 
-    setConfirmationOpen(false);
-    setActiveStep(0);
-    setParameters({
-      collateralAmount: 150000,
-      targetLTV: 40,
-      termDays: 60,
-    });
-    setAgreedToTerms(false);
-    setAgreedToRisks(false);
+      setConfirmationOpen(false);
+      setShowSuccessMessage(true);
+      
+      // Reset form after success
+      setTimeout(() => {
+        setActiveStep(0);
+        setParameters({
+          collateralAmount: 150000,
+          targetLTV: 40,
+          termDays: 60,
+        });
+        setAgreedToTerms(false);
+        setAgreedToRisks(false);
+        setShowSuccessMessage(false);
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Failed to create loan:', error);
+    } finally {
+      setIsCreatingLoan(false);
+    }
   };
 
   const CollateralStep = () => (
@@ -565,12 +586,29 @@ const LoanCreationPage: React.FC = () => {
           <Button 
             onClick={handleCreateLoan} 
             variant="contained"
-            disabled={!agreedToTerms || !agreedToRisks}
+            disabled={!agreedToTerms || !agreedToRisks || isCreatingLoan}
+            startIcon={isCreatingLoan ? <CircularProgress size={20} /> : null}
           >
-            Confirm & Create Loan
+            {isCreatingLoan ? 'Creating Loan...' : 'Confirm & Create Loan'}
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Success Message */}
+      <Snackbar
+        open={showSuccessMessage}
+        autoHideDuration={3000}
+        onClose={() => setShowSuccessMessage(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity="success" onClose={() => setShowSuccessMessage(false)}>
+          <Typography variant="body2">
+            <strong>Loan Created Successfully!</strong>
+            <br />
+            You received {targetBorrowAmount.toFixed(0)} RLUSD for {parameters.termDays} days.
+          </Typography>
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
