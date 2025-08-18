@@ -78,20 +78,25 @@ export const calculateMaxBorrow = (
 };
 
 /**
- * Calculate compound interest for DeFi loans
- * Uses daily compounding for more accurate interest accrual
- * @param principal - Initial borrowed amount
+ * Calculate fixed interest amount for a loan
+ * Interest is calculated upfront based on the full term, regardless of early repayment
+ * @param principal - Borrowed amount in XRP
  * @param rate - Annual interest rate (as percentage)
- * @param timeInDays - Time elapsed in days
+ * @param termDays - Loan term in days (30, 60, or 90)
+ * @returns Fixed interest amount to be paid
  */
-export const calculateCompoundInterest = (
+export const calculateFixedInterest = (
   principal: number,
   rate: number,
-  timeInDays: number
+  termDays: number
 ): number => {
-  const dailyRate = rate / 365 / 100;
-  return principal * (Math.pow(1 + dailyRate, timeInDays) - 1);
+  const annualRate = rate / 100;
+  const termYears = termDays / 365;
+  return principal * annualRate * termYears;
 };
+
+// Legacy function - kept for backward compatibility
+export const calculateCompoundInterest = calculateFixedInterest;
 
 // Simple interest for backward compatibility
 export const calculateInterest = (
@@ -131,7 +136,7 @@ export const isEligibleForLiquidationUSD = (
   liquidationThreshold: number
 ): boolean => {
   const collateralValueUSD = calculateCollateralValueUSD(loan.collateralAmount, xpmPriceUSD);
-  const totalDebtXRP = loan.borrowedAmount + loan.accruedInterest;
+  const totalDebtXRP = loan.borrowedAmount + loan.fixedInterestAmount;
   const totalDebtUSD = calculateDebtValueUSD(totalDebtXRP, xrpPriceUSD);
   const currentLTV = calculateLTV(collateralValueUSD, totalDebtUSD);
   return currentLTV >= liquidationThreshold;
@@ -144,7 +149,7 @@ export const isEligibleForLiquidation = (
   liquidationThreshold: number
 ): boolean => {
   const collateralValue = calculateCollateralValue(loan.collateralAmount, currentXpmPrice);
-  const totalDebt = loan.borrowedAmount + loan.accruedInterest;
+  const totalDebt = loan.borrowedAmount + loan.fixedInterestAmount;
   const currentLTV = calculateLTV(collateralValue, totalDebt);
   return currentLTV >= liquidationThreshold;
 };
@@ -161,7 +166,7 @@ export const calculateLiquidationReturnUSD = (
   totalDebtUSD: number;
   borrowerGetsBackXPM: number;
 } => {
-  const totalDebtXRP = loan.borrowedAmount + loan.accruedInterest;
+  const totalDebtXRP = loan.borrowedAmount + loan.fixedInterestAmount;
   const totalDebtUSD = totalDebtXRP * xrpPriceUSD;
   const liquidationPenaltyUSD = totalDebtUSD * (liquidationFee / 100);
   const totalToRecoverUSD = totalDebtUSD + liquidationPenaltyUSD;
@@ -188,7 +193,7 @@ export const calculateLiquidationReturn = (
   liquidationPenalty: number;
   totalDebt: number;
 } => {
-  const totalDebt = loan.borrowedAmount + loan.accruedInterest;
+  const totalDebt = loan.borrowedAmount + loan.fixedInterestAmount;
   const liquidationPenalty = totalDebt * (liquidationFee / 100);
   const totalToRecover = totalDebt + liquidationPenalty;
   const collateralToReturn = totalToRecover / xpmPrice;

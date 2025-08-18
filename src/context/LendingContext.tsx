@@ -14,7 +14,7 @@ import {
   calculateLTV, 
   calculateCollateralValueUSD,
   calculateDebtValueUSD,
-  calculateCompoundInterest,
+  calculateFixedInterest,
   calculateLiquidationPriceUSD,
   isEligibleForLiquidationUSD,
   calculateLiquidationReturnUSD,
@@ -55,12 +55,8 @@ interface LendingContextType {
   updateMarketPrice: (newPrice: number) => void;
   /** Get all loans eligible for liquidation */
   checkMarginCalls: () => Loan[];
-  /** Manually extend a loan's maturity */
-  extendLoan: (loanId: string) => void;
   /** Get all loans past maturity date */
   checkMaturedLoans: () => Loan[];
-  /** Process matured loans (auto-extend or mark as matured) */
-  processMaturedLoans: () => void;
 }
 
 const LendingContext = createContext<LendingContextType | undefined>(undefined);
@@ -95,26 +91,21 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
 
   /**
-   * Update interest accrual for all active loans
-   * Recalculates compound interest and LTV based on current time and market prices
+   * Update LTV for all active loans based on current market prices
+   * Interest is fixed, so only LTV changes with market prices
    */
-  const updateLoansInterest = useCallback((newTime: Date) => {
+  const updateLoansLTV = useCallback(() => {
     setLoans(prevLoans => 
       prevLoans.map(loan => {
         if (loan.status !== 'active') return loan;
         
-        // Calculate days elapsed since loan creation
-        const timeDiff = (newTime.getTime() - loan.createdAt.getTime()) / (1000 * 60 * 60 * 24);
-        const interest = calculateCompoundInterest(loan.borrowedAmount, loan.interestRate, timeDiff);
-        
-        // Use USD-based LTV calculation for accurate dual-asset risk
+        // Calculate current LTV based on market prices
         const collateralValueUSD = calculateCollateralValueUSD(loan.collateralAmount, marketData.xpmPriceUSD);
-        const totalDebtXRP = loan.borrowedAmount + interest;
+        const totalDebtXRP = loan.borrowedAmount + loan.fixedInterestAmount;
         const debtValueUSD = calculateDebtValueUSD(totalDebtXRP, marketData.xrpPriceUSD);
         
         return {
           ...loan,
-          accruedInterest: interest,
           currentLTV: calculateLTV(collateralValueUSD, debtValueUSD),
         };
       })
@@ -136,26 +127,22 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       params.liquidationThreshold
     );
     
-    // Calculate maturity date based on loan term
+    // Calculate maturity date and fixed interest
     const maturityDate = new Date(currentTime.getTime() + params.termDays * 24 * 60 * 60 * 1000);
+    const fixedInterestAmount = calculateFixedInterest(params.borrowAmount, params.interestRate, params.termDays);
     
     const newLoan: Loan = {
       id: Date.now().toString(),
       borrower: 'user1', // In real app, this would be wallet address
       collateralAmount: params.collateralAmount,
       borrowedAmount: params.borrowAmount,
-      interestRate: params.interestRate,
-      accruedInterest: 0,
+      fixedInterestAmount: fixedInterestAmount,
       createdAt: currentTime,
       liquidationPrice: liquidationPriceUSD,
       currentLTV: calculateLTV(collateralValueUSD, debtValueUSD),
       status: 'active',
-      // Term system fields
       termDays: params.termDays,
       maturityDate: maturityDate,
-      autoRenew: params.autoRenew,
-      extensionsUsed: 0,
-      maxExtensions: 3,
     };
     
     setLoans(prev => [...prev, newLoan]);
@@ -171,16 +158,25 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       prevLoans.map(loan => {
         if (loan.id !== loanId) return loan;
         
-        const totalDebt = loan.borrowedAmount + loan.accruedInterest;
+        const totalDebt = loan.borrowedAmount + loan.fixedInterestAmount;
         // Full repayment - close the loan
         if (amount >= totalDebt) {
           return { ...loan, status: 'repaid' as const };
         }
         
-        // Partial repayment - apply to interest first, then principal
+        // Partial repayment - always pay full interest first, then principal
         const remainingDebt = totalDebt - amount;
-        const paidInterest = Math.min(amount, loan.accruedInterest);
-        const paidPrincipal = amount - paidInterest;
+        let paidInterest = 0;
+        let paidPrincipal = 0;
+        
+        if (amount >= loan.fixedInterestAmount) {
+          // Pay all interest, rest goes to principal
+          paidInterest = loan.fixedInterestAmount;
+          paidPrincipal = amount - loan.fixedInterestAmount;
+        } else {
+          // Can't make partial interest payments - reject the transaction
+          return loan;
+        }
         
         // Recalculate LTV with remaining debt
         const collateralValueUSD = calculateCollateralValueUSD(loan.collateralAmount, marketData.xpmPriceUSD);
@@ -189,7 +185,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return {
           ...loan,
           borrowedAmount: loan.borrowedAmount - paidPrincipal,
-          accruedInterest: loan.accruedInterest - paidInterest,
+          fixedInterestAmount: loan.fixedInterestAmount - paidInterest,
           currentLTV: calculateLTV(collateralValueUSD, remainingDebtUSD),
         };
       })
@@ -203,11 +199,11 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         
         const newCollateralAmount = loan.collateralAmount + amount;
         const collateralValueUSD = calculateCollateralValueUSD(newCollateralAmount, marketData.xpmPriceUSD);
-        const debtValueUSD = calculateDebtValueUSD(loan.borrowedAmount + loan.accruedInterest, marketData.xrpPriceUSD);
+        const debtValueUSD = calculateDebtValueUSD(loan.borrowedAmount + loan.fixedInterestAmount, marketData.xrpPriceUSD);
         
         // Recalculate liquidation price with new collateral amount
         const newLiquidationPrice = calculateLiquidationPriceUSD(
-          loan.borrowedAmount + loan.accruedInterest,
+          loan.borrowedAmount + loan.fixedInterestAmount,
           newCollateralAmount,
           marketData.xrpPriceUSD,
           65
@@ -248,17 +244,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       prevLoans.map(loan => {
         if (loan.status !== 'active' || currentTime < loan.maturityDate) return loan;
         
-        // Auto-extend if enabled and loan is healthy
-        if (loan.autoRenew && loan.currentLTV < 40 && loan.extensionsUsed < loan.maxExtensions) {
-          const newMaturityDate = new Date(loan.maturityDate.getTime() + loan.termDays * 24 * 60 * 60 * 1000);
-          return {
-            ...loan,
-            maturityDate: newMaturityDate,
-            extensionsUsed: loan.extensionsUsed + 1
-          };
-        }
-        
-        // Otherwise, mark as matured
+        // Mark as matured when term expires
         return { ...loan, status: 'matured' as const };
       })
     );
@@ -267,10 +253,10 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const simulateTime = useCallback((days: number) => {
     const newTime = new Date(currentTime.getTime() + days * 24 * 60 * 60 * 1000);
     setCurrentTime(newTime);
-    updateLoansInterest(newTime);
+    updateLoansLTV();
     // Process matured loans after time simulation
     setTimeout(() => processMaturedLoans(), 100);
-  }, [currentTime, updateLoansInterest, processMaturedLoans]);
+  }, [currentTime, updateLoansLTV, processMaturedLoans]);
 
   const updateXpmPrice = useCallback((newPriceUSD: number) => {
     setMarketData(prev => ({ 
@@ -278,8 +264,8 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       xpmPriceUSD: newPriceUSD,
       xpmPrice: newPriceUSD / prev.xrpPriceUSD 
     }));
-    updateLoansInterest(currentTime);
-  }, [currentTime, updateLoansInterest]);
+    updateLoansLTV();
+  }, [updateLoansLTV]);
 
   const updateXrpPrice = useCallback((newPriceUSD: number) => {
     setMarketData(prev => ({ 
@@ -287,13 +273,13 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       xrpPriceUSD: newPriceUSD,
       xpmPrice: prev.xpmPriceUSD / newPriceUSD 
     }));
-    updateLoansInterest(currentTime);
-  }, [currentTime, updateLoansInterest]);
+    updateLoansLTV();
+  }, [updateLoansLTV]);
 
   const updateMarketPrice = useCallback((newPrice: number) => {
     setMarketData(prev => ({ ...prev, xpmPrice: newPrice }));
-    updateLoansInterest(currentTime);
-  }, [currentTime, updateLoansInterest]);
+    updateLoansLTV();
+  }, [updateLoansLTV]);
 
   /**
    * Check for loans that have exceeded liquidation threshold
@@ -319,28 +305,6 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     );
   }, [loans, currentTime]);
 
-  const extendLoan = useCallback((loanId: string) => {
-    setLoans(prevLoans =>
-      prevLoans.map(loan => {
-        if (loan.id !== loanId || loan.status !== 'active') return loan;
-        
-        // Check if extension is allowed
-        if (loan.extensionsUsed >= loan.maxExtensions) return loan;
-        
-        // Check if loan is healthy enough for extension (LTV < 40%)
-        if (loan.currentLTV >= 40) return loan;
-        
-        // Extend maturity date by the original term
-        const newMaturityDate = new Date(loan.maturityDate.getTime() + loan.termDays * 24 * 60 * 60 * 1000);
-        
-        return {
-          ...loan,
-          maturityDate: newMaturityDate,
-          extensionsUsed: loan.extensionsUsed + 1
-        };
-      })
-    );
-  }, []);
 
   /**
    * Calculate aggregate user position across all active loans
@@ -353,9 +317,9 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     totalBorrowed: loans
       .filter(l => l.status === 'active')
       .reduce((sum, loan) => sum + loan.borrowedAmount, 0),
-    totalInterest: loans
+    totalFixedInterest: loans
       .filter(l => l.status === 'active')
-      .reduce((sum, loan) => sum + loan.accruedInterest, 0),
+      .reduce((sum, loan) => sum + loan.fixedInterestAmount, 0),
     loans,
   };
 
@@ -375,9 +339,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateXrpPrice,
         updateMarketPrice,
         checkMarginCalls,
-        extendLoan,
         checkMaturedLoans,
-        processMaturedLoans,
       }}
     >
       {children}

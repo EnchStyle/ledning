@@ -29,7 +29,6 @@ const SimpleLandingPage: React.FC = () => {
   const { createLoan, marketData } = useLending();
   const [collateralAmount, setCollateralAmount] = useState<string>('150000');
   const [selectedTerm, setSelectedTerm] = useState<number>(60);
-  const [autoRenew, setAutoRenew] = useState<boolean>(true);
   const [confirmDialog, setConfirmDialog] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
@@ -54,10 +53,9 @@ const SimpleLandingPage: React.FC = () => {
       interestRate: selectedTerm === 30 ? 14 : selectedTerm === 60 ? 15 : 16,
       liquidationThreshold: 65,
       termDays: selectedTerm,
-      autoRenew: autoRenew,
     });
     setConfirmDialog(false);
-    setSuccessMessage(`Loan created successfully! You received ${maxBorrowXRP.toFixed(0)} XRP for ${selectedTerm} days with ${autoRenew ? 'auto-renewal enabled' : 'manual renewal'}.`);
+    setSuccessMessage(`Loan created successfully! You received ${maxBorrowXRP.toFixed(0)} XRP for ${selectedTerm} days.`);
     setShowSuccess(true);
     // Reset form
     setCollateralAmount('150000');
@@ -150,25 +148,6 @@ const SimpleLandingPage: React.FC = () => {
               </RadioGroup>
             </FormControl>
 
-            {/* Auto-renewal option */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={autoRenew}
-                    onChange={(e) => setAutoRenew(e.target.checked)}
-                  />
-                }
-                label={
-                  <Box>
-                    <Typography variant="body2">Auto-renew loan</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Automatically extend if healthy (LTV &lt; 40%)
-                    </Typography>
-                  </Box>
-                }
-              />
-            </Box>
 
             {collateral > 0 && (
               <Box>
@@ -207,7 +186,7 @@ const SimpleLandingPage: React.FC = () => {
 
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Term: {selectedTerm} days {autoRenew && '(auto-renew enabled)'}
+                    Term: {selectedTerm} days
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Total interest: ~{(maxBorrowXRP * (selectedTerm === 30 ? 0.14 : selectedTerm === 60 ? 0.15 : 0.16) * selectedTerm / 365).toFixed(2)} XRP
@@ -322,9 +301,6 @@ const SimpleLandingPage: React.FC = () => {
             </Typography>
             <Typography variant="body2" gutterBottom>
               • Term: {selectedTerm} days ({selectedTerm === 30 ? '14%' : selectedTerm === 60 ? '15%' : '16%'} APR)
-            </Typography>
-            <Typography variant="body2" gutterBottom>
-              • Auto-renewal: {autoRenew ? 'Enabled' : 'Disabled'}
             </Typography>
             <Typography variant="body2" gutterBottom>
               • Liquidation if XPM drops to: ${liquidationPriceUSD.toFixed(4)}

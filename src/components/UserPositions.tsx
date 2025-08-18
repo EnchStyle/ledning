@@ -97,7 +97,7 @@ const UserPositions: React.FC = () => {
           {selectedLoan && (
             <>
               <Typography variant="body2" gutterBottom>
-                Total Debt: {(selectedLoan.borrowedAmount + selectedLoan.accruedInterest).toFixed(4)} XRP
+                Total Debt: {(selectedLoan.borrowedAmount + selectedLoan.fixedInterestAmount).toFixed(4)} XRP
               </Typography>
               <TextField
                 autoFocus

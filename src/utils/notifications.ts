@@ -70,10 +70,6 @@ export const notifySuccess = {
     type: 'success',
   }),
   
-  loanExtended: (newMaturityDate: Date) => showNotification({
-    message: `Loan extended until ${newMaturityDate.toLocaleDateString()}`,
-    type: 'success',
-  }),
   
   settingsSaved: () => showNotification({
     message: 'Settings saved successfully',
@@ -99,7 +95,7 @@ export const notifyWarning = {
   }),
   
   loanExpiring: (daysLeft: number) => showNotification({
-    message: `Loan expiring in ${daysLeft} days. Consider repayment or extension.`,
+    message: `Loan expiring in ${daysLeft} days. Consider repayment.`,
     type: 'warning',
   }),
   
@@ -155,10 +151,6 @@ export const notifyInfo = {
     type: 'info',
   }),
   
-  autoRenewed: (loanId: string, newMaturityDate: Date) => showNotification({
-    message: `Loan ${loanId} auto-renewed until ${newMaturityDate.toLocaleDateString()}`,
-    type: 'info',
-  }),
   
   simulationMode: () => showNotification({
     message: 'Simulation mode active. Changes will not affect real positions.',

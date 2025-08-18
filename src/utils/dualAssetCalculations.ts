@@ -6,7 +6,7 @@ export interface DualAssetLoan {
   collateralAmount: number; // XPM amount
   borrowedAmount: number; // XRP amount
   interestRate: number;
-  accruedInterest: number; // in XRP
+  fixedInterestAmount: number; // in XRP
   createdAt: Date;
   // Store initial prices when loan was created
   initialXpmPriceUSD: number;
@@ -74,7 +74,7 @@ export const isDualAssetLiquidationEligible = (
   loan: DualAssetLoan,
   marketData: DualAssetMarketData
 ): boolean => {
-  const totalDebt = loan.borrowedAmount + loan.accruedInterest;
+  const totalDebt = loan.borrowedAmount + loan.fixedInterestAmount;
   const currentLTV = calculateDualAssetLTV(
     loan.collateralAmount,
     totalDebt,
@@ -101,7 +101,7 @@ export const calculateLiquidationRisk = (
   loan: DualAssetLoan,
   marketData: DualAssetMarketData
 ): LiquidationRisk => {
-  const totalDebt = loan.borrowedAmount + loan.accruedInterest;
+  const totalDebt = loan.borrowedAmount + loan.fixedInterestAmount;
   const currentLTV = calculateDualAssetLTV(
     loan.collateralAmount,
     totalDebt,

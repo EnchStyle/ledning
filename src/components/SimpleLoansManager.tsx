@@ -28,7 +28,7 @@ import { Loan } from '../types/lending';
 import SimpleHealthGauge from './SimpleHealthGauge';
 
 const SimpleLoansManager: React.FC = () => {
-  const { loans, repayLoan, liquidateLoan, addCollateral, marketData, extendLoan, currentTime } = useLending();
+  const { loans, repayLoan, liquidateLoan, addCollateral, marketData, currentTime } = useLending();
   const [repayDialog, setRepayDialog] = useState<{ open: boolean; loan: Loan | null }>({ open: false, loan: null });
   const [addCollateralDialog, setAddCollateralDialog] = useState<{ open: boolean; loan: Loan | null }>({ open: false, loan: null });
   const [repayAmount, setRepayAmount] = useState('');
@@ -42,7 +42,7 @@ const SimpleLoansManager: React.FC = () => {
   const handleRepay = () => {
     if (repayDialog.loan && repayAmount) {
       const amount = parseFloat(repayAmount);
-      const totalDebt = repayDialog.loan.borrowedAmount + repayDialog.loan.accruedInterest;
+      const totalDebt = repayDialog.loan.borrowedAmount + repayDialog.loan.fixedInterestAmount;
       
       if (amount <= 0 || amount > totalDebt * 1.01) return; // Allow 1% buffer for interest accrual
       
@@ -75,11 +75,6 @@ const SimpleLoansManager: React.FC = () => {
     }
   };
 
-  const handleExtendLoan = (loanId: string) => {
-    extendLoan(loanId);
-    setSuccessMessage('Loan successfully extended for another term period.');
-    setShowSuccess(true);
-  };
 
   const handleLiquidation = (loanId: string) => {
     liquidateLoan(loanId);
@@ -162,7 +157,7 @@ const SimpleLoansManager: React.FC = () => {
               Total Borrowed
             </Typography>
             <Typography variant="h6">
-              {loans.reduce((sum, loan) => sum + (loan.status === 'active' ? loan.borrowedAmount + loan.accruedInterest : 0), 0).toFixed(2)} XRP
+              {loans.reduce((sum, loan) => sum + (loan.status === 'active' ? loan.borrowedAmount + loan.fixedInterestAmount : 0), 0).toFixed(2)} XRP
             </Typography>
           </Box>
           <Box>
@@ -193,11 +188,10 @@ const SimpleLoansManager: React.FC = () => {
             </TableHead>
           <TableBody>
             {loans.map((loan) => {
-              const totalDebt = loan.borrowedAmount + loan.accruedInterest;
+              const totalDebt = loan.borrowedAmount + loan.fixedInterestAmount;
               const healthColor = getLoanHealthColor(loan.currentLTV);
               const healthText = getLoanHealthText(loan.currentLTV);
               const maturityStatus = getMaturityStatus(loan);
-              const canExtend = loan.extensionsUsed < loan.maxExtensions && loan.currentLTV < 40;
               
               return (
                 <TableRow key={loan.id}>
@@ -218,7 +212,7 @@ const SimpleLoansManager: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {loan.accruedInterest.toFixed(4)} XRP
+                      {loan.fixedInterestAmount.toFixed(4)} XRP
                     </Typography>
                   </TableCell>
                   <TableCell>
@@ -241,9 +235,6 @@ const SimpleLoansManager: React.FC = () => {
                         size="small"
                         sx={{ mb: 0.5 }}
                       />
-                      <Typography variant="caption" display="block" color="text.secondary">
-                        {loan.autoRenew ? 'Auto-renew' : 'Manual'} • {loan.extensionsUsed}/{loan.maxExtensions} ext.
-                      </Typography>
                     </Box>
                   </TableCell>
                   <TableCell>
@@ -266,28 +257,16 @@ const SimpleLoansManager: React.FC = () => {
                             Add Collateral
                           </Button>
                         </Box>
-                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                          {canExtend && getDaysUntilMaturity(loan.maturityDate) <= 7 && (
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              color="info"
-                              onClick={() => handleExtendLoan(loan.id)}
-                            >
-                              Extend
-                            </Button>
-                          )}
-                          {loan.currentLTV >= 65 && (
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="error"
-                              onClick={() => handleLiquidation(loan.id)}
-                            >
-                              Liquidate
-                            </Button>
-                          )}
-                        </Box>
+                        {loan.currentLTV >= 65 && (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            color="error"
+                            onClick={() => handleLiquidation(loan.id)}
+                          >
+                            Liquidate
+                          </Button>
+                        )}
                       </Stack>
                     )}
                   </TableCell>
@@ -302,11 +281,10 @@ const SimpleLoansManager: React.FC = () => {
       {/* Loans Cards - Mobile */}
       <Box sx={{ display: { xs: 'block', md: 'none' } }}>
         {loans.map((loan) => {
-          const totalDebt = loan.borrowedAmount + loan.accruedInterest;
+          const totalDebt = loan.borrowedAmount + loan.fixedInterestAmount;
           const healthColor = getLoanHealthColor(loan.currentLTV);
           const healthText = getLoanHealthText(loan.currentLTV);
           const maturityStatus = getMaturityStatus(loan);
-          const canExtend = loan.extensionsUsed < loan.maxExtensions && loan.currentLTV < 40;
           
           return (
             <Paper key={loan.id} sx={{ p: 2, mb: 2 }}>
@@ -337,7 +315,7 @@ const SimpleLoansManager: React.FC = () => {
                     {totalDebt.toFixed(2)} XRP
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Interest: {loan.accruedInterest.toFixed(4)} XRP
+                    Interest: {loan.fixedInterestAmount.toFixed(4)} XRP
                   </Typography>
                 </Grid>
               </Grid>
@@ -356,9 +334,6 @@ const SimpleLoansManager: React.FC = () => {
                   size="medium" 
                   showLabel={true}
                 />
-                <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
-                  {loan.autoRenew ? 'Auto-renew enabled' : 'Manual renewal'} • {loan.extensionsUsed}/{loan.maxExtensions} extensions used
-                </Typography>
               </Box>
 
               {loan.status === 'active' && (
@@ -382,30 +357,16 @@ const SimpleLoansManager: React.FC = () => {
                       Add Collateral
                     </Button>
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    {canExtend && getDaysUntilMaturity(loan.maturityDate) <= 7 && (
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="info"
-                        onClick={() => handleExtendLoan(loan.id)}
-                        sx={{ flex: 1 }}
-                      >
-                        Extend
-                      </Button>
-                    )}
-                    {loan.currentLTV >= 65 && (
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="error"
-                        onClick={() => handleLiquidation(loan.id)}
-                        sx={{ flex: canExtend && getDaysUntilMaturity(loan.maturityDate) <= 7 ? 1 : 'auto' }}
-                      >
-                        Liquidate
-                      </Button>
-                    )}
-                  </Box>
+                  {loan.currentLTV >= 65 && (
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="error"
+                      onClick={() => handleLiquidation(loan.id)}
+                    >
+                      Liquidate
+                    </Button>
+                  )}
                 </Stack>
               )}
             </Paper>
@@ -433,14 +394,6 @@ const SimpleLoansManager: React.FC = () => {
         </Alert>
       )}
 
-      {activeLoans.some(loan => getDaysUntilMaturity(loan.maturityDate) <= 7 && getDaysUntilMaturity(loan.maturityDate) > 3) && (
-        <Alert severity="info" sx={{ mt: 2 }}>
-          <Typography variant="body2">
-            <strong>Extension Available:</strong> Some loans are approaching maturity. 
-            You can extend healthy loans (LTV &lt; 40%) for additional terms.
-          </Typography>
-        </Alert>
-      )}
 
       {/* Repay Dialog */}
       <Dialog open={repayDialog.open} onClose={() => setRepayDialog({ open: false, loan: null })}>
@@ -449,7 +402,7 @@ const SimpleLoansManager: React.FC = () => {
           {repayDialog.loan && (
             <Box sx={{ pt: 2 }}>
               <Typography variant="body2" gutterBottom>
-                Total debt: {(repayDialog.loan.borrowedAmount + repayDialog.loan.accruedInterest).toFixed(4)} XRP
+                Total debt: {(repayDialog.loan.borrowedAmount + repayDialog.loan.fixedInterestAmount).toFixed(4)} XRP
               </Typography>
               <TextField
                 autoFocus
@@ -459,16 +412,16 @@ const SimpleLoansManager: React.FC = () => {
                 value={repayAmount}
                 onChange={(e) => setRepayAmount(e.target.value)}
                 sx={{ mt: 2 }}
-                inputProps={{ step: 0.0001, min: 0.0001, max: repayDialog.loan ? (repayDialog.loan.borrowedAmount + repayDialog.loan.accruedInterest) * 1.01 : undefined }}
+                inputProps={{ step: 0.0001, min: 0.0001, max: repayDialog.loan ? (repayDialog.loan.borrowedAmount + repayDialog.loan.fixedInterestAmount) * 1.01 : undefined }}
                 helperText={
-                  parseFloat(repayAmount || '0') > (repayDialog.loan ? repayDialog.loan.borrowedAmount + repayDialog.loan.accruedInterest : 0) * 1.01
+                  parseFloat(repayAmount || '0') > (repayDialog.loan ? repayDialog.loan.borrowedAmount + repayDialog.loan.fixedInterestAmount : 0) * 1.01
                     ? "Amount exceeds total debt"
                     : parseFloat(repayAmount || '0') <= 0
                       ? "Enter a valid amount"
                       : "Enter amount to repay (partial repayment allowed)"
                 }
                 error={
-                  parseFloat(repayAmount || '0') > (repayDialog.loan ? repayDialog.loan.borrowedAmount + repayDialog.loan.accruedInterest : 0) * 1.01 ||
+                  parseFloat(repayAmount || '0') > (repayDialog.loan ? repayDialog.loan.borrowedAmount + repayDialog.loan.fixedInterestAmount : 0) * 1.01 ||
                   (repayAmount !== '' && parseFloat(repayAmount || '0') <= 0)
                 }
               />
@@ -485,7 +438,7 @@ const SimpleLoansManager: React.FC = () => {
             disabled={
               !repayAmount || 
               parseFloat(repayAmount || '0') <= 0 ||
-              parseFloat(repayAmount || '0') > (repayDialog.loan ? repayDialog.loan.borrowedAmount + repayDialog.loan.accruedInterest : 0) * 1.01
+              parseFloat(repayAmount || '0') > (repayDialog.loan ? repayDialog.loan.borrowedAmount + repayDialog.loan.fixedInterestAmount : 0) * 1.01
             }
           >
             Repay
@@ -529,7 +482,7 @@ const SimpleLoansManager: React.FC = () => {
                     New total collateral: {(addCollateralDialog.loan.collateralAmount + parseFloat(collateralAmount || '0')).toLocaleString()} XPM
                   </Typography>
                   <Typography variant="body2" color="success.dark">
-                    Estimated new LTV: {(((addCollateralDialog.loan.borrowedAmount + addCollateralDialog.loan.accruedInterest) * marketData.xrpPriceUSD) / ((addCollateralDialog.loan.collateralAmount + parseFloat(collateralAmount || '0')) * marketData.xpmPriceUSD) * 100).toFixed(1)}%
+                    Estimated new LTV: {(((addCollateralDialog.loan.borrowedAmount + addCollateralDialog.loan.fixedInterestAmount) * marketData.xrpPriceUSD) / ((addCollateralDialog.loan.collateralAmount + parseFloat(collateralAmount || '0')) * marketData.xpmPriceUSD) * 100).toFixed(1)}%
                   </Typography>
                 </Box>
               )}

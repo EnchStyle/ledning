@@ -31,7 +31,7 @@ const LoanRow: React.FC<LoanRowProps> = ({
   getStatusColor,
 }) => {
   const [open, setOpen] = useState(false);
-  const totalDebt = loan.borrowedAmount + loan.accruedInterest;
+  const totalDebt = loan.borrowedAmount + loan.fixedInterestAmount;
   const isLiquidatable = loan.currentLTV >= 65 && loan.status === 'active';
   const showPreview = loan.currentLTV >= 55 && loan.status === 'active';
 
@@ -58,7 +58,7 @@ const LoanRow: React.FC<LoanRowProps> = ({
         </TableCell>
         <TableCell align="right">{loan.collateralAmount.toFixed(2)}</TableCell>
         <TableCell align="right">{loan.borrowedAmount.toFixed(2)}</TableCell>
-        <TableCell align="right">{loan.accruedInterest.toFixed(4)}</TableCell>
+        <TableCell align="right">{loan.fixedInterestAmount.toFixed(4)}</TableCell>
         <TableCell align="right">{totalDebt.toFixed(4)}</TableCell>
         <TableCell align="right">
           <Typography color={getLTVColor(loan.currentLTV)}>

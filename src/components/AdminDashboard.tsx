@@ -33,7 +33,7 @@ const AdminDashboard: React.FC = () => {
     sum + (loan.collateralAmount * marketData.xpmPriceUSD), 0
   );
   const totalDebtUSD = activeLoans.reduce((sum, loan) => 
-    sum + ((loan.borrowedAmount + loan.accruedInterest) * marketData.xrpPriceUSD), 0
+    sum + ((loan.borrowedAmount + loan.fixedInterestAmount) * marketData.xrpPriceUSD), 0
   );
   const avgLTV = activeLoans.length > 0 
     ? activeLoans.reduce((sum, loan) => sum + loan.currentLTV, 0) / activeLoans.length 
@@ -182,7 +182,7 @@ const AdminDashboard: React.FC = () => {
                         Collateral: {loan.collateralAmount.toLocaleString()} XPM
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Debt: {(loan.borrowedAmount + loan.accruedInterest).toFixed(2)} XRP
+                        Debt: {(loan.borrowedAmount + loan.fixedInterestAmount).toFixed(2)} XRP
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Maturity: {daysUntilMaturity} days
@@ -251,7 +251,7 @@ const AdminDashboard: React.FC = () => {
                 <Typography variant="body2" fontSize="small">
                   • Create 30-day loan<br/>
                   • Simulate 35 days<br/>
-                  • Test auto-renewal
+                  • Test loan expiration
                 </Typography>
               </Grid>
             </Grid>

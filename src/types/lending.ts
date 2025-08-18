@@ -17,7 +17,7 @@ export type LoanTermDays = 30 | 60 | 90;
 /**
  * Loan - Represents a single lending position
  * 
- * Core entity tracking collateral, debt, interest, and health metrics
+ * Core entity tracking collateral, debt, and fixed interest
  */
 export interface Loan {
   /** Unique identifier for the loan */
@@ -32,11 +32,8 @@ export interface Loan {
   /** Amount of XRP borrowed */
   borrowedAmount: number;
   
-  /** Annual interest rate (percentage) */
-  interestRate: number;
-  
-  /** Interest accumulated since loan creation */
-  accruedInterest: number;
+  /** Fixed total interest amount to be paid */
+  fixedInterestAmount: number;
   
   /** Timestamp of loan creation */
   createdAt: Date;
@@ -55,15 +52,6 @@ export interface Loan {
   
   /** Date when loan reaches maturity */
   maturityDate: Date;
-  
-  /** Whether loan automatically extends on maturity */
-  autoRenew: boolean;
-  
-  /** Number of term extensions already used */
-  extensionsUsed: number;
-  
-  /** Maximum allowed extensions (typically 3) */
-  maxExtensions: number;
 }
 
 /**
@@ -78,7 +66,7 @@ export interface LoanParams {
   /** XRP amount to borrow */
   borrowAmount: number;
   
-  /** Annual interest rate for the loan */
+  /** Annual interest rate for calculating fixed interest */
   interestRate: number;
   
   /** LTV percentage that triggers liquidation (e.g., 65%) */
@@ -86,9 +74,6 @@ export interface LoanParams {
   
   /** Duration of the loan term */
   termDays: LoanTermDays;
-  
-  /** Enable automatic renewal on maturity */
-  autoRenew: boolean;
 }
 
 /**
@@ -122,8 +107,8 @@ export interface UserPosition {
   /** Total XRP borrowed across all loans */
   totalBorrowed: number;
   
-  /** Total interest accrued across all loans */
-  totalInterest: number;
+  /** Total fixed interest across all loans */
+  totalFixedInterest: number;
   
   /** Array of all user's loans */
   loans: Loan[];

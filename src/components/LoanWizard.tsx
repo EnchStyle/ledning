@@ -39,7 +39,6 @@ const LoanWizard: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [showRiskDetails, setShowRiskDetails] = useState(false);
   const [selectedTerm, setSelectedTerm] = useState<number>(60); // Default to 60 days
-  const [autoRenew, setAutoRenew] = useState<boolean>(true); // Default to auto-renew enabled
 
   const collateralValue = parseFloat(collateralAmount) || 0;
   const collateralValueUSD = collateralValue * marketData.xpmPriceUSD;
@@ -99,7 +98,6 @@ const LoanWizard: React.FC = () => {
       interestRate: selectedTerm === 30 ? 14 : selectedTerm === 60 ? 15 : 16,
       liquidationThreshold: 65,
       termDays: selectedTerm,
-      autoRenew: autoRenew,
     });
     
     setIsCreating(false);
@@ -201,20 +199,6 @@ const LoanWizard: React.FC = () => {
         </ToggleButtonGroup>
       </Box>
 
-      <Box sx={{ mb: 3 }}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={autoRenew}
-              onChange={(e) => setAutoRenew(e.target.checked)}
-            />
-          }
-          label="Enable Auto-Renewal"
-        />
-        <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
-          Automatically extend your loan at maturity if health is good (LTV &lt; 40%)
-        </Typography>
-      </Box>
 
       <Card sx={{ mb: 3, bgcolor: 'background.default' }}>
         <CardContent>
@@ -310,10 +294,6 @@ const LoanWizard: React.FC = () => {
             <Box sx={{ mb: 1 }}>
               <Typography variant="body2" color="text.secondary">Loan Term:</Typography>
               <Typography variant="body1">{selectedTerm} Days</Typography>
-            </Box>
-            <Box>
-              <Typography variant="body2" color="text.secondary">Auto-Renewal:</Typography>
-              <Typography variant="body1">{autoRenew ? 'Enabled' : 'Disabled'}</Typography>
             </Box>
           </Paper>
         </Grid>

@@ -4,8 +4,7 @@
  * Key features:
  * - Collateral input with real-time USD value calculation
  * - LTV slider for risk management (0-50% range)
- * - Loan term selection (30, 60, 90 days) with corresponding interest rates
- * - Auto-renewal option for convenience
+ * - Loan term selection (30, 60, 90 days) with fixed interest rates
  * - Step-by-step creation process with visual feedback
  * - Real-time liquidation price calculation
  */
@@ -28,8 +27,6 @@ import {
   CircularProgress,
   ToggleButton,
   ToggleButtonGroup,
-  FormControlLabel,
-  Switch,
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import { useLending } from '../context/LendingContext';
@@ -49,7 +46,6 @@ const LoanCreation: React.FC = () => {
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [step, setStep] = useState<number>(0); // Creation process step
   const [selectedTerm, setSelectedTerm] = useState<number>(60); // Default 60-day term
-  const [autoRenew, setAutoRenew] = useState<boolean>(true); // Auto-renewal enabled by default
 
   // Calculate loan parameters based on inputs
   const maxBorrow = calculateMaxBorrowUSD(
@@ -100,7 +96,6 @@ const LoanCreation: React.FC = () => {
       interestRate: selectedTerm === 30 ? 14 : selectedTerm === 60 ? 15 : 16, // Term-based rates
       liquidationThreshold: 65,
       termDays: selectedTerm,
-      autoRenew: autoRenew,
     });
     
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -216,21 +211,6 @@ const LoanCreation: React.FC = () => {
         </ToggleButtonGroup>
       </Box>
 
-      <Box sx={{ mb: 3 }}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={autoRenew}
-              onChange={(e) => setAutoRenew(e.target.checked)}
-              disabled={isCreating}
-            />
-          }
-          label="Enable Auto-Renewal"
-        />
-        <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
-          Automatically extend your loan at maturity if health is good (LTV &lt; 40%)
-        </Typography>
-      </Box>
       
       <Paper sx={{ p: 2, mt: 3, mb: 2, bgcolor: 'background.default' }}>
         <Typography variant="subtitle2" gutterBottom>
@@ -251,8 +231,8 @@ const LoanCreation: React.FC = () => {
           <Typography variant="body2">{selectedTerm} days</Typography>
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="body2">Auto-renewal:</Typography>
-          <Typography variant="body2">{autoRenew ? 'Enabled' : 'Disabled'}</Typography>
+          <Typography variant="body2">Fixed interest:</Typography>
+          <Typography variant="body2">Yes (paid even if repaid early)</Typography>
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
           <Typography variant="body2">Liquidation threshold:</Typography>
