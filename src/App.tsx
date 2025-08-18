@@ -2,15 +2,15 @@ import React from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { LendingProvider } from './context/LendingContext';
-import Dashboard from './components/Dashboard';
-import theme from './theme/theme';
+import NewDashboard from './components/NewDashboard';
+import darkTheme from './theme/darkTheme';
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <LendingProvider>
-        <Dashboard />
+        <NewDashboard />
       </LendingProvider>
     </ThemeProvider>
   );

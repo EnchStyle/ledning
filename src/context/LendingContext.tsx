@@ -79,9 +79,12 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [currentTime, setCurrentTime] = useState(new Date());
   /** Market data including token prices */
   const [marketData, setMarketData] = useState<MarketData>({
-    xpmPriceUSD: 0.02,      // XPM token price in USD
+    xpmPriceUSD: 0.5234,    // XPM token price in USD (demo price)
     liquidationFee: 10,     // Fee percentage for liquidations
   });
+
+  // Demo wallet balance: 2M XPM for demo purposes
+  const demoWalletBalance = 2000000;
 
   /**
    * Update LTV for all active loans based on current market prices
