@@ -19,6 +19,7 @@ import {
   CheckCircle as CheckIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
+import SimulationControls from './SimulationControls';
 
 const AnalyticsPage: React.FC = () => {
   const { userLoans, marketData } = useLending();
@@ -61,6 +62,9 @@ const AnalyticsPage: React.FC = () => {
           Market insights and protocol statistics
         </Typography>
       </Box>
+
+      {/* Simulation Controls */}
+      <SimulationControls />
 
       {/* Market Overview */}
       <Grid container spacing={3} sx={{ mb: 4 }}>

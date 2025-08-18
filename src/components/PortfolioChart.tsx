@@ -11,10 +11,21 @@ interface ChartDataPoint {
 
 const PortfolioChart: React.FC = () => {
   const theme = useTheme();
-  const { userLoans, marketData } = useLending();
+  const { userLoans, marketData, priceHistory } = useLending();
 
-  // Generate mock historical data for demonstration
+  // Use real price history data when available, otherwise generate mock data
   const chartData = useMemo(() => {
+    // If we have real price history, use it
+    if (priceHistory.length > 0) {
+      return priceHistory.map(point => ({
+        timestamp: point.timestamp.toISOString().split('T')[0],
+        collateralValue: point.portfolioValue,
+        debtValue: point.totalDebt,
+        ltv: point.avgLTV,
+      }));
+    }
+
+    // Fallback to mock data for empty state
     const data: ChartDataPoint[] = [];
     const now = Date.now();
     const dayMs = 24 * 60 * 60 * 1000;
@@ -45,7 +56,7 @@ const PortfolioChart: React.FC = () => {
     }
 
     return data;
-  }, [userLoans, marketData.xpmPriceUSD]);
+  }, [userLoans, marketData.xpmPriceUSD, priceHistory]);
 
   // Chart dimensions
   const chartWidth = 800;
@@ -310,7 +321,9 @@ const PortfolioChart: React.FC = () => {
 
       <Box sx={{ mt: 2, textAlign: 'center' }}>
         <Typography variant="caption" color="text.secondary">
-          Portfolio value and LTV history over the last 30 days
+          {priceHistory.length > 0 
+            ? `Portfolio value and LTV history (${priceHistory.length} data points)` 
+            : 'Portfolio value and LTV history (simulated data)'}
         </Typography>
       </Box>
     </Box>

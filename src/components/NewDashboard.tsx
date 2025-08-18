@@ -47,7 +47,7 @@ const NewDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('portfolio');
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   
-  const { marketData, userPosition } = useLending();
+  const { marketData, userPosition, simulationSettings, priceHistory } = useLending();
 
   // Demo balance - 2M XPM
   const walletBalance = 2000000;
@@ -117,11 +117,28 @@ const NewDashboard: React.FC = () => {
         <Typography variant="body2" color="text.secondary">
           ≈ ${walletValueUSD.toLocaleString()} USD
         </Typography>
-        <Chip 
-          label={`$${marketData.xpmPriceUSD.toFixed(4)}/XPM`}
-          size="small"
-          sx={{ mt: 1 }}
-        />
+        <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+          <Chip 
+            label={`$${marketData.xpmPriceUSD.toFixed(4)}/XPM`}
+            size="small"
+            color={simulationSettings.isActive ? "success" : "default"}
+          />
+          {simulationSettings.isActive && (
+            <Chip 
+              label="LIVE"
+              size="small"
+              color="error"
+              sx={{ 
+                animation: 'pulse 2s infinite',
+                '@keyframes pulse': {
+                  '0%': { opacity: 1 },
+                  '50%': { opacity: 0.5 },
+                  '100%': { opacity: 1 },
+                }
+              }}
+            />
+          )}
+        </Box>
       </Box>
 
       {/* Navigation Items */}
