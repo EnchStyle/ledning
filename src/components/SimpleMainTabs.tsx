@@ -5,6 +5,9 @@ import SimpleLoansManager from './SimpleLoansManager';
 import SimpleHelp from './SimpleHelp';
 import MarketInfo from './MarketInfo';
 import AdminDashboard from './AdminDashboard';
+import ProfessionalDashboard from './ProfessionalDashboard';
+import InteractiveLoanCalculator from './InteractiveLoanCalculator';
+import AdvancedLoanManagement from './AdvancedLoanManagement';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -67,28 +70,42 @@ const SimpleMainTabs: React.FC = () => {
               }
             }}
           >
-            <Tab label="Borrow" {...a11yProps(0)} />
-            <Tab label="My Loans" {...a11yProps(1)} />
-            <Tab label="Help" {...a11yProps(2)} />
-            <Tab label="Market" {...a11yProps(3)} />
-            <Tab label="Admin" {...a11yProps(4)} />
+            <Tab label="Professional" {...a11yProps(0)} />
+            <Tab label="Calculator" {...a11yProps(1)} />
+            <Tab label="My Loans" {...a11yProps(2)} />
+            <Tab label="Simple Borrow" {...a11yProps(3)} />
+            <Tab label="Help" {...a11yProps(4)} />
+            <Tab label="Market" {...a11yProps(5)} />
+            <Tab label="Admin" {...a11yProps(6)} />
           </Tabs>
         </Container>
       </Box>
 
       <TabPanel value={value} index={0}>
-        <SimpleLandingPage />
+        <ProfessionalDashboard />
       </TabPanel>
       
       <TabPanel value={value} index={1}>
-        <SimpleLoansManager />
+        <Container maxWidth="xl">
+          <InteractiveLoanCalculator />
+        </Container>
       </TabPanel>
       
       <TabPanel value={value} index={2}>
-        <SimpleHelp />
+        <Container maxWidth="xl">
+          <AdvancedLoanManagement />
+        </Container>
       </TabPanel>
       
       <TabPanel value={value} index={3}>
+        <SimpleLandingPage />
+      </TabPanel>
+      
+      <TabPanel value={value} index={4}>
+        <SimpleHelp />
+      </TabPanel>
+      
+      <TabPanel value={value} index={5}>
         <Container maxWidth="md">
           <Box sx={{ mt: 4 }}>
             <MarketInfo />
@@ -96,7 +113,7 @@ const SimpleMainTabs: React.FC = () => {
         </Container>
       </TabPanel>
       
-      <TabPanel value={value} index={4}>
+      <TabPanel value={value} index={6}>
         <AdminDashboard />
       </TabPanel>
     </Box>

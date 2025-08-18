@@ -29,6 +29,8 @@ import {
 interface LendingContextType {
   /** Array of all loans in the system */
   loans: Loan[];
+  /** User's loans only */
+  userLoans: Loan[];
   /** Current market prices and parameters */
   marketData: MarketData;
   /** Aggregated user position across all loans */
@@ -38,7 +40,7 @@ interface LendingContextType {
   /** Create a new loan with specified parameters */
   createLoan: (params: LoanParams) => void;
   /** Repay part or all of a loan */
-  repayLoan: (loanId: string, amount: number) => void;
+  repayLoan: (loanId: string, amount?: number) => void;
   /** Add additional collateral to improve loan health */
   addCollateral: (loanId: string, amount: number) => void;
   /** Liquidate an underwater loan */
@@ -148,14 +150,14 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
    * Payment is applied first to interest, then to principal
    * Loan is marked as 'repaid' if fully paid off
    */
-  const repayLoan = useCallback((loanId: string, amount: number) => {
+  const repayLoan = useCallback((loanId: string, amount?: number) => {
     setLoans(prevLoans =>
       prevLoans.map(loan => {
         if (loan.id !== loanId) return loan;
         
         const totalDebt = loan.borrowedAmount + loan.fixedInterestAmount;
-        // Full repayment - close the loan
-        if (amount >= totalDebt) {
+        // Full repayment - close the loan (if no amount specified or amount covers full debt)
+        if (!amount || amount >= totalDebt) {
           return { ...loan, status: 'repaid' as const };
         }
         
@@ -313,6 +315,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     <LendingContext.Provider
       value={{
         loans,
+        userLoans: loans.filter(loan => loan.borrower === 'user1'), // In real app, filter by actual user
         marketData,
         userPosition,
         currentTime,
