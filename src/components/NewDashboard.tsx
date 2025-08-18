@@ -47,7 +47,7 @@ const NewDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('portfolio');
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   
-  const { marketData, userPosition, simulationSettings, priceHistory } = useLending();
+  const { marketData, userPosition, simulationSettings } = useLending();
 
   // Demo balance - 2M XPM
   const walletBalance = 2000000;

@@ -10,6 +10,15 @@
  */
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { Loan, LoanParams, MarketData, UserPosition } from '../types/lending';
+import { 
+  calculateLTV, 
+  calculateCollateralValueUSD,
+  calculateDebtValueUSD,
+  calculateFixedInterest,
+  calculateLiquidationPriceUSD,
+  isEligibleForLiquidationRLUSD,
+  calculateLiquidationReturnRLUSD
+} from '../utils/lendingCalculations';
 
 // Price history tracking
 interface PriceHistoryPoint {
@@ -25,15 +34,6 @@ interface SimulationSettings {
   speed: number; // multiplier (1x, 2x, 4x, etc.)
   volatility: number; // price change variance (0.01 = 1%)
 }
-import { 
-  calculateLTV, 
-  calculateCollateralValueUSD,
-  calculateDebtValueUSD,
-  calculateFixedInterest,
-  calculateLiquidationPriceUSD,
-  isEligibleForLiquidationRLUSD,
-  calculateLiquidationReturnRLUSD
-} from '../utils/lendingCalculations';
 
 /**
  * LendingContextType - Interface defining all available operations and state
