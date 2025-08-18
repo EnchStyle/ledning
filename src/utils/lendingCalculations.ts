@@ -41,10 +41,6 @@ export const calculateDebtValueUSD = (debtAmountRLUSD: number): number => {
   return debtAmountRLUSD; // RLUSD is 1:1 USD
 };
 
-// Legacy function for backward compatibility
-export const calculateCollateralValue = (collateralAmount: number, xpmPrice: number): number => {
-  return collateralAmount * xpmPrice;
-};
 
 /**
  * Calculate maximum borrowable RLUSD amount based on collateral
@@ -63,15 +59,6 @@ export const calculateMaxBorrowRLUSD = (
   return (collateralValueUSD * maxLTV) / 100; // Direct USD amount = RLUSD amount
 };
 
-// Legacy function for backward compatibility
-export const calculateMaxBorrow = (
-  collateralAmount: number,
-  xpmPrice: number,
-  maxLTV: number
-): number => {
-  const collateralValue = calculateCollateralValue(collateralAmount, xpmPrice);
-  return (collateralValue * maxLTV) / 100;
-};
 
 /**
  * Calculate fixed interest amount for a loan
@@ -91,18 +78,6 @@ export const calculateFixedInterest = (
   return principal * annualRate * termYears;
 };
 
-// Legacy function - kept for backward compatibility
-export const calculateCompoundInterest = calculateFixedInterest;
-
-// Simple interest for backward compatibility
-export const calculateInterest = (
-  principal: number,
-  rate: number,
-  timeInDays: number
-): number => {
-  const dailyRate = rate / 365 / 100;
-  return principal * dailyRate * timeInDays;
-};
 
 // Calculate XPM liquidation price in USD (simplified for RLUSD)
 export const calculateLiquidationPriceUSD = (
@@ -114,14 +89,6 @@ export const calculateLiquidationPriceUSD = (
   return (borrowedAmountRLUSD / collateralAmountXPM) * (100 / liquidationThreshold);
 };
 
-// Legacy function - calculates liquidation price in XPM/XRP ratio
-export const calculateLiquidationPrice = (
-  borrowedAmount: number,
-  collateralAmount: number,
-  liquidationThreshold: number
-): number => {
-  return (borrowedAmount / collateralAmount) * (100 / liquidationThreshold);
-};
 
 // Check liquidation eligibility (simplified for RLUSD)
 export const isEligibleForLiquidationRLUSD = (
@@ -136,17 +103,6 @@ export const isEligibleForLiquidationRLUSD = (
   return currentLTV >= liquidationThreshold;
 };
 
-// Legacy function for backward compatibility
-export const isEligibleForLiquidation = (
-  loan: Loan,
-  currentXpmPrice: number,
-  liquidationThreshold: number
-): boolean => {
-  const collateralValue = calculateCollateralValue(loan.collateralAmount, currentXpmPrice);
-  const totalDebt = loan.borrowedAmount + loan.fixedInterestAmount;
-  const currentLTV = calculateLTV(collateralValue, totalDebt);
-  return currentLTV >= liquidationThreshold;
-};
 
 // Calculate liquidation return (simplified for RLUSD)
 export const calculateLiquidationReturnRLUSD = (
@@ -197,7 +153,3 @@ export const calculateLiquidationReturn = (
   };
 };
 
-// Backward compatibility aliases
-export const calculateMaxBorrowUSD = calculateMaxBorrowRLUSD;
-export const isEligibleForLiquidationUSD = isEligibleForLiquidationRLUSD;
-export const calculateLiquidationReturnUSD = calculateLiquidationReturnRLUSD;

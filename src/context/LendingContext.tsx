@@ -17,10 +17,7 @@ import {
   calculateFixedInterest,
   calculateLiquidationPriceUSD,
   isEligibleForLiquidationRLUSD,
-  calculateLiquidationReturnRLUSD,
-  // Legacy functions for backward compatibility
-  isEligibleForLiquidationUSD,
-  calculateLiquidationReturnUSD
+  calculateLiquidationReturnRLUSD
 } from '../utils/lendingCalculations';
 
 /**
