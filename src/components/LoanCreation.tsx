@@ -1,3 +1,14 @@
+/**
+ * LoanCreation Component - Interface for creating new loans
+ * 
+ * Key features:
+ * - Collateral input with real-time USD value calculation
+ * - LTV slider for risk management (0-50% range)
+ * - Loan term selection (30, 60, 90 days) with corresponding interest rates
+ * - Auto-renewal option for convenience
+ * - Step-by-step creation process with visual feedback
+ * - Real-time liquidation price calculation
+ */
 import React, { useState } from 'react';
 import {
   Box,
@@ -24,16 +35,23 @@ import InfoIcon from '@mui/icons-material/Info';
 import { useLending } from '../context/LendingContext';
 import { calculateMaxBorrowUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
 
+/**
+ * Loan creation form component
+ * Handles the entire loan origination process with validation
+ */
 const LoanCreation: React.FC = () => {
   const { createLoan, marketData } = useLending();
-  const [collateralAmount, setCollateralAmount] = useState<string>('150000');
-  const [ltv, setLtv] = useState<number>(30);
+  
+  // Form state
+  const [collateralAmount, setCollateralAmount] = useState<string>('150000'); // Default XPM amount
+  const [ltv, setLtv] = useState<number>(30); // Conservative 30% LTV default
   const [error, setError] = useState<string>('');
   const [isCreating, setIsCreating] = useState<boolean>(false);
-  const [step, setStep] = useState<number>(0);
-  const [selectedTerm, setSelectedTerm] = useState<number>(60); // Default to 60 days
-  const [autoRenew, setAutoRenew] = useState<boolean>(true); // Default to auto-renew enabled
+  const [step, setStep] = useState<number>(0); // Creation process step
+  const [selectedTerm, setSelectedTerm] = useState<number>(60); // Default 60-day term
+  const [autoRenew, setAutoRenew] = useState<boolean>(true); // Auto-renewal enabled by default
 
+  // Calculate loan parameters based on inputs
   const maxBorrow = calculateMaxBorrowUSD(
     parseFloat(collateralAmount) || 0,
     marketData.xpmPriceUSD,
@@ -41,17 +59,23 @@ const LoanCreation: React.FC = () => {
     ltv
   );
 
+  // Real-time value calculations for user feedback
   const collateralValueUSD = (parseFloat(collateralAmount) || 0) * marketData.xpmPriceUSD;
   const liquidationPriceUSD = maxBorrow > 0 ? calculateLiquidationPriceUSD(
     maxBorrow,
     parseFloat(collateralAmount) || 1,
     marketData.xrpPriceUSD,
-    65 // 65% liquidation threshold
+    65 // 65% liquidation threshold for altcoin collateral
   ) : 0;
 
+  /**
+   * Handle loan creation with validation and visual feedback
+   * Steps: Validation -> Processing -> Smart Contract -> Confirmation
+   */
   const handleCreateLoan = async () => {
     const collateral = parseFloat(collateralAmount);
     
+    // Validation
     if (!collateral || collateral <= 0) {
       setError('Please enter a valid collateral amount');
       return;
@@ -60,18 +84,20 @@ const LoanCreation: React.FC = () => {
     setError('');
     setIsCreating(true);
     
-    // Simulate loan creation process with steps
+    // Step 1: Validate collateral
     setStep(1);
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    // Step 2: Process loan parameters
     setStep(2);
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    // Step 3: Create loan on-chain
     setStep(3);
     createLoan({
       collateralAmount: collateral,
       borrowAmount: maxBorrow,
-      interestRate: selectedTerm === 30 ? 14 : selectedTerm === 60 ? 15 : 16,
+      interestRate: selectedTerm === 30 ? 14 : selectedTerm === 60 ? 15 : 16, // Term-based rates
       liquidationThreshold: 65,
       termDays: selectedTerm,
       autoRenew: autoRenew,

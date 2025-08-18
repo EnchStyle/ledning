@@ -1,17 +1,43 @@
+/**
+ * Lending Calculations Utility Module
+ * 
+ * Core mathematical functions for the XRP Lending Platform
+ * Handles all financial calculations including:
+ * - Loan-to-Value (LTV) ratios
+ * - Interest calculations (simple and compound)
+ * - Liquidation thresholds and prices
+ * - Dual-asset risk assessment (XPM collateral, XRP debt)
+ */
 import { Loan, LoanParams, MarketData } from '../types/lending';
 
-// Calculate LTV using USD values for accurate dual-asset risk assessment
+/**
+ * Calculate Loan-to-Value ratio using USD values
+ * Essential for accurate risk assessment in dual-asset systems
+ * @param collateralValueUSD - Total collateral value in USD
+ * @param debtValueUSD - Total debt value in USD
+ * @returns LTV percentage (0-100+)
+ */
 export const calculateLTV = (collateralValueUSD: number, debtValueUSD: number): number => {
   if (collateralValueUSD === 0) return 0;
   return (debtValueUSD / collateralValueUSD) * 100;
 };
 
-// Calculate collateral value in USD
+/**
+ * Convert XPM collateral amount to USD value
+ * @param collateralAmount - Amount of XPM tokens
+ * @param xpmPriceUSD - Current XPM price in USD
+ * @returns Collateral value in USD
+ */
 export const calculateCollateralValueUSD = (collateralAmount: number, xpmPriceUSD: number): number => {
   return collateralAmount * xpmPriceUSD;
 };
 
-// Calculate debt value in USD
+/**
+ * Convert XRP debt amount to USD value
+ * @param debtAmountXRP - Amount of XRP owed
+ * @param xrpPriceUSD - Current XRP price in USD
+ * @returns Debt value in USD
+ */
 export const calculateDebtValueUSD = (debtAmountXRP: number, xrpPriceUSD: number): number => {
   return debtAmountXRP * xrpPriceUSD;
 };
@@ -21,7 +47,15 @@ export const calculateCollateralValue = (collateralAmount: number, xpmPrice: num
   return collateralAmount * xpmPrice;
 };
 
-// Calculate max borrow amount in XRP using USD values
+/**
+ * Calculate maximum borrowable XRP amount based on collateral
+ * Uses USD values for accurate cross-asset calculation
+ * @param collateralAmount - XPM tokens to use as collateral
+ * @param xpmPriceUSD - Current XPM price in USD
+ * @param xrpPriceUSD - Current XRP price in USD
+ * @param maxLTV - Maximum allowed LTV percentage
+ * @returns Maximum XRP amount that can be borrowed
+ */
 export const calculateMaxBorrowUSD = (
   collateralAmount: number,
   xpmPriceUSD: number,
@@ -30,7 +64,7 @@ export const calculateMaxBorrowUSD = (
 ): number => {
   const collateralValueUSD = calculateCollateralValueUSD(collateralAmount, xpmPriceUSD);
   const maxBorrowValueUSD = (collateralValueUSD * maxLTV) / 100;
-  return maxBorrowValueUSD / xrpPriceUSD; // Return XRP amount
+  return maxBorrowValueUSD / xrpPriceUSD; // Convert USD to XRP amount
 };
 
 // Legacy function for backward compatibility
@@ -43,7 +77,13 @@ export const calculateMaxBorrow = (
   return (collateralValue * maxLTV) / 100;
 };
 
-// Calculate compound interest (more realistic for DeFi)
+/**
+ * Calculate compound interest for DeFi loans
+ * Uses daily compounding for more accurate interest accrual
+ * @param principal - Initial borrowed amount
+ * @param rate - Annual interest rate (as percentage)
+ * @param timeInDays - Time elapsed in days
+ */
 export const calculateCompoundInterest = (
   principal: number,
   rate: number,
