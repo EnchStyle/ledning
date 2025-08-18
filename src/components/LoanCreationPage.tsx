@@ -222,7 +222,7 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
       <Grid container spacing={4}>
         <Grid item xs={12} md={6}>
           <Box sx={{ mb: 4 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
               <Typography variant="body1">
                 Target LTV: {parameters.targetLTV}%
               </Typography>
@@ -232,12 +232,13 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
                 </IconButton>
               </Tooltip>
             </Box>
+            <Box sx={{ px: 1, py: 2 }}>
             <Slider
               value={parameters.targetLTV}
               onChange={(_, value) => setParameters(prev => ({ ...prev, targetLTV: value as number }))}
               min={10}
               max={50}
-              step={5}
+              step={1}
               marks={[
                 { value: 10, label: '10%' },
                 { value: 25, label: '25%' },
@@ -245,7 +246,50 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
                 { value: 50, label: '50%' },
               ]}
               color={parameters.targetLTV > 40 ? 'warning' : 'primary'}
+              valueLabelDisplay="auto"
+              sx={{
+                '& .MuiSlider-root': {
+                  touchAction: 'none', // Better touch handling
+                },
+                '& .MuiSlider-thumb': {
+                  width: 24,
+                  height: 24,
+                  cursor: 'grab',
+                  '&:hover, &.Mui-focusVisible': {
+                    boxShadow: '0px 0px 0px 8px rgba(0, 212, 255, 0.16)',
+                  },
+                  '&.Mui-active': {
+                    boxShadow: '0px 0px 0px 14px rgba(0, 212, 255, 0.16)',
+                    cursor: 'grabbing',
+                  },
+                  '&:before': {
+                    boxShadow: '0px 0px 1px 0px rgba(0,0,0,0.2), 0px 0px 0px 0px rgba(0,0,0,0.14), 0px 0px 1px 0px rgba(0,0,0,0.12)',
+                  },
+                },
+                '& .MuiSlider-track': {
+                  height: 6,
+                  border: 'none',
+                },
+                '& .MuiSlider-rail': {
+                  height: 6,
+                  opacity: 0.3,
+                },
+                '& .MuiSlider-mark': {
+                  height: 8,
+                  width: 2,
+                  backgroundColor: 'currentColor',
+                },
+                '& .MuiSlider-markActive': {
+                  backgroundColor: 'currentColor',
+                },
+                '& .MuiSlider-valueLabel': {
+                  backgroundColor: 'transparent',
+                  color: 'text.primary',
+                  fontWeight: 600,
+                },
+              }}
             />
+            </Box>
             <Typography variant="caption" color="text.secondary">
               Lower LTV = Safer loan, higher LTV = more borrowing power
             </Typography>
