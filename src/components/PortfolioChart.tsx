@@ -33,7 +33,7 @@ const PortfolioChart: React.FC = () => {
       const totalCollateral = userLoans.reduce((sum, loan) => sum + loan.collateralAmount, 0);
       const totalDebt = userLoans.reduce((sum, loan) => sum + loan.borrowedAmount + (loan.fixedInterestAmount || 0), 0);
       
-      const collateralValue = totalCollateral * historicalXmpPrice;
+      const collateralValue = totalCollateral * historicalXpmPrice;
       const ltv = collateralValue > 0 ? (totalDebt / collateralValue) * 100 : 0;
 
       data.push({
