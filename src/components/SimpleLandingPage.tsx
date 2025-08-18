@@ -8,14 +8,12 @@ import {
   Button,
   Grid,
   Alert,
-  Chip,
   LinearProgress,
   FormControl,
   FormLabel,
   RadioGroup,
   FormControlLabel,
   Radio,
-  Switch,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -123,7 +121,7 @@ const SimpleLandingPage: React.FC = () => {
               <FormLabel component="legend">Loan Term</FormLabel>
               <RadioGroup
                 value={selectedTerm}
-                onChange={(e) => setSelectedTerm(Number(e.target.value))}
+                onChange={(e) => setSelectedTerm(Number(e.target.value) as LoanTermDays)}
                 row={false}
                 sx={{
                   '& .MuiFormControlLabel-root': {

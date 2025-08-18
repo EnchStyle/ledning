@@ -8,7 +8,7 @@
  * - Liquidation thresholds and prices
  * - Dual-asset risk assessment (XPM collateral, XRP debt)
  */
-import { Loan, LoanParams, MarketData } from '../types/lending';
+import { Loan } from '../types/lending';
 
 /**
  * Calculate Loan-to-Value ratio using USD values

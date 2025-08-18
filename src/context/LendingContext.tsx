@@ -18,11 +18,11 @@ import {
   calculateLiquidationPriceUSD,
   isEligibleForLiquidationUSD,
   calculateLiquidationReturnUSD,
-  // Legacy functions for backward compatibility
-  calculateInterest, 
-  calculateLiquidationPrice,
-  isEligibleForLiquidation,
-  calculateLiquidationReturn 
+  // Legacy functions for backward compatibility - kept for future use
+  // calculateInterest, 
+  // calculateLiquidationPrice,
+  // isEligibleForLiquidation,
+  // calculateLiquidationReturn 
 } from '../utils/lendingCalculations';
 
 /**
@@ -224,12 +224,13 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       prevLoans.map(loan => {
         if (loan.id !== loanId || loan.status !== 'active') return loan;
         
-        const liquidationResult = calculateLiquidationReturnUSD(
-          loan,
-          marketData.xpmPriceUSD,
-          marketData.xrpPriceUSD,
-          marketData.liquidationFee
-        );
+        // Calculate liquidation result (stored for future use)
+        // const liquidationResult = calculateLiquidationReturnUSD(
+        //   loan,
+        //   marketData.xpmPriceUSD,
+        //   marketData.xrpPriceUSD,
+        //   marketData.liquidationFee
+        // );
         
         return {
           ...loan,

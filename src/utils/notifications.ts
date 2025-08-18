@@ -5,7 +5,18 @@
  * Integrates with Material-UI's Snackbar component
  */
 
-import { VariantType, enqueueSnackbar, SnackbarOrigin } from 'notistack';
+// TODO: Install notistack package: npm install notistack
+// import { VariantType, enqueueSnackbar, SnackbarOrigin } from 'notistack';
+
+// Temporary types until notistack is installed
+type VariantType = 'success' | 'error' | 'warning' | 'info';
+interface SnackbarOrigin {
+  vertical: 'top' | 'bottom';
+  horizontal: 'left' | 'center' | 'right';
+}
+const enqueueSnackbar = (message: string, options: any) => {
+  console.log(`Notification: ${message}`, options);
+};
 
 /**
  * Notification types
@@ -165,7 +176,7 @@ export const notifyTransaction = {
   pending: (txType: string) => showNotification({
     message: `${txType} transaction pending...`,
     type: 'info',
-    duration: null, // Keep visible until resolved
+    duration: undefined, // Keep visible until resolved
   }),
   
   confirmed: (txType: string, txHash?: string) => showNotification({
