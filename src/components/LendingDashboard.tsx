@@ -30,7 +30,7 @@ const LendingDashboard: React.FC = () => {
   
   // Use USD-based calculations for accurate dual-asset risk assessment
   const totalCollateralValueUSD = userPosition.totalCollateral * marketData.xpmPriceUSD;
-  const totalDebtXRP = userPosition.totalBorrowed + userPosition.totalInterest;
+  const totalDebtXRP = userPosition.totalBorrowed + userPosition.totalFixedInterest;
   const totalDebtUSD = totalDebtXRP * marketData.xrpPriceUSD;
   const utilizationRate = totalCollateralValueUSD > 0 ? (totalDebtUSD / totalCollateralValueUSD) * 100 : 0;
   
