@@ -154,9 +154,9 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }>>([]);
   
   // Ref to hold current state values for stable callback access
-  const stateRef = useRef({ marketData, currentTime, loans });
+  const stateRef = useRef({ marketData, currentTime, loans, simulationSettings });
   useEffect(() => {
-    stateRef.current = { marketData, currentTime, loans };
+    stateRef.current = { marketData, currentTime, loans, simulationSettings };
   });
 
   // Demo wallet balance: 2M XPM for demo purposes
