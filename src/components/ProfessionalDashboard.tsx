@@ -606,7 +606,7 @@ const ProfessionalDashboard: React.FC = () => {
                       {selectedTerm} days
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {selectedTerm === 30 ? '14%' : selectedTerm === 60 ? '15%' : '16%'} APR
+                      {selectedTerm === 30 ? '19%' : selectedTerm === 60 ? '16%' : '15%'} APR
                     </Typography>
                   </Grid>
                   <Grid item xs={6}>
@@ -683,7 +683,7 @@ const ProfessionalDashboard: React.FC = () => {
               • Receive: {maxBorrowRLUSD.toFixed(0)} RLUSD (${borrowValueUSD.toFixed(0)})
             </Typography>
             <Typography variant="body2">
-              • Term: {selectedTerm} days at {selectedTerm === 30 ? '14%' : selectedTerm === 60 ? '15%' : '16%'} APR
+              • Term: {selectedTerm} days at {selectedTerm === 30 ? '19%' : selectedTerm === 60 ? '16%' : '15%'} APR
             </Typography>
             <Typography variant="body2">
               • Liquidation: ${liquidationPriceUSD.toFixed(4)} XPM ({priceDropToLiquidation.toFixed(1)}% buffer)

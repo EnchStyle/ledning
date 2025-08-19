@@ -113,7 +113,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [currentTime, setCurrentTime] = useState(new Date());
   /** Market data including token prices */
   const [marketData, setMarketData] = useState<MarketData>({
-    xpmPriceUSD: 0.5234,    // XPM token price in USD (demo price)
+    xpmPriceUSD: 0.02,      // XPM token price in USD (updated price)
     liquidationFee: 10,     // Fee percentage for liquidations
   });
   /** Price history for charting */
@@ -126,6 +126,8 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
   /** Simulation timer reference */
   const simulationTimer = useRef<NodeJS.Timeout | null>(null);
+  /** Throttling to prevent excessive updates */
+  const lastUpdateTime = useRef<number>(0);
   /** Liquidation events tracking */
   const [liquidationEvents, setLiquidationEvents] = useState<Array<{
     loanId: string;
@@ -138,89 +140,90 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Demo wallet balance: 2M XPM for demo purposes
   const demoWalletBalance = 2000000;
 
-  /**
-   * Generate a random price change based on volatility settings
-   * Uses a more realistic price movement model
-   */
-  const generatePriceChange = useCallback(() => {
-    const { volatility } = simulationSettings;
-    // Use normal distribution for more realistic price movements
-    const random1 = Math.random();
-    const random2 = Math.random();
-    const normalRandom = Math.sqrt(-2 * Math.log(random1)) * Math.cos(2 * Math.PI * random2);
-    
-    // Scale to volatility range and add slight mean reversion
-    const priceChange = normalRandom * volatility * 0.5; // Reduce extreme movements
-    const meanReversion = (0.5234 - marketData.xpmPriceUSD) * 0.001; // Gentle pull towards starting price
-    
-    return priceChange + meanReversion;
-  }, [simulationSettings.volatility, marketData.xpmPriceUSD]);
+  // Minimum loan amount to prevent micro transactions and spam
+  const MINIMUM_LOAN_AMOUNT_USD = 50; // $50 minimum loan value
+  const MINIMUM_COLLATERAL_AMOUNT_USD = 100; // $100 minimum collateral value
+
 
   /**
-   * Add current state to price history
-   */
-  const addPriceHistoryPoint = useCallback(() => {
-    const activeLoans = loans.filter(l => l.status === 'active');
-    const portfolioValue = activeLoans.reduce((sum, loan) => 
-      sum + (loan.collateralAmount * marketData.xpmPriceUSD), 0
-    );
-    const totalDebt = activeLoans.reduce((sum, loan) => 
-      sum + loan.borrowedAmount + (loan.fixedInterestAmount || 0), 0
-    );
-    const avgLTV = portfolioValue > 0 ? (totalDebt / portfolioValue) * 100 : 0;
-
-    const newPoint: PriceHistoryPoint = {
-      timestamp: new Date(currentTime),
-      xpmPrice: marketData.xpmPriceUSD,
-      portfolioValue,
-      totalDebt,
-      avgLTV,
-    };
-
-    setPriceHistory(prev => {
-      const updated = [...prev, newPoint];
-      // Keep only last 200 points to prevent memory issues but show more history
-      return updated.slice(-200);
-    });
-  }, [loans, marketData.xpmPriceUSD, currentTime]);
-
-  /**
-   * Simulation tick - update price and time
-   */
-  const simulationTick = useCallback(() => {
-    // Generate new price
-    const priceChange = generatePriceChange();
-    const newPrice = Math.max(0.01, marketData.xpmPriceUSD * (1 + priceChange));
-    
-    // Update market data
-    setMarketData(prev => ({
-      ...prev,
-      xpmPriceUSD: newPrice,
-    }));
-
-    // Advance time by ~10 minutes per tick (for demo purposes)
-    setCurrentTime(prev => new Date(prev.getTime() + 10 * 60 * 1000));
-
-    // Add to price history - directly without setTimeout to avoid memory issues
-    addPriceHistoryPoint();
-  }, [generatePriceChange, marketData.xpmPriceUSD, addPriceHistoryPoint]);
-
-  /**
-   * Start/stop simulation timer
+   * Add current state to price history - triggered by price changes
    */
   useEffect(() => {
     if (simulationSettings.isActive) {
-      const interval = Math.max(100, 10000 / simulationSettings.speed); // Base 10 seconds, minimum 100ms
+      const activeLoans = loans.filter(l => l.status === 'active');
+      const portfolioValue = activeLoans.reduce((sum, loan) => 
+        sum + (loan.collateralAmount * marketData.xpmPriceUSD), 0
+      );
+      const totalDebt = activeLoans.reduce((sum, loan) => 
+        sum + loan.borrowedAmount + (loan.fixedInterestAmount || 0), 0
+      );
+      const avgLTV = portfolioValue > 0 ? (totalDebt / portfolioValue) * 100 : 0;
+
+      const newPoint: PriceHistoryPoint = {
+        timestamp: new Date(currentTime),
+        xpmPrice: marketData.xpmPriceUSD,
+        portfolioValue,
+        totalDebt,
+        avgLTV,
+      };
+
+      setPriceHistory(prev => {
+        // Only add if price actually changed to avoid excessive updates
+        const lastPoint = prev[prev.length - 1];
+        if (!lastPoint || Math.abs(lastPoint.xpmPrice - newPoint.xpmPrice) > 0.0001) {
+          const updated = [...prev, newPoint];
+          return updated.slice(-100); // Reduced to 100 points
+        }
+        return prev;
+      });
+    }
+  }, [marketData.xpmPriceUSD, currentTime, loans, simulationSettings.isActive]);
+
+  /**
+   * Simulation tick - update price and time
+   * Using refs to avoid dependency issues that cause constant re-creation
+   */
+  const simulationTick = useCallback(() => {
+    const now = Date.now();
+    
+    // Throttle updates to prevent excessive state changes
+    if (now - lastUpdateTime.current < 200) { // Minimum 200ms between updates
+      return;
+    }
+    lastUpdateTime.current = now;
+    
+    setMarketData(prev => {
+      // Generate new price
+      const { volatility } = simulationSettings;
+      const random1 = Math.random();
+      const random2 = Math.random();
+      const normalRandom = Math.sqrt(-2 * Math.log(random1)) * Math.cos(2 * Math.PI * random2);
+      const priceChange = normalRandom * volatility * 0.5;
+      const meanReversion = (0.02 - prev.xpmPriceUSD) * 0.001;
+      const totalChange = priceChange + meanReversion;
+      const newPrice = Math.max(0.001, prev.xpmPriceUSD * (1 + totalChange));
+      
+      return { ...prev, xpmPriceUSD: newPrice };
+    });
+
+    // Advance time by ~10 minutes per tick
+    setCurrentTime(prev => new Date(prev.getTime() + 10 * 60 * 1000));
+  }, [simulationSettings]);
+
+  /**
+   * Start/stop simulation timer with stable reference
+   */
+  useEffect(() => {
+    if (simulationSettings.isActive) {
+      const interval = Math.max(500, 10000 / simulationSettings.speed); // Minimum 500ms to prevent excessive updates
       
       // Clear any existing timer first
       if (simulationTimer.current) {
         clearInterval(simulationTimer.current);
       }
       
-      // Create new timer
-      simulationTimer.current = setInterval(() => {
-        simulationTick();
-      }, interval);
+      // Create new timer with stable tick function
+      simulationTimer.current = setInterval(simulationTick, interval);
     } else {
       if (simulationTimer.current) {
         clearInterval(simulationTimer.current);
@@ -234,7 +237,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         simulationTimer.current = null;
       }
     };
-  }, [simulationSettings.isActive, simulationSettings.speed]);
+  }, [simulationSettings.isActive, simulationSettings.speed, simulationTick]);
 
   /**
    * Update LTV for all active loans based on current market prices
@@ -323,6 +326,14 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Use USD-based calculations for risk assessment
     const collateralValueUSD = calculateCollateralValueUSD(params.collateralAmount, marketData.xpmPriceUSD);
     const debtValueUSD = calculateDebtValueUSD(params.borrowAmount); // RLUSD is 1:1 USD
+
+    // Validate minimum loan amounts to prevent spam and micro transactions
+    if (debtValueUSD < MINIMUM_LOAN_AMOUNT_USD) {
+      throw new Error(`Minimum loan amount is $${MINIMUM_LOAN_AMOUNT_USD} USD`);
+    }
+    if (collateralValueUSD < MINIMUM_COLLATERAL_AMOUNT_USD) {
+      throw new Error(`Minimum collateral value is $${MINIMUM_COLLATERAL_AMOUNT_USD} USD`);
+    }
     const liquidationPriceUSD = calculateLiquidationPriceUSD(
       params.borrowAmount,
       params.collateralAmount,
@@ -452,17 +463,24 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Assumes the price is XPM price in USD
     setMarketData(prev => ({ ...prev, xpmPriceUSD: newPrice }));
     updateLoansLTV();
-    addPriceHistoryPoint();
-  }, [updateLoansLTV, addPriceHistoryPoint]);
+    // Price history is now handled automatically by useEffect
+  }, [updateLoansLTV]);
 
   /**
    * Toggle simulation on/off
    */
   const toggleSimulation = useCallback(() => {
-    setSimulationSettings(prev => ({
-      ...prev,
-      isActive: !prev.isActive,
-    }));
+    setSimulationSettings(prev => {
+      // If turning off, clear any existing timer immediately
+      if (prev.isActive && simulationTimer.current) {
+        clearInterval(simulationTimer.current);
+        simulationTimer.current = null;
+      }
+      return {
+        ...prev,
+        isActive: !prev.isActive,
+      };
+    });
   }, []);
 
   /**

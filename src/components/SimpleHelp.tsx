@@ -34,7 +34,7 @@ const SimpleHelp: React.FC = () => {
           <Box component="ol" sx={{ pl: 2 }}>
             <li>Deposit XPM tokens (locked as collateral)</li>
             <li>Receive RLUSD immediately (up to 50% of collateral value)</li>
-            <li>Pay 15% annual interest</li>
+            <li>Pay competitive annual interest (19% for 30d, 16% for 60d, 15% for 90d)</li>
             <li>Repay anytime to unlock your XPM</li>
           </Box>
           <Alert severity="info" sx={{ mt: 2 }}>
@@ -138,11 +138,11 @@ const SimpleHelp: React.FC = () => {
       answer: (
         <Box>
           <Typography paragraph>
-            Interest compounds daily at 15% APR:
+Interest rates vary by loan term with daily compounding:
           </Typography>
           <Typography paragraph>
-            <strong>Daily rate:</strong> 15% ÷ 365 = ~0.041% per day<br />
-            <strong>Monthly rate:</strong> ~1.25%<br />
+            <strong>Rates:</strong> 19% APR (30d), 16% APR (60d), 15% APR (90d)<br />
+            <strong>Example daily rate:</strong> 16% ÷ 365 = ~0.044% per day<br />
             <strong>Formula:</strong> Principal × (1 + daily_rate)^days - Principal
           </Typography>
           <Typography paragraph>
@@ -204,7 +204,7 @@ const SimpleHelp: React.FC = () => {
           </Box>
           <Box>
             <Typography variant="body2">Interest Rate</Typography>
-            <Typography variant="h6">15% APR</Typography>
+            <Typography variant="h6">15-19% APR</Typography>
           </Box>
           <Box>
             <Typography variant="body2">Max LTV</Typography>

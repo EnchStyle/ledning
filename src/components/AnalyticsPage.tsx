@@ -345,9 +345,9 @@ const AnalyticsPage: React.FC = () => {
                 <strong>Interest Rates:</strong>
               </Typography>
               <Box sx={{ display: 'flex', gap: 1 }}>
-                <Chip label="30d: 14% APR" size="small" />
-                <Chip label="60d: 15% APR" size="small" />
-                <Chip label="90d: 16% APR" size="small" />
+                <Chip label="30d: 19% APR" size="small" />
+                <Chip label="60d: 16% APR" size="small" />
+                <Chip label="90d: 15% APR" size="small" />
               </Box>
             </Box>
           </Grid>

@@ -77,7 +77,7 @@ const InteractiveLoanCalculator: React.FC = () => {
     const liquidationPriceUSD = calculateLiquidationPriceUSD(actualBorrowAmount, collateralAmount, 65);
     const priceDropToLiquidation = ((marketData.xpmPriceUSD - liquidationPriceUSD) / marketData.xpmPriceUSD) * 100;
     
-    const interestRate = selectedTerm === 30 ? 14 : selectedTerm === 60 ? 15 : 16;
+    const interestRate = selectedTerm === 30 ? 19 : selectedTerm === 60 ? 16 : 15;
     const dailyRate = interestRate / 365;
     const totalInterest = actualBorrowAmount * (interestRate / 100) * (selectedTerm / 365);
     const totalRepayment = actualBorrowAmount + totalInterest;
@@ -326,13 +326,10 @@ const InteractiveLoanCalculator: React.FC = () => {
                 <Slider
                   value={state.targetLTV}
                   onChange={(_, value) => handleLTVChange(value as number)}
-                  min={5}
+                  min={20}
                   max={50}
                   step={5}
                   marks={[
-                    { value: 5, label: '5%' },
-                    { value: 10, label: '10%' },
-                    { value: 15, label: '15%' },
                     { value: 20, label: '20%' },
                     { value: 25, label: '25%' },
                     { value: 30, label: '30%' },

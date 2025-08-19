@@ -61,9 +61,9 @@ const SimpleLandingPage: React.FC = () => {
   };
 
   const termOptions = [
-    { days: 30, label: '30 Days', rate: '14%' },
-    { days: 60, label: '60 Days', rate: '15%' }, 
-    { days: 90, label: '90 Days', rate: '16%' }
+    { days: 30, label: '30 Days', rate: '19%' },
+    { days: 60, label: '60 Days', rate: '16%' }, 
+    { days: 90, label: '90 Days', rate: '15%' }
   ];
 
   return (
@@ -299,7 +299,7 @@ const SimpleLandingPage: React.FC = () => {
               • You'll receive: {maxBorrowRLUSD.toFixed(0)} RLUSD (${borrowValueUSD.toFixed(0)} USD)
             </Typography>
             <Typography variant="body2" gutterBottom>
-              • Term: {selectedTerm} days ({selectedTerm === 30 ? '14%' : selectedTerm === 60 ? '15%' : '16%'} APR)
+              • Term: {selectedTerm} days ({selectedTerm === 30 ? '19%' : selectedTerm === 60 ? '16%' : '15%'} APR)
             </Typography>
             <Typography variant="body2" gutterBottom>
               • Liquidation if XPM drops to: ${liquidationPriceUSD.toFixed(4)}

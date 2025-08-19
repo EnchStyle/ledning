@@ -74,6 +74,10 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
   // Demo wallet balance (2M XPM)
   const walletBalance = 2000000;
 
+  // Minimum amounts to prevent micro transactions and spam
+  const MINIMUM_LOAN_AMOUNT_USD = 50;
+  const MINIMUM_COLLATERAL_AMOUNT_USD = 100;
+
   // Calculations
   const collateralValueUSD = parameters.collateralAmount * marketData.xpmPriceUSD;
   const maxBorrowRLUSD = calculateMaxBorrowRLUSD(parameters.collateralAmount, marketData.xpmPriceUSD, 50);
@@ -82,9 +86,14 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
   const liquidationPrice = calculateLiquidationPriceUSD(targetBorrowAmount, parameters.collateralAmount, 65);
   const priceDropBuffer = ((marketData.xpmPriceUSD - liquidationPrice) / marketData.xpmPriceUSD) * 100;
   
-  const interestRate = parameters.termDays === 30 ? 14 : parameters.termDays === 60 ? 15 : 16;
+  const interestRate = parameters.termDays === 30 ? 19 : parameters.termDays === 60 ? 16 : 15;
   const totalInterest = targetBorrowAmount * (interestRate / 100) * (parameters.termDays / 365);
   const totalRepayment = targetBorrowAmount + totalInterest;
+
+  // Validation checks
+  const isCollateralTooSmall = collateralValueUSD < MINIMUM_COLLATERAL_AMOUNT_USD;
+  const isLoanTooSmall = targetBorrowAmount < MINIMUM_LOAN_AMOUNT_USD;
+  const hasValidationErrors = isCollateralTooSmall || isLoanTooSmall;
 
   // Risk assessment
   const getRiskLevel = (ltv: number) => {
@@ -201,7 +210,22 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
           </Box>
         </Box>
 
-        {parameters.collateralAmount >= 1000 && (
+        {/* Validation Warnings */}
+        {isCollateralTooSmall && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            <Typography variant="body2">
+              <strong>Minimum collateral:</strong> ${MINIMUM_COLLATERAL_AMOUNT_USD} USD (currently ${collateralValueUSD.toFixed(2)} USD)
+            </Typography>
+          </Alert>
+        )}
+        {isLoanTooSmall && !isCollateralTooSmall && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            <Typography variant="body2">
+              <strong>Minimum loan:</strong> ${MINIMUM_LOAN_AMOUNT_USD} USD (currently ${targetBorrowAmount.toFixed(2)} USD)
+            </Typography>
+          </Alert>
+        )}
+        {parameters.collateralAmount >= 1000 && !hasValidationErrors && (
           <Alert severity="info" sx={{ mb: 2 }}>
             <Typography variant="body2">
               <strong>Collateral will be locked</strong> via XRPL escrow until loan repayment.
@@ -236,13 +260,10 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
             <Slider
               value={parameters.targetLTV}
               onChange={(_, value) => setParameters(prev => ({ ...prev, targetLTV: value as number }))}
-              min={5}
+              min={20}
               max={50}
               step={5}
               marks={[
-                { value: 5, label: '5%' },
-                { value: 10, label: '10%' },
-                { value: 15, label: '15%' },
                 { value: 20, label: '20%' },
                 { value: 25, label: '25%' },
                 { value: 30, label: '30%' },
@@ -527,11 +548,13 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
   const canProceed = () => {
     switch (activeStep) {
       case 0:
-        return parameters.collateralAmount >= 1000 && parameters.collateralAmount <= walletBalance;
+        return parameters.collateralAmount >= 1000 && 
+               parameters.collateralAmount <= walletBalance && 
+               !isCollateralTooSmall;
       case 1:
-        return targetBorrowAmount > 0;
+        return targetBorrowAmount > 0 && !isLoanTooSmall && !hasValidationErrors;
       case 2:
-        return agreedToTerms && agreedToRisks;
+        return agreedToTerms && agreedToRisks && !hasValidationErrors;
       default:
         return false;
     }
