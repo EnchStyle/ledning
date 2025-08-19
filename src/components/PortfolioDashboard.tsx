@@ -58,8 +58,10 @@ interface PortfolioDashboardProps {
   onNavigateToBorrow?: () => void;
 }
 
-const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBorrow }) => {
+const PortfolioDashboard: React.FC<PortfolioDashboardProps> = React.memo(({ onNavigateToBorrow }) => {
+  console.log('🏦 PortfolioDashboard: Component rendering');
   const { userLoans, marketData, repayLoan, addCollateral } = useLending();
+  console.log('🏦 PortfolioDashboard: userLoans length:', userLoans.length, 'XPM price:', marketData.xpmPriceUSD);
   const [actionDialog, setActionDialog] = useState<ActionDialog>({
     open: false,
     type: null,
@@ -75,19 +77,32 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
   // Demo wallet balance
   const walletBalance = 2000000;
 
-  // Portfolio calculations
-  const totalCollateralValue = userLoans.reduce((sum, loan) => 
-    sum + (loan.collateralAmount * marketData.xpmPriceUSD), 0
-  );
-  const totalDebtRLUSD = userLoans.reduce((sum, loan) => 
-    sum + loan.borrowedAmount + (loan.fixedInterestAmount || 0), 0
-  );
-  const avgLTV = totalCollateralValue > 0 ? (totalDebtRLUSD / totalCollateralValue) * 100 : 0;
-  const availableToBorrow = Math.max(0, (totalCollateralValue * 0.5) - totalDebtRLUSD);
-  const atRiskLoans = userLoans.filter(loan => {
-    const loanLTV = ((loan.borrowedAmount + loan.fixedInterestAmount) / (loan.collateralAmount * marketData.xpmPriceUSD)) * 100;
-    return loanLTV > 50;
-  }).length;
+  // Portfolio calculations - memoized to prevent excessive recalculation
+  const portfolioStats = React.useMemo(() => {
+    console.log('🏦 PortfolioDashboard: Recalculating portfolio stats');
+    const totalCollateralValue = userLoans.reduce((sum, loan) => 
+      sum + (loan.collateralAmount * marketData.xpmPriceUSD), 0
+    );
+    const totalDebtRLUSD = userLoans.reduce((sum, loan) => 
+      sum + loan.borrowedAmount + (loan.fixedInterestAmount || 0), 0
+    );
+    const avgLTV = totalCollateralValue > 0 ? (totalDebtRLUSD / totalCollateralValue) * 100 : 0;
+    const availableToBorrow = Math.max(0, (totalCollateralValue * 0.5) - totalDebtRLUSD);
+    const atRiskLoans = userLoans.filter(loan => {
+      const loanLTV = ((loan.borrowedAmount + loan.fixedInterestAmount) / (loan.collateralAmount * marketData.xpmPriceUSD)) * 100;
+      return loanLTV > 50;
+    }).length;
+    
+    return {
+      totalCollateralValue,
+      totalDebtRLUSD,
+      avgLTV,
+      availableToBorrow,
+      atRiskLoans
+    };
+  }, [userLoans.length, marketData.xpmPriceUSD]); // Only recalculate when loans count or price changes significantly
+  
+  const { totalCollateralValue, totalDebtRLUSD, avgLTV, availableToBorrow, atRiskLoans } = portfolioStats;
 
   const handleAction = (type: 'repay' | 'add_collateral', loanId: string, loanIndex: number) => {
     setActionDialog({ open: true, type, loanId, loanIndex });
@@ -640,6 +655,8 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
       </Snackbar>
     </Box>
   );
-};
+});
+
+PortfolioDashboard.displayName = 'PortfolioDashboard';
 
 export default PortfolioDashboard;

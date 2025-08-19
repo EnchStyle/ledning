@@ -9,14 +9,20 @@ interface ChartDataPoint {
   ltv: number;
 }
 
-const PortfolioChart: React.FC = () => {
+const PortfolioChart: React.FC = React.memo(() => {
+  console.log('📈 PortfolioChart: Component rendering');
   const theme = useTheme();
   const { userLoans, marketData, priceHistory } = useLending();
+  console.log('📈 PortfolioChart: priceHistory length:', priceHistory.length, 'userLoans length:', userLoans.length);
 
   // Use real price history data when available, otherwise generate mock data
+  // Optimized to prevent excessive recalculation during simulation
   const chartData = useMemo(() => {
+    console.log('📈 PortfolioChart: Recalculating chart data');
+    
     // If we have real price history, use it
     if (priceHistory.length > 0) {
+      console.log('📈 PortfolioChart: Using real price history data');
       return priceHistory.map(point => ({
         timestamp: point.timestamp.toISOString().split('T')[0],
         collateralValue: point.portfolioValue,
@@ -25,7 +31,12 @@ const PortfolioChart: React.FC = () => {
       }));
     }
 
-    // Fallback to mock data for empty state
+    console.log('📈 PortfolioChart: Generating mock data (no price history)');
+    // Fallback to mock data for empty state - only when no loans exist
+    if (userLoans.length === 0) {
+      return [];
+    }
+
     const data: ChartDataPoint[] = [];
     const now = Date.now();
     const dayMs = 24 * 60 * 60 * 1000;
@@ -40,7 +51,7 @@ const PortfolioChart: React.FC = () => {
       const randomVariation = 1 + (Math.sin(i * 1.7) * 0.02); // Small random component
       const historicalXpmPrice = marketData.xpmPriceUSD * baseVariation * trendVariation * randomVariation;
       
-      // Calculate portfolio values
+      // Calculate portfolio values using stable loan count
       const totalCollateral = userLoans.reduce((sum, loan) => sum + loan.collateralAmount, 0);
       const totalDebt = userLoans.reduce((sum, loan) => sum + loan.borrowedAmount + (loan.fixedInterestAmount || 0), 0);
       
@@ -56,7 +67,7 @@ const PortfolioChart: React.FC = () => {
     }
 
     return data;
-  }, [userLoans, marketData.xpmPriceUSD, priceHistory]);
+  }, [priceHistory.length, userLoans.length, marketData.xpmPriceUSD]); // Optimized dependencies
 
   // Chart dimensions
   const chartWidth = 800;
@@ -328,6 +339,8 @@ const PortfolioChart: React.FC = () => {
       </Box>
     </Box>
   );
-};
+});
+
+PortfolioChart.displayName = 'PortfolioChart';
 
 export default PortfolioChart;

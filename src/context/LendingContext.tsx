@@ -389,21 +389,42 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
    * Simplified for RLUSD since debt is already in USD
    */
   const updateLoansLTV = useCallback(() => {
-    setLoans(prevLoans => 
-      prevLoans.map(loan => {
+    console.log('💰 LendingContext: updateLoansLTV called, price:', marketData.xpmPriceUSD);
+    
+    setLoans(prevLoans => {
+      const updatedLoans = prevLoans.map(loan => {
         if (loan.status !== 'active') return loan;
         
         // Calculate current LTV based on market prices
         const collateralValueUSD = calculateCollateralValueUSD(loan.collateralAmount, marketData.xpmPriceUSD);
         const totalDebtRLUSD = loan.borrowedAmount + loan.fixedInterestAmount;
         const debtValueUSD = calculateDebtValueUSD(totalDebtRLUSD); // 1:1 conversion
+        const newLTV = calculateLTV(collateralValueUSD, debtValueUSD);
+        
+        // Only update if LTV actually changed to prevent unnecessary re-renders
+        if (Math.abs((loan.currentLTV || 0) - newLTV) < 0.01) {
+          return loan; // No significant change
+        }
         
         return {
           ...loan,
-          currentLTV: calculateLTV(collateralValueUSD, debtValueUSD),
+          currentLTV: newLTV,
         };
-      })
-    );
+      });
+      
+      // Check if any loans actually changed
+      const hasChanges = updatedLoans.some((loan, index) => 
+        loan.currentLTV !== prevLoans[index]?.currentLTV
+      );
+      
+      if (!hasChanges) {
+        console.log('💰 LendingContext: No LTV changes, skipping update');
+        return prevLoans; // No changes, return same reference
+      }
+      
+      console.log('💰 LendingContext: LTV updated for loans');
+      return updatedLoans;
+    });
   }, [marketData.xpmPriceUSD]);
 
   /**
@@ -682,6 +703,8 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       .reduce((sum, loan) => sum + loan.fixedInterestAmount, 0),
     loans,
   };
+
+  console.log('🏦 LendingContext: Provider rendering, loans count:', loans.length, 'simulation active:', simulationSettings.isActive);
 
   return (
     <LendingContext.Provider

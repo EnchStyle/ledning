@@ -16,7 +16,8 @@ import {
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
 
-const LiquidationAlert: React.FC = () => {
+const LiquidationAlert: React.FC = React.memo(() => {
+  console.log('⚠️ LiquidationAlert: Component rendering');
   const { userLoans, marketData, liquidationEvents } = useLending();
   const [showAlert, setShowAlert] = useState(true);
   const [recentLiquidation, setRecentLiquidation] = useState<any>(null);
@@ -166,6 +167,8 @@ const LiquidationAlert: React.FC = () => {
       </Alert>
     </Collapse>
   );
-};
+});
+
+LiquidationAlert.displayName = 'LiquidationAlert';
 
 export default LiquidationAlert;
