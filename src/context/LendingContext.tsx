@@ -184,6 +184,11 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const addPriceHistoryPoint = useCallback(() => {
     if (!simulationSettings.isActive || loans.length === 0) return;
     
+    // Skip price history updates if Portfolio tab is active
+    if (typeof window !== 'undefined' && (window as any).__simulationPaused) {
+      return;
+    }
+    
     // Throttle price history updates to reduce re-renders
     const now = Date.now();
     if (now - lastPriceHistoryUpdate.current < 5000) { // 5 second minimum between updates
@@ -252,6 +257,11 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const simulationTick = useRef(() => {
     // Don't run simulation if tab is not visible (performance optimization)
     if (!isTabVisible.current) {
+      return;
+    }
+    
+    // Check if simulation is paused by Portfolio component
+    if (typeof window !== 'undefined' && (window as any).__simulationPaused) {
       return;
     }
     

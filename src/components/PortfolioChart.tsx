@@ -18,6 +18,12 @@ const PortfolioChart: React.FC = React.memo(() => {
   // Use real price history data when available, otherwise generate mock data
   // Optimized to prevent excessive recalculation during simulation
   const chartData = useMemo(() => {
+    // Skip recalculation if Portfolio tab is pausing simulation
+    if (typeof window !== 'undefined' && (window as any).__simulationPaused) {
+      console.log('📈 PortfolioChart: Skipping chart recalculation (simulation paused)');
+      return [];
+    }
+    
     console.log('📈 PortfolioChart: Recalculating chart data');
     
     // If we have real price history, use it

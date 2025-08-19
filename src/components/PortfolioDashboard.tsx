@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -46,6 +46,7 @@ import {
 import { useLending } from '../context/LendingContext';
 import PortfolioChart from './PortfolioChart';
 import LiquidationAlert from './LiquidationAlert';
+import { useSimulationPause } from '../hooks/useSimulationPause';
 
 interface ActionDialog {
   open: boolean;
@@ -59,6 +60,9 @@ interface PortfolioDashboardProps {
 }
 
 const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBorrow }) => {
+  // Pause simulation updates when this component is mounted to prevent freezing
+  useSimulationPause(true);
+  
   // Throttle component rendering logs
   const renderCount = React.useRef(0);
   renderCount.current += 1;
@@ -89,6 +93,11 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
   
   // Update portfolio stats with throttling
   React.useEffect(() => {
+    // Don't update stats during simulation to prevent freezing
+    if (typeof window !== 'undefined' && (window as any).__simulationPaused) {
+      return;
+    }
+    
     const now = Date.now();
     // Throttle updates to every 5 seconds during simulation
     if (now - lastStatsUpdate.current < 5000 && portfolioStats.totalCollateralValue > 0) {
