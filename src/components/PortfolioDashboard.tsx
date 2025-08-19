@@ -58,10 +58,16 @@ interface PortfolioDashboardProps {
   onNavigateToBorrow?: () => void;
 }
 
-const PortfolioDashboard: React.FC<PortfolioDashboardProps> = React.memo(({ onNavigateToBorrow }) => {
-  console.log('🏦 PortfolioDashboard: Component rendering');
+const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBorrow }) => {
+  // Throttle component rendering logs
+  const renderCount = React.useRef(0);
+  renderCount.current += 1;
+  
   const { userLoans, marketData, repayLoan, addCollateral } = useLending();
-  console.log('🏦 PortfolioDashboard: userLoans length:', userLoans.length, 'XPM price:', marketData.xpmPriceUSD);
+  
+  if (renderCount.current % 20 === 0) { // Only log every 20th render
+    console.log('🏦 PortfolioDashboard: Rendered', renderCount.current, 'times, userLoans:', userLoans.length, 'price:', marketData.xpmPriceUSD.toFixed(4));
+  }
   const [actionDialog, setActionDialog] = useState<ActionDialog>({
     open: false,
     type: null,
@@ -77,9 +83,20 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = React.memo(({ onNa
   // Demo wallet balance
   const walletBalance = 2000000;
 
-  // Portfolio calculations - memoized to prevent excessive recalculation
-  const portfolioStats = React.useMemo(() => {
-    console.log('🏦 PortfolioDashboard: Recalculating portfolio stats');
+  // Portfolio calculations using useState to avoid memoization issues
+  const [portfolioStats, setPortfolioStats] = React.useState({ totalCollateralValue: 0, totalDebtRLUSD: 0, avgLTV: 0, availableToBorrow: 0, atRiskLoans: 0 });
+  const lastStatsUpdate = React.useRef(0);
+  
+  // Update portfolio stats with throttling
+  React.useEffect(() => {
+    const now = Date.now();
+    // Throttle updates to every 5 seconds during simulation
+    if (now - lastStatsUpdate.current < 5000 && portfolioStats.totalCollateralValue > 0) {
+      return;
+    }
+    lastStatsUpdate.current = now;
+    
+    console.log('🏦 PortfolioDashboard: Updating portfolio stats (throttled)');
     const totalCollateralValue = userLoans.reduce((sum, loan) => 
       sum + (loan.collateralAmount * marketData.xpmPriceUSD), 0
     );
@@ -93,14 +110,14 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = React.memo(({ onNa
       return loanLTV > 50;
     }).length;
     
-    return {
+    setPortfolioStats({
       totalCollateralValue,
       totalDebtRLUSD,
       avgLTV,
       availableToBorrow,
       atRiskLoans
-    };
-  }, [userLoans.length, marketData.xpmPriceUSD]); // Only recalculate when loans count or price changes significantly
+    });
+  }, [userLoans.length, marketData.xpmPriceUSD]); // Minimal dependencies
   
   const { totalCollateralValue, totalDebtRLUSD, avgLTV, availableToBorrow, atRiskLoans } = portfolioStats;
 
@@ -655,8 +672,14 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = React.memo(({ onNa
       </Snackbar>
     </Box>
   );
+};
+
+// Memoize with custom comparison to only re-render when loans actually change
+const MemoizedPortfolioDashboard = React.memo(PortfolioDashboard, (prevProps, nextProps) => {
+  // Only re-render if the callback prop changes (which it shouldn't)
+  return prevProps.onNavigateToBorrow === nextProps.onNavigateToBorrow;
 });
 
-PortfolioDashboard.displayName = 'PortfolioDashboard';
+MemoizedPortfolioDashboard.displayName = 'PortfolioDashboard';
 
-export default PortfolioDashboard;
+export default MemoizedPortfolioDashboard;

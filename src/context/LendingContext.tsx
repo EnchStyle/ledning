@@ -438,12 +438,33 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [marketData.xpmPriceUSD]);
 
   /**
-   * Update LTVs when price changes
+   * Update LTVs when price changes - with aggressive throttling
+   * Use a separate timer to avoid dependency issues
    */
+  const ltvUpdateTimer = useRef<NodeJS.Timeout | null>(null);
+  
   useEffect(() => {
     if (loans.length > 0) {
-      updateLoansLTV();
+      // Clear existing timer
+      if (ltvUpdateTimer.current) {
+        clearTimeout(ltvUpdateTimer.current);
+      }
+      
+      // Debounce LTV updates to reduce excessive re-renders
+      ltvUpdateTimer.current = setTimeout(() => {
+        const now = Date.now();
+        if (now - lastUpdateTime.current > 2000) {
+          updateLoansLTV();
+          lastUpdateTime.current = now;
+        }
+      }, 100);
     }
+    
+    return () => {
+      if (ltvUpdateTimer.current) {
+        clearTimeout(ltvUpdateTimer.current);
+      }
+    };
   }, [marketData.xpmPriceUSD, updateLoansLTV]);
 
   const liquidateLoan = useCallback((loanId: string) => {
@@ -717,8 +738,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return loans.filter(loan => loan.borrower === 'user1'); // In real app, filter by actual user
   }, [loans]);
 
-  // Memoize context value to prevent unnecessary re-renders
-  // Only recreate when essential data changes
+  // Memoize context value to prevent recreation on every render
   const contextValue = React.useMemo(() => {
     console.log('🏦 LendingContext: Creating new context value');
     return {
@@ -746,14 +766,12 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [
     loans,
     userLoans,
-    marketData.xpmPriceUSD, // Only track price changes, not entire object
+    marketData,
     userPosition,
-    currentTime.getTime(), // Only track timestamp, not Date object
-    priceHistory.length, // Only track length changes
-    simulationSettings.isActive,
-    simulationSettings.speed,
-    simulationSettings.volatility,
-    liquidationEvents.length,
+    currentTime,
+    priceHistory,
+    simulationSettings,
+    liquidationEvents,
     createLoan,
     repayLoan,
     addCollateral,
@@ -768,7 +786,13 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     clearPriceHistory,
   ]);
 
-  console.log('🏦 LendingContext: Provider rendering, loans count:', loans.length, 'simulation active:', simulationSettings.isActive);
+  // Throttle provider re-renders by limiting logging
+  const renderCount = React.useRef(0);
+  renderCount.current += 1;
+  
+  if (renderCount.current % 50 === 0) { // Only log every 50th render
+    console.log('🏦 LendingContext: Provider rendered', renderCount.current, 'times, loans:', loans.length, 'active:', simulationSettings.isActive);
+  }
 
   return (
     <LendingContext.Provider value={contextValue}>
