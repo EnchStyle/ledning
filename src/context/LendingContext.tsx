@@ -560,7 +560,17 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
       
       // Dynamic LTV update timing based on simulation speed
-      const currentSettings = stateRef.current.simulationSettings || { speed: 1 };\n      const updateDelay = Math.max(25, 100 / Math.max(1, currentSettings.speed)); // 25ms minimum for 10x\n      const throttleInterval = Math.max(500, 2000 / Math.max(1, currentSettings.speed)); // 500ms minimum for 10x\n      \n      ltvUpdateTimer.current = setTimeout(() => {\n        const now = Date.now();\n        if (now - lastUpdateTime.current > throttleInterval) {\n          updateLoansLTV();\n          lastUpdateTime.current = now;\n        }\n      }, updateDelay);"
+      const currentSettings = stateRef.current.simulationSettings || { speed: 1 };
+      const updateDelay = Math.max(25, 100 / Math.max(1, currentSettings.speed)); // 25ms minimum for 10x
+      const throttleInterval = Math.max(500, 2000 / Math.max(1, currentSettings.speed)); // 500ms minimum for 10x
+      
+      ltvUpdateTimer.current = setTimeout(() => {
+        const now = Date.now();
+        if (now - lastUpdateTime.current > throttleInterval) {
+          updateLoansLTV();
+          lastUpdateTime.current = now;
+        }
+      }, updateDelay);
     }
     
     return () => {
