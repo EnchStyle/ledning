@@ -197,15 +197,15 @@ const PortfolioChart: React.FC = React.memo(() => {
         <Box sx={{ display: 'flex', gap: { xs: 2, md: 3 }, flexWrap: 'wrap', justifyContent: 'center' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ width: 16, height: 2, bgcolor: theme.palette.primary.main, mr: 1 }} />
-            <Typography variant="body2">Collateral Value</Typography>
+            <Typography variant="body2">Deposit Value</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ width: 16, height: 2, bgcolor: theme.palette.secondary.main, mr: 1 }} />
-            <Typography variant="body2">Debt Value</Typography>
+            <Typography variant="body2">Amount Owed</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ width: 16, height: 2, bgcolor: theme.palette.warning.main, mr: 1 }} />
-            <Typography variant="body2">LTV %</Typography>
+            <Typography variant="body2">Risk Level %</Typography>
           </Box>
         </Box>
       </Box>
@@ -242,7 +242,7 @@ const PortfolioChart: React.FC = React.memo(() => {
             fill={theme.palette.error.main}
             fontSize="10"
           >
-            Liquidation (65%)
+            Danger Zone (65%)
           </text>
 
           {/* Area fills */}
@@ -339,8 +339,8 @@ const PortfolioChart: React.FC = React.memo(() => {
       <Box sx={{ mt: 2, textAlign: 'center' }}>
         <Typography variant="caption" color="text.secondary">
           {priceHistory.length > 0 
-            ? `Portfolio value and LTV history (${priceHistory.length} data points)` 
-            : 'Portfolio value and LTV history (simulated data)'}
+            ? `Your loan performance over time (${priceHistory.length} updates)` 
+            : 'Your loan performance over time (preview)'}
         </Typography>
       </Box>
     </Box>

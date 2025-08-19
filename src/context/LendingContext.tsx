@@ -301,16 +301,23 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         throw new Error('Invalid price state detected');
       }
       
-      // Generate new price using Box-Muller transform
+      // Generate new price with more realistic movement
       const random1 = Math.random();
       const random2 = Math.random();
-      const normalRandom = Math.sqrt(-2 * Math.log(random1)) * Math.cos(2 * Math.PI * random2);
-      const priceChange = normalRandom * currentSettings.volatility * 0.3;
       
-      // Mean reversion to prevent price drift
+      // Use a combination of random walk and momentum
+      const momentum = (Math.random() - 0.5) * 0.002; // Small momentum component
+      const normalRandom = Math.sqrt(-2 * Math.log(random1)) * Math.cos(2 * Math.PI * random2);
+      const volatilityComponent = normalRandom * currentSettings.volatility;
+      
+      // Very weak mean reversion to prevent extreme drift
       const meanReversion = (SIMULATION_CONFIG.MEAN_REVERSION.TARGET_PRICE - currentPrice) * SIMULATION_CONFIG.MEAN_REVERSION.REVERSION_STRENGTH;
-      const totalChange = priceChange + meanReversion;
-      const newPrice = Math.max(0.001, Math.min(1.0, currentPrice * (1 + totalChange)));
+      
+      // Total change combines volatility, momentum, and weak mean reversion
+      const totalChange = volatilityComponent + momentum + meanReversion;
+      
+      // Apply change with bounds to prevent unrealistic prices
+      const newPrice = Math.max(0.001, Math.min(0.10, currentPrice * (1 + totalChange)));
       
       // Validate new price
       if (!newPrice || newPrice <= 0 || isNaN(newPrice)) {

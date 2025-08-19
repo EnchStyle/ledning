@@ -233,7 +233,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <CollateralIcon color="primary" sx={{ mr: 1 }} />
               <Typography variant="body2" color="text.secondary">
-                Total Collateral
+                Your Deposit
               </Typography>
             </Box>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
@@ -258,7 +258,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <DebtIcon color="primary" sx={{ mr: 1 }} />
               <Typography variant="body2" color="text.secondary">
-                Outstanding Debt
+                Amount Borrowed
               </Typography>
             </Box>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
@@ -282,7 +282,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <LTVIcon color="primary" sx={{ mr: 1 }} />
               <Typography variant="body2" color="text.secondary">
-                Portfolio LTV
+                Loan Risk Level
               </Typography>
             </Box>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
@@ -295,7 +295,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
               sx={{ height: 6, borderRadius: 1, mb: 1 }}
             />
             <Typography variant="caption" color="text.secondary">
-              Liquidation at 65%
+              Danger Zone at 65%
             </Typography>
           </CardContent>
         </Card>
@@ -307,7 +307,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <TrendingUpIcon color="primary" sx={{ mr: 1 }} />
               <Typography variant="body2" color="text.secondary">
-                Available to Borrow
+                You Can Still Borrow
               </Typography>
             </Box>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 1, color: 'success.main' }}>
@@ -350,7 +350,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
                 {health.ltv.toFixed(1)}%
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                LTV Ratio
+                Risk Level
               </Typography>
             </Box>
           </Box>
@@ -358,7 +358,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
           <Grid container spacing={2} sx={{ mb: 3 }}>
             <Grid item xs={6} sm={3}>
               <Typography variant="body2" color="text.secondary">
-                Collateral
+                Your Deposit
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 {loan.collateralAmount.toLocaleString()} XPM
@@ -391,7 +391,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
             </Grid>
             <Grid item xs={6} sm={3}>
               <Typography variant="body2" color="text.secondary">
-                Maturity
+                Due In
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 600 }}>
                 {daysUntilMaturity} days
@@ -405,10 +405,10 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
           <Box sx={{ mb: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                Health Status
+                Loan Safety
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Liquidation at ${health.liquidationPrice.toFixed(4)}
+                Danger if XPM drops to ${health.liquidationPrice.toFixed(4)}
               </Typography>
             </Box>
             <LinearProgress

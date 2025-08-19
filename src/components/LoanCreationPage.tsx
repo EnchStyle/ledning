@@ -251,9 +251,9 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
           <Box sx={{ mb: 4 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
               <Typography variant="body1">
-                Target LTV: {parameters.targetLTV}%
+                How Much to Borrow: {parameters.targetLTV}%
               </Typography>
-              <Tooltip title="Loan-to-Value ratio determines how much you can borrow relative to your collateral value">
+              <Tooltip title="This slider controls what percentage of your deposit value you want to borrow. Lower is safer!">
                 <IconButton size="small">
                   <HelpIcon fontSize="small" />
                 </IconButton>
@@ -329,7 +329,7 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
           <Box sx={{ mb: 4 }}>
             <FormControl component="fieldset">
               <FormLabel component="legend" sx={{ mb: 2 }}>
-                Loan Term & Interest Rate
+                How Long & Interest Cost
               </FormLabel>
               <RadioGroup
                 value={parameters.termDays}
@@ -411,7 +411,7 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
                 sx={{ height: 8, borderRadius: 1, mb: 1 }}
               />
               <Typography variant="caption" color="text.secondary">
-                {riskAssessment.description} • Liquidation at {FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV}% LTV
+                {riskAssessment.description} • Auto-sold if risk reaches {FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV}%
               </Typography>
             </Box>
 
@@ -419,7 +419,7 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
               severity={priceDropBuffer < 25 ? "warning" : "info"}
             >
               <Typography variant="caption">
-                <strong>Liquidation Price:</strong> ${liquidationPrice.toFixed(4)} XPM
+                <strong>Danger Price:</strong> ${liquidationPrice.toFixed(4)} XPM
                 <br />
                 <strong>Price Drop Buffer:</strong> {priceDropBuffer.toFixed(1)}%
               </Typography>

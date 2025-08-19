@@ -136,7 +136,7 @@ export const SIMULATION_CONFIG = {
   // Mean reversion settings for price simulation
   MEAN_REVERSION: {
     TARGET_PRICE: 0.02,        // XPM target price
-    REVERSION_STRENGTH: 0.001, // How strongly price reverts to target
+    REVERSION_STRENGTH: 0.0001, // Very weak reversion to allow natural price movement
   },
 } as const;
 

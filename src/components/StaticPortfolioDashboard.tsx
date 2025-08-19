@@ -218,7 +218,7 @@ const StaticPortfolioDashboard: React.FC<StaticPortfolioDashboardProps> = ({ onN
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <CollateralIcon color="primary" sx={{ mr: 1 }} />
                 <Typography variant="body2" color="text.secondary">
-                  Total Collateral
+                  Your Deposit
                 </Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
@@ -242,7 +242,7 @@ const StaticPortfolioDashboard: React.FC<StaticPortfolioDashboardProps> = ({ onN
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <DebtIcon color="primary" sx={{ mr: 1 }} />
                 <Typography variant="body2" color="text.secondary">
-                  Outstanding Debt
+                  Amount Borrowed
                 </Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
@@ -266,7 +266,7 @@ const StaticPortfolioDashboard: React.FC<StaticPortfolioDashboardProps> = ({ onN
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <LTVIcon color="primary" sx={{ mr: 1 }} />
                 <Typography variant="body2" color="text.secondary">
-                  Portfolio LTV
+                  Loan Risk Level
                 </Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
@@ -279,7 +279,7 @@ const StaticPortfolioDashboard: React.FC<StaticPortfolioDashboardProps> = ({ onN
                 sx={{ height: 6, borderRadius: 1, mb: 1 }}
               />
               <Typography variant="caption" color="text.secondary">
-                Liquidation at 65%
+                Danger Zone at 65%
               </Typography>
             </CardContent>
           </Card>
@@ -291,7 +291,7 @@ const StaticPortfolioDashboard: React.FC<StaticPortfolioDashboardProps> = ({ onN
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <TrendingUpIcon color="primary" sx={{ mr: 1 }} />
                 <Typography variant="body2" color="text.secondary">
-                  Available to Borrow
+                  You Can Still Borrow
                 </Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 700, mb: 1, color: 'success.main' }}>
