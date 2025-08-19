@@ -196,9 +196,13 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return;
     }
     
-    // Throttle price history updates to reduce re-renders
+    // Dynamic throttling for price history based on simulation speed
     const now = Date.now();
-    if (now - lastPriceHistoryUpdate.current < 5000) { // 5 second minimum between updates
+    const currentSettings = stateRef.current.simulationSettings || simulationSettings;
+    // Faster updates for higher speeds: 10x = 1s, 1x = 5s
+    const dynamicThrottle = Math.max(1000, 5000 / Math.max(1, currentSettings.speed));
+    
+    if (now - lastPriceHistoryUpdate.current < dynamicThrottle) {
       return;
     }
     lastPriceHistoryUpdate.current = now;
@@ -458,12 +462,13 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
     
     if (simulationSettings.isActive) {
-      // Conservative interval to prevent crashes
-      const baseInterval = 2000; // 2 second base
-      const speedMultiplier = Math.min(simulationSettings.speed, 3); // Cap at 3x
-      const interval = Math.max(2000, baseInterval / speedMultiplier);
+      // High-performance interval calculation optimized for 10x speed
+      const baseInterval = 500; // 500ms base interval
+      const speedMultiplier = simulationSettings.speed;
+      // Minimum 50ms for 10x speed, maximum 1000ms for 0.5x speed
+      const interval = Math.max(50, Math.min(1000, baseInterval / speedMultiplier));
       
-      console.log(`Starting simulation: ${interval}ms interval`);
+      console.log(`🚀 Starting HIGH-PERFORMANCE simulation: ${interval}ms interval (${simulationSettings.speed}x speed)`);
       
       simulationTimer.current = setInterval(() => {
         try {
@@ -554,14 +559,8 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         clearTimeout(ltvUpdateTimer.current);
       }
       
-      // Debounce LTV updates to reduce excessive re-renders
-      ltvUpdateTimer.current = setTimeout(() => {
-        const now = Date.now();
-        if (now - lastUpdateTime.current > 2000) {
-          updateLoansLTV();
-          lastUpdateTime.current = now;
-        }
-      }, 100);
+      // Dynamic LTV update timing based on simulation speed
+      const currentSettings = stateRef.current.simulationSettings || { speed: 1 };\n      const updateDelay = Math.max(25, 100 / Math.max(1, currentSettings.speed)); // 25ms minimum for 10x\n      const throttleInterval = Math.max(500, 2000 / Math.max(1, currentSettings.speed)); // 500ms minimum for 10x\n      \n      ltvUpdateTimer.current = setTimeout(() => {\n        const now = Date.now();\n        if (now - lastUpdateTime.current > throttleInterval) {\n          updateLoansLTV();\n          lastUpdateTime.current = now;\n        }\n      }, updateDelay);"
     }
     
     return () => {

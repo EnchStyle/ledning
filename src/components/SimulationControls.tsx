@@ -79,8 +79,8 @@ const SimulationControls: React.FC = React.memo(() => {
         </Typography>
         {simulationSettings.speed >= 3 && (
           <Chip 
-            label={simulationSettings.speed >= 5 ? "Extreme Speed" : "High Speed"} 
-            color={simulationSettings.speed >= 5 ? "error" : "warning"} 
+            label={simulationSettings.speed >= 10 ? "MAXIMUM 10x" : simulationSettings.speed >= 7 ? "Ultra Speed" : simulationSettings.speed >= 5 ? "High Speed" : "Fast Speed"} 
+            color={simulationSettings.speed >= 8 ? "error" : simulationSettings.speed >= 5 ? "warning" : "info"} 
             size="small"
             icon={<SpeedIcon />}
           />
@@ -97,24 +97,27 @@ const SimulationControls: React.FC = React.memo(() => {
 
       <Divider sx={{ my: 2 }} />
 
-      {/* Performance Warning for High Settings */}
+      {/* Performance Info for High Settings */}
       {(simulationSettings.speed >= 3 || simulationSettings.volatility >= 0.1) && (
         <Alert 
-          severity={simulationSettings.speed >= 5 || simulationSettings.volatility >= 0.2 ? "error" : "warning"} 
+          severity={simulationSettings.speed >= 8 || simulationSettings.volatility >= 0.3 ? "warning" : "info"} 
           sx={{ mb: 2 }}
           icon={<TrendingUpIcon />}
         >
           <Typography variant="body2">
-            <strong>High Performance Impact!</strong>
+            <strong>High-Performance Mode Active!</strong>
             {simulationSettings.speed >= 3 && (
-              <> Speed is at {simulationSettings.speed}x (capped at 3x for stability).</>
+              <> Speed is at {simulationSettings.speed}x - optimized for maximum performance.</>
             )}
             {simulationSettings.speed >= 3 && simulationSettings.volatility >= 0.1 && ' '}
             {simulationSettings.volatility >= 0.1 && (
-              <>High volatility at {(simulationSettings.volatility * 100).toFixed(0)}% may cause browser lag!</>
+              <>Volatility at {(simulationSettings.volatility * 100).toFixed(0)}% for realistic market simulation.</>
+            )}
+            {simulationSettings.speed >= 10 && (
+              <><br /><strong>MAXIMUM SPEED:</strong> 10x speed with intelligent component switching and memory management!</>
             )}
             {simulationSettings.speed >= 5 && (
-              <><br /><strong>Warning:</strong> Settings above 3x speed may cause page crashes when switching tabs!</>
+              <><br /><strong>Performance Mode:</strong> Portfolio automatically switches to high-performance view above 5x speed.</>
             )}
           </Typography>
         </Alert>
@@ -148,13 +151,14 @@ const SimulationControls: React.FC = React.memo(() => {
             value={simulationSettings.speed}
             onChange={handleSpeedChange}
             min={0.5}
-            max={3}
+            max={10}
             step={0.5}
             marks={[
               { value: 0.5, label: '0.5x' },
               { value: 1, label: '1x' },
               { value: 2, label: '2x' },
-              { value: 3, label: '3x MAX' },
+              { value: 5, label: '5x' },
+              { value: 10, label: '10x' },
             ]}
             valueLabelDisplay="auto"
             valueLabelFormat={(value) => `${value}x`}

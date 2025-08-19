@@ -32,6 +32,7 @@ import { DEMO_CONFIG } from '../config/demoConstants';
 import LoanCreationPage from './LoanCreationPage';
 import PortfolioDashboard from './PortfolioDashboard';
 import StaticPortfolioDashboard from './StaticPortfolioDashboard';
+import HighPerformancePortfolioDashboard from './HighPerformancePortfolioDashboard';
 import AnalyticsPage from './AnalyticsPage';
 
 type TabType = 'portfolio' | 'borrow' | 'analytics';
@@ -84,19 +85,30 @@ const NewDashboard: React.FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'portfolio':
-        // Use static version during simulation to prevent freezing
-        return simulationSettings.isActive ? 
-          <StaticPortfolioDashboard onNavigateToBorrow={() => setActiveTab('borrow')} /> :
-          <PortfolioDashboard onNavigateToBorrow={() => setActiveTab('borrow')} />;
+        // Smart component selection based on simulation speed
+        if (!simulationSettings.isActive) {
+          // No simulation - use regular component
+          return <PortfolioDashboard onNavigateToBorrow={() => setActiveTab('borrow')} />;
+        } else if (simulationSettings.speed >= 5) {
+          // High speed (5x+) - use high-performance component
+          return <HighPerformancePortfolioDashboard onNavigateToBorrow={() => setActiveTab('borrow')} />;
+        } else {
+          // Low speed (1x-4x) - use static component to prevent freezing
+          return <StaticPortfolioDashboard onNavigateToBorrow={() => setActiveTab('borrow')} />;
+        }
       case 'borrow':
         return <LoanCreationPage onNavigateToPortfolio={() => setActiveTab('portfolio')} />;
       case 'analytics':
         return <AnalyticsPage />;
       default:
-        // Use static version during simulation for default case too
-        return simulationSettings.isActive ? 
-          <StaticPortfolioDashboard /> :
-          <PortfolioDashboard />;
+        // Smart default component selection
+        if (!simulationSettings.isActive) {
+          return <PortfolioDashboard />;
+        } else if (simulationSettings.speed >= 5) {
+          return <HighPerformancePortfolioDashboard />;
+        } else {
+          return <StaticPortfolioDashboard />;
+        }
     }
   };
 
