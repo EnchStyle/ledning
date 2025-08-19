@@ -10,6 +10,8 @@
  * - Real-time market simulation with configurable volatility
  */
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import { generateSecureId } from '../utils/securityUtils';
+import { FINANCIAL_CONSTANTS, DEMO_PORTFOLIO, SIMULATION_CONFIG, DEMO_CONFIG } from '../config/demoConstants';
 import { Loan, LoanParams, MarketData, UserPosition } from '../types/lending';
 import { 
   calculateLTV, 
@@ -199,7 +201,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const random2 = Math.random();
       const normalRandom = Math.sqrt(-2 * Math.log(random1)) * Math.cos(2 * Math.PI * random2);
       const priceChange = normalRandom * volatility * 0.5;
-      const meanReversion = (0.02 - prev.xpmPriceUSD) * 0.001;
+      const meanReversion = (SIMULATION_CONFIG.MEAN_REVERSION.TARGET_PRICE - prev.xpmPriceUSD) * SIMULATION_CONFIG.MEAN_REVERSION.REVERSION_STRENGTH;
       const totalChange = priceChange + meanReversion;
       const newPrice = Math.max(0.001, prev.xpmPriceUSD * (1 + totalChange));
       
@@ -345,7 +347,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const fixedInterestAmount = calculateFixedInterest(params.borrowAmount, params.interestRate, params.termDays);
     
     const newLoan: Loan = {
-      id: Date.now().toString(),
+      id: generateSecureId(),
       borrower: 'user1', // In real app, this would be wallet address
       collateralAmount: params.collateralAmount,
       borrowedAmount: params.borrowAmount,

@@ -36,6 +36,7 @@ import {
 import { useLending } from '../context/LendingContext';
 import { calculateMaxBorrowRLUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
 import { LoanTermDays } from '../types/lending';
+import { FINANCIAL_CONSTANTS, DEMO_PORTFOLIO } from '../config/demoConstants';
 import RiskVisualization from './RiskVisualization';
 
 interface CalculatorState {
@@ -48,9 +49,9 @@ interface CalculatorState {
 const InteractiveLoanCalculator: React.FC = () => {
   const { marketData } = useLending();
   const [state, setState] = useState<CalculatorState>({
-    collateralAmount: 150000,
-    targetLTV: 40,
-    selectedTerm: 60,
+    collateralAmount: DEMO_PORTFOLIO.DEFAULT_LOAN_PARAMS.COLLATERAL_AMOUNT,
+    targetLTV: DEMO_PORTFOLIO.DEFAULT_LOAN_PARAMS.TARGET_LTV,
+    selectedTerm: DEMO_PORTFOLIO.DEFAULT_LOAN_PARAMS.TERM_DAYS,
     showRiskAnalysis: false,
   });
   
@@ -77,7 +78,7 @@ const InteractiveLoanCalculator: React.FC = () => {
     const liquidationPriceUSD = calculateLiquidationPriceUSD(actualBorrowAmount, collateralAmount, 65);
     const priceDropToLiquidation = ((marketData.xpmPriceUSD - liquidationPriceUSD) / marketData.xpmPriceUSD) * 100;
     
-    const interestRate = selectedTerm === 30 ? 19 : selectedTerm === 60 ? 16 : 15;
+    const interestRate = FINANCIAL_CONSTANTS.INTEREST_RATES[selectedTerm as keyof typeof FINANCIAL_CONSTANTS.INTEREST_RATES];
     const dailyRate = interestRate / 365;
     const totalInterest = actualBorrowAmount * (interestRate / 100) * (selectedTerm / 365);
     const totalRepayment = actualBorrowAmount + totalInterest;

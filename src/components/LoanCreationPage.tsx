@@ -44,6 +44,7 @@ import {
 import { useLending } from '../context/LendingContext';
 import { calculateMaxBorrowRLUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
 import { LoanTermDays } from '../types/lending';
+import { FINANCIAL_CONSTANTS, DEMO_PORTFOLIO, DEMO_CONFIG } from '../config/demoConstants';
 
 interface LoanParameters {
   collateralAmount: number;
@@ -59,9 +60,9 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
   const { createLoan, marketData } = useLending();
   const [activeStep, setActiveStep] = useState(0);
   const [parameters, setParameters] = useState<LoanParameters>({
-    collateralAmount: 150000,
-    targetLTV: 40,
-    termDays: 60,
+    collateralAmount: DEMO_PORTFOLIO.DEFAULT_LOAN_PARAMS.COLLATERAL_AMOUNT,
+    targetLTV: DEMO_PORTFOLIO.DEFAULT_LOAN_PARAMS.TARGET_LTV,
+    termDays: DEMO_PORTFOLIO.DEFAULT_LOAN_PARAMS.TERM_DAYS,
   });
   const [showAdvancedRisk, setShowAdvancedRisk] = useState(false);
   const [confirmationOpen, setConfirmationOpen] = useState(false);
@@ -71,12 +72,12 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-  // Demo wallet balance (2M XPM)
-  const walletBalance = 2000000;
+  // Demo wallet balance from config
+  const walletBalance = DEMO_PORTFOLIO.XPM_BALANCE;
 
-  // Minimum amounts to prevent micro transactions and spam
-  const MINIMUM_LOAN_AMOUNT_USD = 50;
-  const MINIMUM_COLLATERAL_AMOUNT_USD = 100;
+  // Minimum amounts from config
+  const MINIMUM_LOAN_AMOUNT_USD = FINANCIAL_CONSTANTS.MINIMUM_AMOUNTS.LOAN_AMOUNT;
+  const MINIMUM_COLLATERAL_AMOUNT_USD = FINANCIAL_CONSTANTS.MINIMUM_AMOUNTS.COLLATERAL_VALUE;
 
   // Calculations
   const collateralValueUSD = parameters.collateralAmount * marketData.xpmPriceUSD;
@@ -86,7 +87,7 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
   const liquidationPrice = calculateLiquidationPriceUSD(targetBorrowAmount, parameters.collateralAmount, 65);
   const priceDropBuffer = ((marketData.xpmPriceUSD - liquidationPrice) / marketData.xpmPriceUSD) * 100;
   
-  const interestRate = parameters.termDays === 30 ? 19 : parameters.termDays === 60 ? 16 : 15;
+  const interestRate = FINANCIAL_CONSTANTS.INTEREST_RATES[parameters.termDays as keyof typeof FINANCIAL_CONSTANTS.INTEREST_RATES];
   const totalInterest = targetBorrowAmount * (interestRate / 100) * (parameters.termDays / 365);
   const totalRepayment = targetBorrowAmount + totalInterest;
 

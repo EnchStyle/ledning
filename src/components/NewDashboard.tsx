@@ -28,9 +28,11 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
+import { DEMO_CONFIG } from '../config/demoConstants';
 import LoanCreationPage from './LoanCreationPage';
 import PortfolioDashboard from './PortfolioDashboard';
 import AnalyticsPage from './AnalyticsPage';
+import DemoDisclaimer from './DemoDisclaimer';
 
 type TabType = 'portfolio' | 'borrow' | 'analytics';
 
