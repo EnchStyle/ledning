@@ -70,12 +70,12 @@ const InteractiveLoanCalculator: React.FC = () => {
     }
 
     const collateralValueUSD = collateralAmount * marketData.xpmPriceUSD;
-    const maxBorrowRLUSD = calculateMaxBorrowRLUSD(collateralAmount, marketData.xpmPriceUSD, 50);
+    const maxBorrowRLUSD = calculateMaxBorrowRLUSD(collateralAmount, marketData.xpmPriceUSD, FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV);
     const targetBorrowAmount = (collateralValueUSD * targetLTV) / 100;
     const actualBorrowAmount = Math.min(maxBorrowRLUSD, targetBorrowAmount);
     const actualLTV = (actualBorrowAmount / collateralValueUSD) * 100;
     
-    const liquidationPriceUSD = calculateLiquidationPriceUSD(actualBorrowAmount, collateralAmount, 65);
+    const liquidationPriceUSD = calculateLiquidationPriceUSD(actualBorrowAmount, collateralAmount, FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV);
     const priceDropToLiquidation = ((marketData.xpmPriceUSD - liquidationPriceUSD) / marketData.xpmPriceUSD) * 100;
     
     const interestRate = FINANCIAL_CONSTANTS.INTEREST_RATES[selectedTerm as keyof typeof FINANCIAL_CONSTANTS.INTEREST_RATES];
@@ -194,7 +194,7 @@ const InteractiveLoanCalculator: React.FC = () => {
       </Box>
       <LinearProgress
         variant="determinate"
-        value={(ltv / 65) * 100}
+        value={(ltv / FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV) * 100}
         color={riskColor}
         sx={{ 
           height: 8, 
@@ -207,7 +207,7 @@ const InteractiveLoanCalculator: React.FC = () => {
           Safe (0%)
         </Typography>
         <Typography variant="caption" color="error.main">
-          Liquidation (65%)
+          Liquidation ({FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV}%)
         </Typography>
       </Box>
     </Box>
@@ -327,8 +327,8 @@ const InteractiveLoanCalculator: React.FC = () => {
                 <Slider
                   value={state.targetLTV}
                   onChange={(_, value) => handleLTVChange(value as number)}
-                  min={20}
-                  max={50}
+                  min={FINANCIAL_CONSTANTS.LTV_LIMITS.MIN_LTV}
+                  max={FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}
                   step={5}
                   marks={[
                     { value: 20, label: '20%' },
@@ -337,7 +337,7 @@ const InteractiveLoanCalculator: React.FC = () => {
                     { value: 35, label: '35%' },
                     { value: 40, label: '40%' },
                     { value: 45, label: '45%' },
-                    { value: 50, label: '50%' }
+                    { value: FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV, label: `${FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}%` }
                   ]}
                   color={state.targetLTV > 40 ? 'warning' : 'primary'}
                   valueLabelDisplay="on"
@@ -355,9 +355,9 @@ const InteractiveLoanCalculator: React.FC = () => {
                     onChange={(e) => setState(prev => ({ ...prev, selectedTerm: Number(e.target.value) as LoanTermDays }))}
                   >
                     {[
-                      { days: 30, rate: 14 },
-                      { days: 60, rate: 15 },
-                      { days: 90, rate: 16 }
+                      { days: 30, rate: FINANCIAL_CONSTANTS.INTEREST_RATES[30] },
+                      { days: 60, rate: FINANCIAL_CONSTANTS.INTEREST_RATES[60] },
+                      { days: 90, rate: FINANCIAL_CONSTANTS.INTEREST_RATES[90] }
                     ].map((option) => (
                       <FormControlLabel
                         key={option.days}

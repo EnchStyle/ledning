@@ -33,6 +33,7 @@ import {
   Shield as ShieldIcon,
   Help as HelpIcon,
 } from '@mui/icons-material';
+import { FINANCIAL_CONSTANTS } from '../config/demoConstants';
 
 interface RiskVisualizationProps {
   collateralAmount: number;
@@ -59,8 +60,8 @@ const RiskVisualization: React.FC<RiskVisualizationProps> = ({
 }) => {
   const [priceSimulation, setPriceSimulation] = useState(0);
 
-  // Calculate liquidation price (65% LTV threshold)
-  const liquidationPrice = (borrowAmount * 1.0) / (collateralAmount * 0.65); // RLUSD is 1:1 USD
+  // Calculate liquidation price (using centralized threshold)
+  const liquidationPrice = (borrowAmount * 1.0) / (collateralAmount * (FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV / 100)); // RLUSD is 1:1 USD
   const priceDropToLiquidation = ((currentXpmPrice - liquidationPrice) / currentXpmPrice) * 100;
 
   // Risk scenarios
@@ -96,7 +97,7 @@ const RiskVisualization: React.FC<RiskVisualizationProps> = ({
       name: "Liquidation",
       priceChange: -priceDropToLiquidation,
       newPrice: liquidationPrice,
-      newLTV: 65,
+      newLTV: FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV,
       liquidated: true,
       severity: 'error',
       description: "Automatic liquidation triggered"
@@ -106,9 +107,9 @@ const RiskVisualization: React.FC<RiskVisualizationProps> = ({
   // Calculate simulated scenario
   const simulatedPrice = currentXpmPrice * (1 + priceSimulation / 100);
   const simulatedLTV = collateralAmount > 0 ? (borrowAmount / (collateralAmount * simulatedPrice)) * 100 : 0;
-  const isSimulatedLiquidated = simulatedLTV >= 65;
+  const isSimulatedLiquidated = simulatedLTV >= FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV;
 
-  const RiskMeter = ({ value, max = 65, label }: { value: number; max?: number; label: string }) => {
+  const RiskMeter = ({ value, max = FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV, label }: { value: number; max?: number; label: string }) => {
     const percentage = (value / max) * 100;
     const color = value < 40 ? 'success' : value < 55 ? 'warning' : 'error';
     
@@ -140,7 +141,7 @@ const RiskVisualization: React.FC<RiskVisualizationProps> = ({
             Safe
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Liquidation (65%)
+            Liquidation ({FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV}%)
           </Typography>
         </Box>
       </Box>
@@ -297,7 +298,7 @@ const RiskVisualization: React.FC<RiskVisualizationProps> = ({
           <Alert severity="error" sx={{ mt: 2 }}>
             <Typography variant="body2">
               <strong>Liquidation Alert!</strong> At this price, your loan would be automatically liquidated 
-              with a 10% penalty deducted from your collateral.
+              with a {FINANCIAL_CONSTANTS.LIQUIDATION_FEE}% penalty deducted from your collateral.
             </Typography>
           </Alert>
         )}

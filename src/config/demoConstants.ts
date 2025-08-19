@@ -55,6 +55,9 @@ export const FINANCIAL_CONSTANTS = {
     XPM_PRICE_USD: 0.02,    // XPM token price
     RLUSD_PRICE_USD: 1.00,  // RLUSD stable at $1.00
   },
+  
+  // Liquidation fee percentage
+  LIQUIDATION_FEE: 10,  // 10% liquidation penalty
 } as const;
 
 // =============================================================================

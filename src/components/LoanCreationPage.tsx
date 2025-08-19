@@ -81,10 +81,10 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
 
   // Calculations
   const collateralValueUSD = parameters.collateralAmount * marketData.xpmPriceUSD;
-  const maxBorrowRLUSD = calculateMaxBorrowRLUSD(parameters.collateralAmount, marketData.xpmPriceUSD, 50);
+  const maxBorrowRLUSD = calculateMaxBorrowRLUSD(parameters.collateralAmount, marketData.xpmPriceUSD, FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV);
   const targetBorrowAmount = Math.min(maxBorrowRLUSD, (collateralValueUSD * parameters.targetLTV) / 100);
   const actualLTV = collateralValueUSD > 0 ? (targetBorrowAmount / collateralValueUSD) * 100 : 0;
-  const liquidationPrice = calculateLiquidationPriceUSD(targetBorrowAmount, parameters.collateralAmount, 65);
+  const liquidationPrice = calculateLiquidationPriceUSD(targetBorrowAmount, parameters.collateralAmount, FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV);
   const priceDropBuffer = ((marketData.xpmPriceUSD - liquidationPrice) / marketData.xpmPriceUSD) * 100;
   
   const interestRate = FINANCIAL_CONSTANTS.INTEREST_RATES[parameters.termDays as keyof typeof FINANCIAL_CONSTANTS.INTEREST_RATES];
@@ -146,7 +146,7 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
         collateralAmount: parameters.collateralAmount,
         borrowAmount: targetBorrowAmount,
         interestRate: interestRate,
-        liquidationThreshold: 65,
+        liquidationThreshold: FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV,
         termDays: parameters.termDays,
       });
 
@@ -261,8 +261,8 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
             <Slider
               value={parameters.targetLTV}
               onChange={(_, value) => setParameters(prev => ({ ...prev, targetLTV: value as number }))}
-              min={20}
-              max={50}
+              min={FINANCIAL_CONSTANTS.LTV_LIMITS.MIN_LTV}
+              max={FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}
               step={5}
               marks={[
                 { value: 20, label: '20%' },
@@ -271,7 +271,7 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
                 { value: 35, label: '35%' },
                 { value: 40, label: '40%' },
                 { value: 45, label: '45%' },
-                { value: 50, label: '50%' },
+                { value: FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV, label: `${FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}%` },
               ]}
               color={parameters.targetLTV > 40 ? 'warning' : 'primary'}
               valueLabelDisplay="on"
@@ -334,9 +334,9 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
                 onChange={(e) => setParameters(prev => ({ ...prev, termDays: Number(e.target.value) as LoanTermDays }))}
               >
                 {[
-                  { days: 30, rate: 14 },
-                  { days: 60, rate: 15 },
-                  { days: 90, rate: 16 }
+                  { days: 30, rate: FINANCIAL_CONSTANTS.INTEREST_RATES[30] },
+                  { days: 60, rate: FINANCIAL_CONSTANTS.INTEREST_RATES[60] },
+                  { days: 90, rate: FINANCIAL_CONSTANTS.INTEREST_RATES[90] }
                 ].map((option) => (
                   <FormControlLabel
                     key={option.days}
@@ -404,12 +404,12 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
               </Box>
               <LinearProgress 
                 variant="determinate"
-                value={(actualLTV / 65) * 100}
+                value={(actualLTV / FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV) * 100}
                 color={riskAssessment.color as any}
                 sx={{ height: 8, borderRadius: 1, mb: 1 }}
               />
               <Typography variant="caption" color="text.secondary">
-                {riskAssessment.description} • Liquidation at 65% LTV
+                {riskAssessment.description} • Liquidation at {FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV}% LTV
               </Typography>
             </Box>
 
@@ -507,9 +507,9 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
           <strong>Important Risk Disclosure:</strong>
         </Typography>
         <ul style={{ margin: 0, paddingLeft: 20 }}>
-          <li>Your collateral will be liquidated if LTV reaches 65%</li>
+          <li>Your collateral will be liquidated if LTV reaches {FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV}%</li>
           <li>Liquidation triggers at XPM price of ${liquidationPrice.toFixed(4)}</li>
-          <li>10% liquidation penalty will be deducted from your collateral</li>
+          <li>{FINANCIAL_CONSTANTS.LIQUIDATION_FEE}% liquidation penalty will be deducted from your collateral</li>
           <li>Interest is fixed and calculated for the full term</li>
         </ul>
       </Alert>

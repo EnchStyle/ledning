@@ -309,7 +309,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (simulationSettings.isActive && loans.length > 0) {
       const eligibleForLiquidation = loans.filter(loan => 
         loan.status === 'active' && 
-        isEligibleForLiquidationRLUSD(loan, marketData.xpmPriceUSD, 65)
+        isEligibleForLiquidationRLUSD(loan, marketData.xpmPriceUSD, FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV)
       );
       
       eligibleForLiquidation.forEach(loan => {
@@ -420,7 +420,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const newLiquidationPrice = calculateLiquidationPriceUSD(
           loan.borrowedAmount + loan.fixedInterestAmount,
           newCollateralAmount,
-          65
+          FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV
         );
         
         return {
@@ -511,7 +511,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       isEligibleForLiquidationRLUSD(
         loan, 
         marketData.xpmPriceUSD, 
-        65 // 65% LTV threshold for altcoins
+        FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV // Liquidation LTV threshold
       )
     );
   }, [loans, marketData.xpmPriceUSD]);

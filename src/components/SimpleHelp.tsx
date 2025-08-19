@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useLending } from '../context/LendingContext';
+import { FINANCIAL_CONSTANTS } from '../config/demoConstants';
 
 const SimpleHelp: React.FC = () => {
   const { marketData } = useLending();
@@ -33,8 +34,8 @@ const SimpleHelp: React.FC = () => {
           </Typography>
           <Box component="ol" sx={{ pl: 2 }}>
             <li>Deposit XPM tokens (locked as collateral)</li>
-            <li>Receive RLUSD immediately (up to 50% of collateral value)</li>
-            <li>Pay competitive annual interest (19% for 30d, 16% for 60d, 15% for 90d)</li>
+            <li>Receive RLUSD immediately (up to {FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}% of collateral value)</li>
+            <li>Pay competitive annual interest ({FINANCIAL_CONSTANTS.INTEREST_RATES[30]}% for 30d, {FINANCIAL_CONSTANTS.INTEREST_RATES[60]}% for 60d, {FINANCIAL_CONSTANTS.INTEREST_RATES[90]}% for 90d)</li>
             <li>Repay anytime to unlock your XPM</li>
           </Box>
           <Alert severity="info" sx={{ mt: 2 }}>
@@ -63,8 +64,8 @@ const SimpleHelp: React.FC = () => {
           <Box sx={{ mt: 2 }}>
             <Chip label="0-40% = Healthy" color="success" sx={{ mr: 1, mb: 1 }} />
             <Chip label="40-55% = Medium Risk" color="warning" sx={{ mr: 1, mb: 1 }} />
-            <Chip label="55-65% = High Risk" color="error" sx={{ mr: 1, mb: 1 }} />
-            <Chip label="65%+ = Liquidated" color="error" variant="outlined" sx={{ mb: 1 }} />
+            <Chip label="55-{FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV}% = High Risk" color="error" sx={{ mr: 1, mb: 1 }} />
+            <Chip label="{FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV}%+ = Liquidated" color="error" variant="outlined" sx={{ mb: 1 }} />
           </Box>
         </Box>
       )
@@ -75,7 +76,7 @@ const SimpleHelp: React.FC = () => {
       answer: (
         <Box>
           <Typography paragraph>
-            Liquidation automatically occurs when your LTV reaches 65%. This protects the platform from losses.
+            Liquidation automatically occurs when your LTV reaches {FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV}%. This protects the platform from losses.
           </Typography>
           <Typography paragraph>
             <strong>What happens during liquidation:</strong>
@@ -87,7 +88,7 @@ const SimpleHelp: React.FC = () => {
           </Box>
           <Alert severity="error" sx={{ mt: 2 }}>
             <Typography variant="body2">
-              <strong>Prevention:</strong> Monitor your LTV regularly. Repay part of your loan or add more collateral when LTV gets above 50%.
+              <strong>Prevention:</strong> Monitor your LTV regularly. Repay part of your loan or add more collateral when LTV gets above {FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}%.
             </Typography>
           </Alert>
         </Box>
@@ -141,8 +142,8 @@ const SimpleHelp: React.FC = () => {
 Interest rates vary by loan term with daily compounding:
           </Typography>
           <Typography paragraph>
-            <strong>Rates:</strong> 19% APR (30d), 16% APR (60d), 15% APR (90d)<br />
-            <strong>Example daily rate:</strong> 16% ÷ 365 = ~0.044% per day<br />
+            <strong>Rates:</strong> {FINANCIAL_CONSTANTS.INTEREST_RATES[30]}% APR (30d), {FINANCIAL_CONSTANTS.INTEREST_RATES[60]}% APR (60d), {FINANCIAL_CONSTANTS.INTEREST_RATES[90]}% APR (90d)<br />
+            <strong>Example daily rate:</strong> {FINANCIAL_CONSTANTS.INTEREST_RATES[60]}% ÷ 365 = ~{(FINANCIAL_CONSTANTS.INTEREST_RATES[60] / 365).toFixed(3)}% per day<br />
             <strong>Formula:</strong> Principal × (1 + daily_rate)^days - Principal
           </Typography>
           <Typography paragraph>
@@ -204,11 +205,11 @@ Interest rates vary by loan term with daily compounding:
           </Box>
           <Box>
             <Typography variant="body2">Interest Rate</Typography>
-            <Typography variant="h6">15-19% APR</Typography>
+            <Typography variant="h6">{FINANCIAL_CONSTANTS.INTEREST_RATES[90]}-{FINANCIAL_CONSTANTS.INTEREST_RATES[30]}% APR</Typography>
           </Box>
           <Box>
             <Typography variant="body2">Max LTV</Typography>
-            <Typography variant="h6">50%</Typography>
+            <Typography variant="h6">{FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}%</Typography>
           </Box>
         </Box>
       </Paper>
