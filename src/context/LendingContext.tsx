@@ -145,6 +145,12 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     collateral: number;
     debt: number;
   }>>([]);
+  
+  // Ref to hold current state values for stable callback access
+  const stateRef = useRef({ marketData, currentTime, loans });
+  useEffect(() => {
+    stateRef.current = { marketData, currentTime, loans };
+  });
 
   // Demo wallet balance: 2M XPM for demo purposes
   const demoWalletBalance = 2000000;
@@ -399,14 +405,15 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
    * Simplified for RLUSD since debt is already in USD
    */
   const updateLoansLTV = useCallback(() => {
-    console.log('💰 LendingContext: updateLoansLTV called, price:', marketData.xpmPriceUSD);
+    const currentMarketData = stateRef.current.marketData;
+    console.log('💰 LendingContext: updateLoansLTV called, price:', currentMarketData.xpmPriceUSD);
     
     setLoans(prevLoans => {
       const updatedLoans = prevLoans.map(loan => {
         if (loan.status !== 'active') return loan;
         
         // Calculate current LTV based on market prices
-        const collateralValueUSD = calculateCollateralValueUSD(loan.collateralAmount, marketData.xpmPriceUSD);
+        const collateralValueUSD = calculateCollateralValueUSD(loan.collateralAmount, currentMarketData.xpmPriceUSD);
         const totalDebtRLUSD = loan.borrowedAmount + loan.fixedInterestAmount;
         const debtValueUSD = calculateDebtValueUSD(totalDebtRLUSD); // 1:1 conversion
         const newLTV = calculateLTV(collateralValueUSD, debtValueUSD);
@@ -435,7 +442,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.log('💰 LendingContext: LTV updated for loans');
       return updatedLoans;
     });
-  }, [marketData.xpmPriceUSD]);
+  }, []); // No dependencies - uses ref for current values
 
   /**
    * Update LTVs when price changes - with aggressive throttling
@@ -468,22 +475,17 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [marketData.xpmPriceUSD, updateLoansLTV]);
 
   const liquidateLoan = useCallback((loanId: string) => {
+    const currentMarketData = stateRef.current.marketData;
+    
     setLoans(prevLoans =>
       prevLoans.map(loan => {
         if (loan.id !== loanId || loan.status !== 'active') return loan;
-        
-        // Calculate liquidation result (stored for future use)
-        // const liquidationResult = calculateLiquidationReturnRLUSD(
-        //   loan,
-        //   marketData.xpmPriceUSD,
-        //   marketData.liquidationFee
-        // );
         
         // Track liquidation event
         setLiquidationEvents(prev => [...prev.slice(-49), {
           loanId: loan.id,
           timestamp: new Date(),
-          price: marketData.xpmPriceUSD,
+          price: currentMarketData.xpmPriceUSD,
           collateral: loan.collateralAmount,
           debt: loan.borrowedAmount + loan.fixedInterestAmount,
         }]);
@@ -494,7 +496,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         };
       })
     );
-  }, [marketData]);
+  }, []); // No dependencies - uses ref
 
   /**
    * Check for liquidations when price changes during simulation
@@ -519,8 +521,10 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
    * Simplified for RLUSD since debt is already in USD
    */
   const createLoan = useCallback((params: LoanParams) => {
+    const { marketData: currentMarketData, currentTime: currentTimeValue } = stateRef.current;
+    
     // Use USD-based calculations for risk assessment
-    const collateralValueUSD = calculateCollateralValueUSD(params.collateralAmount, marketData.xpmPriceUSD);
+    const collateralValueUSD = calculateCollateralValueUSD(params.collateralAmount, currentMarketData.xpmPriceUSD);
     const debtValueUSD = calculateDebtValueUSD(params.borrowAmount); // RLUSD is 1:1 USD
 
     // Validate minimum loan amounts to prevent spam and micro transactions
@@ -537,7 +541,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     );
     
     // Calculate maturity date and fixed interest
-    const maturityDate = new Date(currentTime.getTime() + params.termDays * 24 * 60 * 60 * 1000);
+    const maturityDate = new Date(currentTimeValue.getTime() + params.termDays * 24 * 60 * 60 * 1000);
     const fixedInterestAmount = calculateFixedInterest(params.borrowAmount, params.interestRate, params.termDays);
     
     const newLoan: Loan = {
@@ -546,7 +550,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       collateralAmount: params.collateralAmount,
       borrowedAmount: params.borrowAmount,
       fixedInterestAmount: fixedInterestAmount,
-      createdAt: currentTime,
+      createdAt: currentTimeValue,
       liquidationPrice: liquidationPriceUSD,
       currentLTV: calculateLTV(collateralValueUSD, debtValueUSD),
       status: 'active',
@@ -555,7 +559,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
     
     setLoans(prev => [...prev, newLoan]);
-  }, [currentTime, marketData.xpmPriceUSD]);
+  }, []); // No dependencies
 
   /**
    * Repay a loan partially or fully
@@ -587,8 +591,11 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           return loan;
         }
         
+        // Access current market data from ref
+        const currentMarketData = stateRef.current.marketData;
+        
         // Recalculate LTV with remaining debt
-        const collateralValueUSD = calculateCollateralValueUSD(loan.collateralAmount, marketData.xpmPriceUSD);
+        const collateralValueUSD = calculateCollateralValueUSD(loan.collateralAmount, currentMarketData.xpmPriceUSD);
         const remainingDebtUSD = calculateDebtValueUSD(remainingDebt); // RLUSD is 1:1 USD
         
         return {
@@ -599,15 +606,18 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         };
       })
     );
-  }, [marketData.xpmPriceUSD]);
+  }, []); // No dependencies
 
   const addCollateral = useCallback((loanId: string, amount: number) => {
     setLoans(prevLoans =>
       prevLoans.map(loan => {
         if (loan.id !== loanId || loan.status !== 'active') return loan;
         
+        // Access current market data from ref
+        const currentMarketData = stateRef.current.marketData;
+        
         const newCollateralAmount = loan.collateralAmount + amount;
-        const collateralValueUSD = calculateCollateralValueUSD(newCollateralAmount, marketData.xpmPriceUSD);
+        const collateralValueUSD = calculateCollateralValueUSD(newCollateralAmount, currentMarketData.xpmPriceUSD);
         const debtValueUSD = calculateDebtValueUSD(loan.borrowedAmount + loan.fixedInterestAmount); // RLUSD is 1:1 USD
         
         // Recalculate liquidation price with new collateral amount
@@ -625,26 +635,28 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         };
       })
     );
-  }, [marketData.xpmPriceUSD]);
+  }, []); // No dependencies
 
   const processMaturedLoans = useCallback(() => {
     setLoans(prevLoans =>
       prevLoans.map(loan => {
-        if (loan.status !== 'active' || currentTime < loan.maturityDate) return loan;
+        const currentTimeValue = stateRef.current.currentTime;
+        if (loan.status !== 'active' || currentTimeValue < loan.maturityDate) return loan;
         
         // Mark as matured when term expires
         return { ...loan, status: 'matured' as const };
       })
     );
-  }, [currentTime]);
+  }, []); // No dependencies
 
   const simulateTime = useCallback((days: number) => {
-    const newTime = new Date(currentTime.getTime() + days * 24 * 60 * 60 * 1000);
+    const currentTimeValue = stateRef.current.currentTime;
+    const newTime = new Date(currentTimeValue.getTime() + days * 24 * 60 * 60 * 1000);
     setCurrentTime(newTime);
     updateLoansLTV();
     // Process matured loans after time simulation
     setTimeout(() => processMaturedLoans(), 100);
-  }, [currentTime, updateLoansLTV, processMaturedLoans]);
+  }, [updateLoansLTV, processMaturedLoans]); // Minimal dependencies
 
   const updateXpmPrice = useCallback((newPriceUSD: number) => {
     setMarketData(prev => ({ 
@@ -700,22 +712,24 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
    * Simplified for RLUSD loans
    */
   const checkMarginCalls = useCallback(() => {
-    return loans.filter(loan => 
+    const { loans: currentLoans, marketData: currentMarketData } = stateRef.current;
+    return currentLoans.filter(loan => 
       loan.status === 'active' && 
       isEligibleForLiquidationRLUSD(
         loan, 
-        marketData.xpmPriceUSD, 
+        currentMarketData.xpmPriceUSD, 
         FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV // Liquidation LTV threshold
       )
     );
-  }, [loans, marketData.xpmPriceUSD]);
+  }, []); // No dependencies
 
   const checkMaturedLoans = useCallback(() => {
-    return loans.filter(loan => 
+    const { loans: currentLoans, currentTime: currentTimeValue } = stateRef.current;
+    return currentLoans.filter(loan => 
       loan.status === 'active' && 
-      currentTime >= loan.maturityDate
+      currentTimeValue >= loan.maturityDate
     );
-  }, [loans, currentTime]);
+  }, []); // No dependencies
 
 
   /**
