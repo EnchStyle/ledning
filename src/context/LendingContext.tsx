@@ -130,6 +130,11 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const simulationTimer = useRef<NodeJS.Timeout | null>(null);
   /** Throttling to prevent excessive updates */
   const lastUpdateTime = useRef<number>(0);
+  /** Track if tab is visible to pause simulation in background */
+  const isTabVisible = useRef<boolean>(true);
+  /** Batch state updates to prevent excessive re-renders */
+  const updateBatch = useRef<{ price?: number; time?: Date }>({});
+  const batchTimer = useRef<NodeJS.Timeout | null>(null);
   /** Liquidation events tracking */
   const [liquidationEvents, setLiquidationEvents] = useState<Array<{
     loanId: string;
@@ -148,89 +153,217 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
 
   /**
-   * Add current state to price history - triggered by price changes
+   * Page Visibility API to pause simulation in background tabs
    */
   useEffect(() => {
-    if (simulationSettings.isActive) {
-      const activeLoans = loans.filter(l => l.status === 'active');
-      const portfolioValue = activeLoans.reduce((sum, loan) => 
-        sum + (loan.collateralAmount * marketData.xpmPriceUSD), 0
-      );
-      const totalDebt = activeLoans.reduce((sum, loan) => 
-        sum + loan.borrowedAmount + (loan.fixedInterestAmount || 0), 0
-      );
-      const avgLTV = portfolioValue > 0 ? (totalDebt / portfolioValue) * 100 : 0;
+    const handleVisibilityChange = () => {
+      isTabVisible.current = !document.hidden;
+      if (document.hidden && simulationSettings.isActive) {
+        console.log('Tab hidden: Pausing simulation for performance');
+      } else if (!document.hidden && simulationSettings.isActive) {
+        console.log('Tab visible: Resuming simulation');
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [simulationSettings.isActive]);
 
-      const newPoint: PriceHistoryPoint = {
-        timestamp: new Date(currentTime),
-        xpmPrice: marketData.xpmPriceUSD,
-        portfolioValue,
-        totalDebt,
-        avgLTV,
-      };
+  /**
+   * Add current state to price history - optimized to reduce memory usage
+   * Using refs to prevent dependency issues while maintaining functionality
+   */
+  const addPriceHistoryPoint = useCallback(() => {
+    if (!simulationSettings.isActive || loans.length === 0) return;
+    
+    const activeLoans = loans.filter(l => l.status === 'active');
+    const portfolioValue = activeLoans.reduce((sum, loan) => 
+      sum + (loan.collateralAmount * marketData.xpmPriceUSD), 0
+    );
+    const totalDebt = activeLoans.reduce((sum, loan) => 
+      sum + loan.borrowedAmount + (loan.fixedInterestAmount || 0), 0
+    );
+    const avgLTV = portfolioValue > 0 ? (totalDebt / portfolioValue) * 100 : 0;
 
-      setPriceHistory(prev => {
-        // Only add if price actually changed to avoid excessive updates
-        const lastPoint = prev[prev.length - 1];
-        if (!lastPoint || Math.abs(lastPoint.xpmPrice - newPoint.xpmPrice) > 0.0001) {
-          const updated = [...prev, newPoint];
-          return updated.slice(-100); // Reduced to 100 points
-        }
-        return prev;
-      });
-    }
+    const newPoint: PriceHistoryPoint = {
+      timestamp: new Date(currentTime),
+      xpmPrice: marketData.xpmPriceUSD,
+      portfolioValue,
+      totalDebt,
+      avgLTV,
+    };
+
+    setPriceHistory(prev => {
+      // Only add if price actually changed to avoid excessive updates
+      const lastPoint = prev[prev.length - 1];
+      if (!lastPoint || Math.abs(lastPoint.xpmPrice - newPoint.xpmPrice) > 0.0001) {
+        const updated = [...prev, newPoint];
+        return updated.slice(-25); // Reduced to 25 points for memory efficiency
+      }
+      return prev;
+    });
   }, [marketData.xpmPriceUSD, currentTime, loans, simulationSettings.isActive]);
 
   /**
-   * Simulation tick - update price and time
-   * Using refs to avoid dependency issues that cause constant re-creation
+   * Trigger price history update when price changes during simulation
    */
-  const simulationTick = useCallback(() => {
+  useEffect(() => {
+    if (simulationSettings.isActive) {
+      addPriceHistoryPoint();
+    }
+  }, [marketData.xpmPriceUSD, simulationSettings.isActive, addPriceHistoryPoint]);
+
+  /**
+   * Batch state updates to prevent excessive re-renders
+   */
+  const flushBatchedUpdates = useCallback(() => {
+    if (Object.keys(updateBatch.current).length === 0) return;
+    
+    const batch = updateBatch.current;
+    updateBatch.current = {};
+    
+    if (batch.price !== undefined) {
+      setMarketData(prev => ({ ...prev, xpmPriceUSD: batch.price! }));
+    }
+    if (batch.time !== undefined) {
+      setCurrentTime(batch.time);
+    }
+  }, []);
+
+  /**
+   * Optimized simulation tick using refs to prevent dependency issues
+   */
+  const simulationTick = useRef(() => {
+    // Don't run simulation if tab is not visible (performance optimization)
+    if (!isTabVisible.current) {
+      return;
+    }
+    
     const now = Date.now();
     
-    // Throttle updates to prevent excessive state changes
-    if (now - lastUpdateTime.current < 200) { // Minimum 200ms between updates
+    // Aggressive throttling to prevent memory issues
+    if (now - lastUpdateTime.current < 1000) { // 1 second minimum
       return;
     }
     lastUpdateTime.current = now;
     
-    setMarketData(prev => {
-      // Generate new price
-      const { volatility } = simulationSettings;
+    try {
+      // Get current values from state
+      const currentSettings = simulationSettings;
+      const currentPrice = marketData.xpmPriceUSD;
+      
+      // Generate new price using Box-Muller transform
       const random1 = Math.random();
       const random2 = Math.random();
       const normalRandom = Math.sqrt(-2 * Math.log(random1)) * Math.cos(2 * Math.PI * random2);
-      const priceChange = normalRandom * volatility * 0.5;
-      const meanReversion = (SIMULATION_CONFIG.MEAN_REVERSION.TARGET_PRICE - prev.xpmPriceUSD) * SIMULATION_CONFIG.MEAN_REVERSION.REVERSION_STRENGTH;
-      const totalChange = priceChange + meanReversion;
-      const newPrice = Math.max(0.001, prev.xpmPriceUSD * (1 + totalChange));
+      const priceChange = normalRandom * currentSettings.volatility * 0.3;
       
-      return { ...prev, xpmPriceUSD: newPrice };
-    });
-
-    // Advance time by ~10 minutes per tick
-    setCurrentTime(prev => new Date(prev.getTime() + 10 * 60 * 1000));
-  }, [simulationSettings]);
-
+      // Mean reversion to prevent price drift
+      const meanReversion = (SIMULATION_CONFIG.MEAN_REVERSION.TARGET_PRICE - currentPrice) * SIMULATION_CONFIG.MEAN_REVERSION.REVERSION_STRENGTH;
+      const totalChange = priceChange + meanReversion;
+      const newPrice = Math.max(0.001, Math.min(1.0, currentPrice * (1 + totalChange)));
+      
+      // Batch updates to prevent excessive re-renders
+      updateBatch.current.price = newPrice;
+      updateBatch.current.time = new Date(currentTime.getTime() + 10 * 60 * 1000);
+      
+      // Clear existing batch timer and set new one
+      if (batchTimer.current) {
+        clearTimeout(batchTimer.current);
+      }
+      
+      // Flush updates after delay
+      batchTimer.current = setTimeout(() => {
+        if (Object.keys(updateBatch.current).length === 0) return;
+        
+        const batch = updateBatch.current;
+        updateBatch.current = {};
+        
+        if (batch.price !== undefined) {
+          setMarketData(prev => ({ ...prev, xpmPriceUSD: batch.price! }));
+        }
+        if (batch.time !== undefined) {
+          setCurrentTime(batch.time);
+        }
+      }, 200);
+      
+    } catch (error) {
+      console.error('Simulation tick error:', error);
+      setSimulationSettings(prev => ({ ...prev, isActive: false }));
+    }
+  });
+  
   /**
-   * Start/stop simulation timer with stable reference
+   * Update simulation tick function when dependencies change
    */
   useEffect(() => {
+    simulationTick.current = () => {
+      if (!isTabVisible.current) return;
+      
+      const now = Date.now();
+      if (now - lastUpdateTime.current < 1000) return;
+      lastUpdateTime.current = now;
+      
+      try {
+        const currentSettings = simulationSettings;
+        const currentPrice = marketData.xpmPriceUSD;
+        
+        const random1 = Math.random();
+        const random2 = Math.random();
+        const normalRandom = Math.sqrt(-2 * Math.log(random1)) * Math.cos(2 * Math.PI * random2);
+        const priceChange = normalRandom * currentSettings.volatility * 0.3;
+        
+        const meanReversion = (SIMULATION_CONFIG.MEAN_REVERSION.TARGET_PRICE - currentPrice) * SIMULATION_CONFIG.MEAN_REVERSION.REVERSION_STRENGTH;
+        const totalChange = priceChange + meanReversion;
+        const newPrice = Math.max(0.001, Math.min(1.0, currentPrice * (1 + totalChange)));
+        
+        updateBatch.current.price = newPrice;
+        updateBatch.current.time = new Date(currentTime.getTime() + 10 * 60 * 1000);
+        
+        if (batchTimer.current) clearTimeout(batchTimer.current);
+        batchTimer.current = setTimeout(flushBatchedUpdates, 200);
+        
+      } catch (error) {
+        console.error('Simulation error:', error);
+        setSimulationSettings(prev => ({ ...prev, isActive: false }));
+      }
+    };
+  }, [simulationSettings, marketData.xpmPriceUSD, currentTime, flushBatchedUpdates]);
+
+  /**
+   * Robust simulation timer management with proper cleanup
+   */
+  useEffect(() => {
+    // Clear existing timers
+    if (simulationTimer.current) {
+      clearInterval(simulationTimer.current);
+      simulationTimer.current = null;
+    }
+    if (batchTimer.current) {
+      clearTimeout(batchTimer.current);
+      batchTimer.current = null;
+    }
+    
     if (simulationSettings.isActive) {
-      const interval = Math.max(500, 10000 / simulationSettings.speed); // Minimum 500ms to prevent excessive updates
+      // Conservative interval to prevent crashes
+      const baseInterval = 2000; // 2 second base
+      const speedMultiplier = Math.min(simulationSettings.speed, 3); // Cap at 3x
+      const interval = Math.max(2000, baseInterval / speedMultiplier);
       
-      // Clear any existing timer first
-      if (simulationTimer.current) {
-        clearInterval(simulationTimer.current);
-      }
+      console.log(`Starting simulation: ${interval}ms interval`);
       
-      // Create new timer with stable tick function
-      simulationTimer.current = setInterval(simulationTick, interval);
-    } else {
-      if (simulationTimer.current) {
-        clearInterval(simulationTimer.current);
-        simulationTimer.current = null;
-      }
+      simulationTimer.current = setInterval(() => {
+        try {
+          simulationTick.current();
+        } catch (error) {
+          console.error('Critical simulation error:', error);
+          if (simulationTimer.current) {
+            clearInterval(simulationTimer.current);
+            simulationTimer.current = null;
+          }
+          setSimulationSettings(prev => ({ ...prev, isActive: false }));
+        }
+      }, interval);
     }
 
     return () => {
@@ -238,8 +371,17 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         clearInterval(simulationTimer.current);
         simulationTimer.current = null;
       }
+      if (batchTimer.current) {
+        clearTimeout(batchTimer.current);
+        batchTimer.current = null;
+      }
+      try {
+        flushBatchedUpdates();
+      } catch (error) {
+        console.warn('Cleanup error:', error);
+      }
     };
-  }, [simulationSettings.isActive, simulationSettings.speed, simulationTick]);
+  }, [simulationSettings.isActive, simulationSettings.speed, flushBatchedUpdates])
 
   /**
    * Update LTV for all active loans based on current market prices

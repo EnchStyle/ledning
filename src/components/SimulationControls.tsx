@@ -77,18 +77,18 @@ const SimulationControls: React.FC = React.memo(() => {
         <Typography variant="body2" color="text.secondary">
           Data Points: <strong>{priceHistory.length}</strong>
         </Typography>
-        {simulationSettings.speed >= 8 && (
+        {simulationSettings.speed >= 3 && (
           <Chip 
-            label="Ultra Speed" 
-            color="warning" 
+            label={simulationSettings.speed >= 5 ? "Extreme Speed" : "High Speed"} 
+            color={simulationSettings.speed >= 5 ? "error" : "warning"} 
             size="small"
             icon={<SpeedIcon />}
           />
         )}
-        {simulationSettings.volatility >= 0.15 && (
+        {simulationSettings.volatility >= 0.1 && (
           <Chip 
-            label="Extreme Volatility" 
-            color="error" 
+            label={simulationSettings.volatility >= 0.2 ? "Extreme Volatility" : "High Volatility"} 
+            color={simulationSettings.volatility >= 0.2 ? "error" : "warning"} 
             size="small"
             icon={<TrendingUpIcon />}
           />
@@ -97,21 +97,24 @@ const SimulationControls: React.FC = React.memo(() => {
 
       <Divider sx={{ my: 2 }} />
 
-      {/* Extreme Settings Warning */}
-      {(simulationSettings.speed >= 8 || simulationSettings.volatility >= 0.15) && (
+      {/* Performance Warning for High Settings */}
+      {(simulationSettings.speed >= 3 || simulationSettings.volatility >= 0.1) && (
         <Alert 
-          severity="warning" 
+          severity={simulationSettings.speed >= 5 || simulationSettings.volatility >= 0.2 ? "error" : "warning"} 
           sx={{ mb: 2 }}
           icon={<TrendingUpIcon />}
         >
           <Typography variant="body2">
-            <strong>Extreme Settings Active!</strong>
-            {simulationSettings.speed >= 8 && (
-              <> Speed is at {simulationSettings.speed}x - updates every {(10 / simulationSettings.speed).toFixed(1)} seconds.</>
+            <strong>High Performance Impact!</strong>
+            {simulationSettings.speed >= 3 && (
+              <> Speed is at {simulationSettings.speed}x (capped at 3x for stability).</>
             )}
-            {simulationSettings.speed >= 8 && simulationSettings.volatility >= 0.15 && ' '}
-            {simulationSettings.volatility >= 0.15 && (
-              <>Volatility is at {(simulationSettings.volatility * 100).toFixed(0)}% - expect large price swings!</>
+            {simulationSettings.speed >= 3 && simulationSettings.volatility >= 0.1 && ' '}
+            {simulationSettings.volatility >= 0.1 && (
+              <>High volatility at {(simulationSettings.volatility * 100).toFixed(0)}% may cause browser lag!</>
+            )}
+            {simulationSettings.speed >= 5 && (
+              <><br /><strong>Warning:</strong> Settings above 3x speed may cause page crashes when switching tabs!</>
             )}
           </Typography>
         </Alert>
@@ -145,14 +148,14 @@ const SimulationControls: React.FC = React.memo(() => {
             value={simulationSettings.speed}
             onChange={handleSpeedChange}
             min={0.5}
-            max={10}
+            max={5}
             step={0.5}
             marks={[
               { value: 0.5, label: '0.5x' },
               { value: 1, label: '1x' },
               { value: 2, label: '2x' },
               { value: 4, label: '4x' },
-              { value: 10, label: '10x' },
+              { value: 5, label: '5x' },
             ]}
             valueLabelDisplay="auto"
             valueLabelFormat={(value) => `${value}x`}
@@ -218,9 +221,9 @@ const SimulationControls: React.FC = React.memo(() => {
           <strong>How it works:</strong> The simulation generates realistic price movements every 10 seconds (adjustable by speed). 
           Watch how your loans react to market volatility and track performance over time.
           <br /><br />
-          <strong>Speed Settings:</strong> 0.5x-4x for normal testing, 10x for rapid stress testing.
+          <strong>Speed Settings:</strong> 0.5x-2x for normal testing, 3-5x for stress testing (may impact performance).
           <br />
-          <strong>Volatility Settings:</strong> 0.5-5% for normal markets, 10-50% for extreme conditions.
+          <strong>Volatility Settings:</strong> 0.5-5% for normal markets, 10-20% for volatile conditions, 25%+ may cause browser lag.
         </Typography>
       </Box>
     </Paper>
