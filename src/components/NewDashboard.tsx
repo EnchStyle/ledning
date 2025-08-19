@@ -21,10 +21,10 @@ import {
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  AccountBalance as LoanIcon,
-  Dashboard as DashboardIcon,
-  TrendingUp as TrendingUpIcon,
-  Wallet as WalletIcon,
+  RequestQuote as LoanIcon,
+  PieChart as DashboardIcon,
+  Analytics as TrendingUpIcon,
+  AccountBalanceWallet as WalletIcon,
   Close as CloseIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';

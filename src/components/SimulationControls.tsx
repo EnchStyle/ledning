@@ -14,12 +14,12 @@ import {
   Alert,
 } from '@mui/material';
 import {
-  PlayArrow as PlayIcon,
-  Pause as PauseIcon,
-  Speed as SpeedIcon,
-  TrendingUp as TrendingUpIcon,
-  Refresh as RefreshIcon,
-  Info as InfoIcon,
+  PlayCircleFilled as PlayIcon,
+  PauseCircleFilled as PauseIcon,
+  FastForward as FastForwardIcon,
+  ShowChart as ChartIcon,
+  RestartAlt as RefreshIcon,
+  InfoOutlined as InfoIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
 
@@ -53,7 +53,7 @@ const SimulationControls: React.FC = React.memo(() => {
   return (
     <Paper sx={{ p: 3, mb: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <TrendingUpIcon color="primary" sx={{ mr: 2 }} />
+        <ChartIcon color="primary" sx={{ mr: 2 }} />
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Market Simulation
         </Typography>
@@ -82,7 +82,7 @@ const SimulationControls: React.FC = React.memo(() => {
             label={simulationSettings.speed >= 10 ? "MAXIMUM 10x" : simulationSettings.speed >= 7 ? "Ultra Speed" : simulationSettings.speed >= 5 ? "High Speed" : "Fast Speed"} 
             color={simulationSettings.speed >= 8 ? "error" : simulationSettings.speed >= 5 ? "warning" : "info"} 
             size="small"
-            icon={<SpeedIcon />}
+            icon={<FastForwardIcon />}
           />
         )}
         {simulationSettings.volatility >= 0.1 && (
@@ -90,7 +90,7 @@ const SimulationControls: React.FC = React.memo(() => {
             label={simulationSettings.volatility >= 0.2 ? "Extreme Volatility" : "High Volatility"} 
             color={simulationSettings.volatility >= 0.2 ? "error" : "warning"} 
             size="small"
-            icon={<TrendingUpIcon />}
+            icon={<ChartIcon />}
           />
         )}
       </Box>
@@ -102,7 +102,7 @@ const SimulationControls: React.FC = React.memo(() => {
         <Alert 
           severity={simulationSettings.speed >= 8 || simulationSettings.volatility >= 0.3 ? "warning" : "info"} 
           sx={{ mb: 2 }}
-          icon={<TrendingUpIcon />}
+          icon={<ChartIcon />}
         >
           <Typography variant="body2">
             <strong>High-Performance Mode Active!</strong>

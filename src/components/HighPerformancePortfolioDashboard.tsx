@@ -17,9 +17,9 @@ import {
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
-  AccountBalance as AccountBalanceIcon,
-  Speed as SpeedIcon,
-  Shield as ShieldIcon,
+  Savings as CollateralIcon,
+  CreditCard as DebtIcon,
+  Percent as LTVIcon,
   Bolt as BoltIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
@@ -108,7 +108,7 @@ const HighPerformancePortfolioDashboard: React.FC<HighPerformancePortfolioDashbo
         </Alert>
         
         <Paper sx={{ p: 6, textAlign: 'center', mt: 4 }}>
-          <AccountBalanceIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+          <CollateralIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h5" gutterBottom>
             No Active Loans
           </Typography>
@@ -176,7 +176,7 @@ const HighPerformancePortfolioDashboard: React.FC<HighPerformancePortfolioDashbo
           <Card sx={{ height: '100%', transition: 'none' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <AccountBalanceIcon color="primary" sx={{ mr: 1 }} />
+                <CollateralIcon color="primary" sx={{ mr: 1 }} />
                 <Typography variant="body2" color="text.secondary">
                   Total Collateral
                 </Typography>
@@ -201,7 +201,7 @@ const HighPerformancePortfolioDashboard: React.FC<HighPerformancePortfolioDashbo
           <Card sx={{ height: '100%', transition: 'none' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <SpeedIcon color="primary" sx={{ mr: 1 }} />
+                <DebtIcon color="primary" sx={{ mr: 1 }} />
                 <Typography variant="body2" color="text.secondary">
                   Outstanding Debt
                 </Typography>
@@ -225,7 +225,7 @@ const HighPerformancePortfolioDashboard: React.FC<HighPerformancePortfolioDashbo
           <Card sx={{ height: '100%', transition: 'none' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <ShieldIcon color="primary" sx={{ mr: 1 }} />
+                <LTVIcon color="primary" sx={{ mr: 1 }} />
                 <Typography variant="body2" color="text.secondary">
                   Portfolio LTV
                 </Typography>

@@ -37,16 +37,20 @@ import {
   ExpandMore as ExpandMoreIcon,
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
-  Warning as WarningIcon,
+  WarningAmber as WarningIcon,
+  Security as SecurityIcon,
   CheckCircle as CheckIcon,
-  AccountBalance as AccountBalanceIcon,
-  Speed as SpeedIcon,
-  Shield as ShieldIcon,
-  Payment as PaymentIcon,
-  Add as AddIcon,
+  ErrorOutline as ErrorOutlineIcon,
+  Dangerous as DangerousIcon,
+  Savings as CollateralIcon,
+  CreditCard as DebtIcon,
+  Percent as LTVIcon,
+  Payments as PaymentIcon,
+  AddCircleOutline as AddIcon,
+  ReceiptLong as ReceiptIcon,
   Timeline as TimelineIcon,
-  Help as HelpIcon,
-  Pause as PauseIcon,
+  HelpOutline as HelpIcon,
+  PauseCircleFilled as PauseIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
 
@@ -152,7 +156,7 @@ const StaticPortfolioDashboard: React.FC<StaticPortfolioDashboardProps> = ({ onN
         )}
         
         <Paper sx={{ p: 6, textAlign: 'center', mt: 4 }}>
-          <AccountBalanceIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+          <CollateralIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h5" gutterBottom>
             No Active Loans
           </Typography>
@@ -212,7 +216,7 @@ const StaticPortfolioDashboard: React.FC<StaticPortfolioDashboardProps> = ({ onN
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <AccountBalanceIcon color="primary" sx={{ mr: 1 }} />
+                <CollateralIcon color="primary" sx={{ mr: 1 }} />
                 <Typography variant="body2" color="text.secondary">
                   Total Collateral
                 </Typography>
@@ -236,7 +240,7 @@ const StaticPortfolioDashboard: React.FC<StaticPortfolioDashboardProps> = ({ onN
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <SpeedIcon color="primary" sx={{ mr: 1 }} />
+                <DebtIcon color="primary" sx={{ mr: 1 }} />
                 <Typography variant="body2" color="text.secondary">
                   Outstanding Debt
                 </Typography>
@@ -260,7 +264,7 @@ const StaticPortfolioDashboard: React.FC<StaticPortfolioDashboardProps> = ({ onN
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <ShieldIcon color="primary" sx={{ mr: 1 }} />
+                <LTVIcon color="primary" sx={{ mr: 1 }} />
                 <Typography variant="body2" color="text.secondary">
                   Portfolio LTV
                 </Typography>

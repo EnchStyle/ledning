@@ -33,13 +33,15 @@ import {
   Snackbar,
 } from '@mui/material';
 import {
-  Help as HelpIcon,
-  Warning as WarningIcon,
+  HelpOutline as HelpIcon,
+  WarningAmber as WarningIcon,
   CheckCircle as CheckIcon,
-  Info as InfoIcon,
+  InfoOutlined as InfoIcon,
   TrendingUp as TrendingUpIcon,
-  Shield as ShieldIcon,
-  Speed as SpeedIcon,
+  Percent as LTVIcon,
+  CreditCard as LoanIcon,
+  RequestQuote as BorrowIcon,
+  Security as SecurityIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
 import { calculateMaxBorrowRLUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';

@@ -33,15 +33,19 @@ import {
   ExpandMore as ExpandMoreIcon,
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
-  Warning as WarningIcon,
+  WarningAmber as WarningIcon,
+  Security as SecurityIcon,
   CheckCircle as CheckIcon,
-  AccountBalance as AccountBalanceIcon,
-  Speed as SpeedIcon,
-  Shield as ShieldIcon,
-  Payment as PaymentIcon,
-  Add as AddIcon,
+  ErrorOutline as ErrorOutlineIcon,
+  Dangerous as DangerousIcon,
+  Savings as CollateralIcon,
+  CreditCard as DebtIcon,
+  Percent as LTVIcon,
+  Payments as PaymentIcon,
+  AddCircleOutline as AddIcon,
+  ReceiptLong as ReceiptIcon,
   Timeline as TimelineIcon,
-  Help as HelpIcon,
+  HelpOutline as HelpIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
 import PortfolioChart from './PortfolioChart';
@@ -182,23 +186,32 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
     const liquidationPrice = (totalDebt / (loan.collateralAmount * 0.65));
     const priceBuffer = ((marketData.xpmPriceUSD - liquidationPrice) / marketData.xpmPriceUSD) * 100;
 
-    let status, color, description;
+    let status, color, description, icon;
     if (loanLTV < 30) {
       status = 'Excellent';
       color = 'success';
       description = 'Very safe position';
+      icon = <SecurityIcon />;
     } else if (loanLTV < 45) {
       status = 'Good';
       color = 'info';
       description = 'Healthy position';
+      icon = <CheckIcon />;
     } else if (loanLTV < 55) {
       status = 'Fair';
       color = 'warning';
       description = 'Monitor closely';
-    } else {
+      icon = <WarningIcon />;
+    } else if (loanLTV < 62) {
       status = 'At Risk';
       color = 'error';
       description = 'Near liquidation';
+      icon = <ErrorOutlineIcon />;
+    } else {
+      status = 'Critical';
+      color = 'error';
+      description = 'Immediate liquidation risk';
+      icon = <DangerousIcon />;
     }
 
     return {
@@ -208,6 +221,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
       status,
       color,
       description,
+      icon,
     };
   };
 
@@ -217,7 +231,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
         <Card sx={{ height: '100%' }}>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <AccountBalanceIcon color="primary" sx={{ mr: 1 }} />
+              <CollateralIcon color="primary" sx={{ mr: 1 }} />
               <Typography variant="body2" color="text.secondary">
                 Total Collateral
               </Typography>
@@ -242,7 +256,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
         <Card sx={{ height: '100%' }}>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <SpeedIcon color="primary" sx={{ mr: 1 }} />
+              <DebtIcon color="primary" sx={{ mr: 1 }} />
               <Typography variant="body2" color="text.secondary">
                 Outstanding Debt
               </Typography>
@@ -266,7 +280,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
         <Card sx={{ height: '100%' }}>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <ShieldIcon color="primary" sx={{ mr: 1 }} />
+              <LTVIcon color="primary" sx={{ mr: 1 }} />
               <Typography variant="body2" color="text.secondary">
                 Portfolio LTV
               </Typography>
@@ -328,7 +342,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
                 label={health.status}
                 color={health.color as any}
                 size="small"
-                icon={health.color === 'error' ? <WarningIcon /> : <CheckIcon />}
+                icon={health.icon}
               />
             </Box>
             <Box sx={{ textAlign: 'right' }}>
@@ -453,6 +467,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
                   variant="contained"
                   size="small"
                   color="success"
+                  startIcon={<ReceiptIcon />}
                   onClick={() => handleFullRepayment(loan.id || `loan-${index}`, index, totalDebt)}
                 >
                   Full Repayment
@@ -473,7 +488,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
         </Typography>
         
         <Paper sx={{ p: 6, textAlign: 'center', mt: 4 }}>
-          <AccountBalanceIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+          <CollateralIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h5" gutterBottom>
             No Active Loans
           </Typography>
