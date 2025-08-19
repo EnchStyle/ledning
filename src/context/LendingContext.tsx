@@ -126,6 +126,14 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
   /** Simulation timer reference */
   const simulationTimer = useRef<NodeJS.Timeout | null>(null);
+  /** Liquidation events tracking */
+  const [liquidationEvents, setLiquidationEvents] = useState<Array<{
+    loanId: string;
+    timestamp: Date;
+    price: number;
+    collateral: number;
+    debt: number;
+  }>>([]);
 
   // Demo wallet balance: 2M XPM for demo purposes
   const demoWalletBalance = 2000000;
@@ -254,6 +262,35 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [marketData.xpmPriceUSD, updateLoansLTV]);
 
+  const liquidateLoan = useCallback((loanId: string) => {
+    setLoans(prevLoans =>
+      prevLoans.map(loan => {
+        if (loan.id !== loanId || loan.status !== 'active') return loan;
+        
+        // Calculate liquidation result (stored for future use)
+        // const liquidationResult = calculateLiquidationReturnRLUSD(
+        //   loan,
+        //   marketData.xpmPriceUSD,
+        //   marketData.liquidationFee
+        // );
+        
+        // Track liquidation event
+        setLiquidationEvents(prev => [...prev.slice(-49), {
+          loanId: loan.id,
+          timestamp: new Date(),
+          price: marketData.xpmPriceUSD,
+          collateral: loan.collateralAmount,
+          debt: loan.borrowedAmount + loan.fixedInterestAmount,
+        }]);
+        
+        return {
+          ...loan,
+          status: 'liquidated' as const,
+        };
+      })
+    );
+  }, [marketData]);
+
   /**
    * Check for liquidations when price changes during simulation
    */
@@ -377,35 +414,6 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     );
   }, [marketData.xpmPriceUSD]);
 
-  const liquidateLoan = useCallback((loanId: string) => {
-    setLoans(prevLoans =>
-      prevLoans.map(loan => {
-        if (loan.id !== loanId || loan.status !== 'active') return loan;
-        
-        // Calculate liquidation result (stored for future use)
-        // const liquidationResult = calculateLiquidationReturnRLUSD(
-        //   loan,
-        //   marketData.xpmPriceUSD,
-        //   marketData.liquidationFee
-        // );
-        
-        // Track liquidation event
-        setLiquidationEvents(prev => [...prev.slice(-49), {
-          loanId: loan.id,
-          timestamp: new Date(),
-          price: marketData.xpmPriceUSD,
-          collateral: loan.collateralAmount,
-          debt: loan.borrowedAmount + loan.fixedInterestAmount,
-        }]);
-        
-        return {
-          ...loan,
-          status: 'liquidated' as const,
-        };
-      })
-    );
-  }, [marketData]);
-
   const processMaturedLoans = useCallback(() => {
     setLoans(prevLoans =>
       prevLoans.map(loan => {
@@ -517,6 +525,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         currentTime,
         priceHistory,
         simulationSettings,
+        liquidationEvents,
         createLoan,
         repayLoan,
         addCollateral,
