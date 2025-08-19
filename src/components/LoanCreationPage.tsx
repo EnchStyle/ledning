@@ -204,7 +204,7 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
         {parameters.collateralAmount >= 1000 && (
           <Alert severity="info" sx={{ mb: 2 }}>
             <Typography variant="body2">
-              <strong>Collateral will be locked</strong> in a smart contract until loan repayment.
+              <strong>Collateral will be locked</strong> via XRPL escrow until loan repayment.
               Current XPM price: ${marketData.xpmPriceUSD.toFixed(4)}
             </Typography>
           </Alert>

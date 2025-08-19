@@ -102,7 +102,7 @@ export enum ErrorCode {
   
   // System errors
   NETWORK_ERROR = 'NETWORK_ERROR',
-  CONTRACT_ERROR = 'CONTRACT_ERROR',
+  TRANSACTION_ERROR = 'TRANSACTION_ERROR',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR'
 }
 
@@ -119,7 +119,7 @@ export const ErrorMessages = {
   [ErrorCode.PRICE_UNAVAILABLE]: 'Unable to fetch current market prices',
   [ErrorCode.LIQUIDITY_INSUFFICIENT]: 'Insufficient liquidity in the pool',
   [ErrorCode.NETWORK_ERROR]: 'Network connection error. Please try again.',
-  [ErrorCode.CONTRACT_ERROR]: 'Smart contract interaction failed',
+  [ErrorCode.TRANSACTION_ERROR]: 'XRPL transaction failed',
   [ErrorCode.UNKNOWN_ERROR]: 'An unexpected error occurred'
 };
 
@@ -143,8 +143,8 @@ export const getUserErrorMessage = (error: any): string => {
     if (error.message.includes('network')) {
       return ErrorMessages[ErrorCode.NETWORK_ERROR];
     }
-    if (error.message.includes('contract')) {
-      return ErrorMessages[ErrorCode.CONTRACT_ERROR];
+    if (error.message.includes('transaction') || error.message.includes('ledger')) {
+      return ErrorMessages[ErrorCode.TRANSACTION_ERROR];
     }
     
     return error.message;

@@ -179,8 +179,8 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     setPriceHistory(prev => {
       const updated = [...prev, newPoint];
-      // Keep only last 100 points to prevent memory issues
-      return updated.slice(-100);
+      // Keep only last 200 points to prevent memory issues but show more history
+      return updated.slice(-200);
     });
   }, [loans, marketData.xpmPriceUSD, currentTime]);
 
@@ -188,8 +188,6 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
    * Simulation tick - update price and time
    */
   const simulationTick = useCallback(() => {
-    if (!simulationSettings.isActive) return;
-
     // Generate new price
     const priceChange = generatePriceChange();
     const newPrice = Math.max(0.01, marketData.xpmPriceUSD * (1 + priceChange));
@@ -203,19 +201,26 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // Advance time by ~10 minutes per tick (for demo purposes)
     setCurrentTime(prev => new Date(prev.getTime() + 10 * 60 * 1000));
 
-    // Add to price history
-    setTimeout(() => {
-      addPriceHistoryPoint();
-    }, 100); // Small delay to ensure state updates
-  }, [simulationSettings.isActive, generatePriceChange, marketData.xpmPriceUSD, addPriceHistoryPoint]);
+    // Add to price history - directly without setTimeout to avoid memory issues
+    addPriceHistoryPoint();
+  }, [generatePriceChange, marketData.xpmPriceUSD, addPriceHistoryPoint]);
 
   /**
    * Start/stop simulation timer
    */
   useEffect(() => {
     if (simulationSettings.isActive) {
-      const interval = 10000 / simulationSettings.speed; // Base 10 seconds, adjusted by speed
-      simulationTimer.current = setInterval(simulationTick, interval);
+      const interval = Math.max(100, 10000 / simulationSettings.speed); // Base 10 seconds, minimum 100ms
+      
+      // Clear any existing timer first
+      if (simulationTimer.current) {
+        clearInterval(simulationTimer.current);
+      }
+      
+      // Create new timer
+      simulationTimer.current = setInterval(() => {
+        simulationTick();
+      }, interval);
     } else {
       if (simulationTimer.current) {
         clearInterval(simulationTimer.current);
@@ -226,9 +231,10 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => {
       if (simulationTimer.current) {
         clearInterval(simulationTimer.current);
+        simulationTimer.current = null;
       }
     };
-  }, [simulationSettings.isActive, simulationSettings.speed, simulationTick]);
+  }, [simulationSettings.isActive, simulationSettings.speed]);
 
   /**
    * Update LTV for all active loans based on current market prices

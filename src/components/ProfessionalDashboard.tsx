@@ -551,7 +551,7 @@ const ProfessionalDashboard: React.FC = () => {
               Instant Execution
             </Typography>
             <Typography color="text.secondary">
-              Get RLUSD liquidity immediately with our automated smart contract system
+              Get RLUSD liquidity immediately through XRPL's native transaction system
             </Typography>
           </Card>
         </Grid>
