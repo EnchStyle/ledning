@@ -137,6 +137,13 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const batchTimer = useRef<NodeJS.Timeout | null>(null);
   /** Throttle price history updates */
   const lastPriceHistoryUpdate = useRef<number>(0);
+  /** Circuit breaker for simulation crashes */
+  const errorCount = useRef<number>(0);
+  const lastErrorTime = useRef<number>(0);
+  const circuitBreakerTripped = useRef<boolean>(false);
+  /** Memory monitoring */
+  const lastMemoryCheck = useRef<number>(0);
+  const memoryCheckInterval = 30000; // Check memory every 30 seconds
   /** Liquidation events tracking */
   const [liquidationEvents, setLiquidationEvents] = useState<Array<{
     loanId: string;
@@ -274,9 +281,21 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     lastUpdateTime.current = now;
     
     try {
+      // Circuit breaker: Check if we should stop due to errors
+      if (circuitBreakerTripped.current) {
+        console.warn('🚨 Circuit breaker tripped - stopping simulation');
+        setSimulationSettings(prev => ({ ...prev, isActive: false }));
+        return;
+      }
+      
       // Get current values from state
       const currentSettings = simulationSettings;
       const currentPrice = marketData.xpmPriceUSD;
+      
+      // Validate state to prevent crashes
+      if (!currentPrice || currentPrice <= 0 || isNaN(currentPrice)) {
+        throw new Error('Invalid price state detected');
+      }
       
       // Generate new price using Box-Muller transform
       const random1 = Math.random();
@@ -288,6 +307,11 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const meanReversion = (SIMULATION_CONFIG.MEAN_REVERSION.TARGET_PRICE - currentPrice) * SIMULATION_CONFIG.MEAN_REVERSION.REVERSION_STRENGTH;
       const totalChange = priceChange + meanReversion;
       const newPrice = Math.max(0.001, Math.min(1.0, currentPrice * (1 + totalChange)));
+      
+      // Validate new price
+      if (!newPrice || newPrice <= 0 || isNaN(newPrice)) {
+        throw new Error('Generated invalid price');
+      }
       
       // Batch updates to prevent excessive re-renders
       updateBatch.current.price = newPrice;
@@ -313,8 +337,71 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
       }, 200);
       
+      // Reset error count on successful tick
+      errorCount.current = 0;
+      
+      // Memory monitoring and cleanup
+      if (now - lastMemoryCheck.current > memoryCheckInterval) {
+        lastMemoryCheck.current = now;
+        
+        // Check if performance.memory is available (Chrome-based browsers)
+        if (typeof performance !== 'undefined' && (performance as any).memory) {
+          const memory = (performance as any).memory;
+          const usedMB = memory.usedJSHeapSize / 1048576; // Convert to MB
+          const limitMB = memory.jsHeapSizeLimit / 1048576;
+          
+          console.log(`📊 Memory usage: ${usedMB.toFixed(1)}MB / ${limitMB.toFixed(1)}MB (${((usedMB/limitMB)*100).toFixed(1)}%)`);
+          
+          // If memory usage is over 80%, trigger cleanup
+          if (usedMB / limitMB > 0.8) {
+            console.warn('⚠️ High memory usage detected, triggering cleanup');
+            
+            // Aggressive price history cleanup
+            setPriceHistory(prev => prev.slice(-5)); // Keep only last 5 points
+            
+            // Trigger garbage collection if available
+            if ((window as any).gc) {
+              (window as any).gc();
+            }
+            
+            // If still over 90%, stop simulation
+            setTimeout(() => {
+              if (typeof performance !== 'undefined' && (performance as any).memory) {
+                const newMemory = (performance as any).memory;
+                const newUsedMB = newMemory.usedJSHeapSize / 1048576;
+                const newLimitMB = newMemory.jsHeapSizeLimit / 1048576;
+                
+                if (newUsedMB / newLimitMB > 0.9) {
+                  console.error('🚨 MEMORY CRITICAL: Stopping simulation to prevent crash');
+                  setSimulationSettings(prev => ({ ...prev, isActive: false }));
+                  alert('Simulation stopped due to high memory usage. Please refresh the page to continue.');
+                }
+              }
+            }, 5000);
+          }
+        }
+      }
+      
     } catch (error) {
-      console.error('Simulation tick error:', error);
+      console.error('🚨 Simulation tick error:', error);
+      
+      // Circuit breaker logic
+      const now = Date.now();
+      if (now - lastErrorTime.current < 10000) { // Within 10 seconds of last error
+        errorCount.current += 1;
+      } else {
+        errorCount.current = 1; // Reset count if more than 10 seconds since last error
+      }
+      lastErrorTime.current = now;
+      
+      // Trip circuit breaker if too many errors
+      if (errorCount.current >= 3) {
+        circuitBreakerTripped.current = true;
+        console.error('🚨 CIRCUIT BREAKER TRIPPED: Too many simulation errors, stopping permanently');
+        alert('Simulation crashed due to repeated errors. Please refresh the page to restart.');
+      }
+      
+      // Stop simulation immediately on error
       setSimulationSettings(prev => ({ ...prev, isActive: false }));
     }
   });

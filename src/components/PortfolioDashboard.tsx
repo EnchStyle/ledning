@@ -46,7 +46,6 @@ import {
 import { useLending } from '../context/LendingContext';
 import PortfolioChart from './PortfolioChart';
 import LiquidationAlert from './LiquidationAlert';
-import { useSimulationPause } from '../hooks/useSimulationPause';
 
 interface ActionDialog {
   open: boolean;
@@ -60,9 +59,6 @@ interface PortfolioDashboardProps {
 }
 
 const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBorrow }) => {
-  // Pause simulation updates when this component is mounted to prevent freezing
-  useSimulationPause(true);
-  
   // Throttle component rendering logs
   const renderCount = React.useRef(0);
   renderCount.current += 1;

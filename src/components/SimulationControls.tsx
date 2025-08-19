@@ -148,14 +148,13 @@ const SimulationControls: React.FC = React.memo(() => {
             value={simulationSettings.speed}
             onChange={handleSpeedChange}
             min={0.5}
-            max={5}
+            max={3}
             step={0.5}
             marks={[
               { value: 0.5, label: '0.5x' },
               { value: 1, label: '1x' },
               { value: 2, label: '2x' },
-              { value: 4, label: '4x' },
-              { value: 5, label: '5x' },
+              { value: 3, label: '3x MAX' },
             ]}
             valueLabelDisplay="auto"
             valueLabelFormat={(value) => `${value}x`}

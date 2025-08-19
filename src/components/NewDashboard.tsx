@@ -31,6 +31,7 @@ import { useLending } from '../context/LendingContext';
 import { DEMO_CONFIG } from '../config/demoConstants';
 import LoanCreationPage from './LoanCreationPage';
 import PortfolioDashboard from './PortfolioDashboard';
+import StaticPortfolioDashboard from './StaticPortfolioDashboard';
 import AnalyticsPage from './AnalyticsPage';
 
 type TabType = 'portfolio' | 'borrow' | 'analytics';
@@ -83,13 +84,19 @@ const NewDashboard: React.FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'portfolio':
-        return <PortfolioDashboard onNavigateToBorrow={() => setActiveTab('borrow')} />;
+        // Use static version during simulation to prevent freezing
+        return simulationSettings.isActive ? 
+          <StaticPortfolioDashboard onNavigateToBorrow={() => setActiveTab('borrow')} /> :
+          <PortfolioDashboard onNavigateToBorrow={() => setActiveTab('borrow')} />;
       case 'borrow':
         return <LoanCreationPage onNavigateToPortfolio={() => setActiveTab('portfolio')} />;
       case 'analytics':
         return <AnalyticsPage />;
       default:
-        return <PortfolioDashboard />;
+        // Use static version during simulation for default case too
+        return simulationSettings.isActive ? 
+          <StaticPortfolioDashboard /> :
+          <PortfolioDashboard />;
     }
   };
 
