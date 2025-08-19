@@ -135,6 +135,8 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   /** Batch state updates to prevent excessive re-renders */
   const updateBatch = useRef<{ price?: number; time?: Date }>({});
   const batchTimer = useRef<NodeJS.Timeout | null>(null);
+  /** Throttle price history updates */
+  const lastPriceHistoryUpdate = useRef<number>(0);
   /** Liquidation events tracking */
   const [liquidationEvents, setLiquidationEvents] = useState<Array<{
     loanId: string;
@@ -176,6 +178,13 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const addPriceHistoryPoint = useCallback(() => {
     if (!simulationSettings.isActive || loans.length === 0) return;
     
+    // Throttle price history updates to reduce re-renders
+    const now = Date.now();
+    if (now - lastPriceHistoryUpdate.current < 5000) { // 5 second minimum between updates
+      return;
+    }
+    lastPriceHistoryUpdate.current = now;
+    
     const activeLoans = loans.filter(l => l.status === 'active');
     const portfolioValue = activeLoans.reduce((sum, loan) => 
       sum + (loan.collateralAmount * marketData.xpmPriceUSD), 0
@@ -194,11 +203,12 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     setPriceHistory(prev => {
-      // Only add if price actually changed to avoid excessive updates
+      // Only add if price actually changed significantly
       const lastPoint = prev[prev.length - 1];
-      if (!lastPoint || Math.abs(lastPoint.xpmPrice - newPoint.xpmPrice) > 0.0001) {
+      if (!lastPoint || Math.abs(lastPoint.xpmPrice - newPoint.xpmPrice) > 0.001) {
+        console.log('📊 LendingContext: Adding price history point, price:', newPoint.xpmPrice.toFixed(4));
         const updated = [...prev, newPoint];
-        return updated.slice(-25); // Reduced to 25 points for memory efficiency
+        return updated.slice(-15); // Further reduced to 15 points for better performance
       }
       return prev;
     });
@@ -689,48 +699,79 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   /**
    * Calculate aggregate user position across all active loans
-   * Provides portfolio-level metrics for risk assessment
+   * Memoized to prevent unnecessary recalculations and re-renders
    */
-  const userPosition: UserPosition = {
-    totalCollateral: loans
-      .filter(l => l.status === 'active')
-      .reduce((sum, loan) => sum + loan.collateralAmount, 0),
-    totalBorrowed: loans
-      .filter(l => l.status === 'active')
-      .reduce((sum, loan) => sum + loan.borrowedAmount, 0),
-    totalFixedInterest: loans
-      .filter(l => l.status === 'active')
-      .reduce((sum, loan) => sum + loan.fixedInterestAmount, 0),
+  const userPosition: UserPosition = React.useMemo(() => {
+    console.log('🏦 LendingContext: Recalculating userPosition');
+    const activeLoans = loans.filter(l => l.status === 'active');
+    return {
+      totalCollateral: activeLoans.reduce((sum, loan) => sum + loan.collateralAmount, 0),
+      totalBorrowed: activeLoans.reduce((sum, loan) => sum + loan.borrowedAmount, 0),
+      totalFixedInterest: activeLoans.reduce((sum, loan) => sum + loan.fixedInterestAmount, 0),
+      loans,
+    };
+  }, [loans]);
+
+  // Memoize user loans to prevent filtering on every render
+  const userLoans = React.useMemo(() => {
+    return loans.filter(loan => loan.borrower === 'user1'); // In real app, filter by actual user
+  }, [loans]);
+
+  // Memoize context value to prevent unnecessary re-renders
+  // Only recreate when essential data changes
+  const contextValue = React.useMemo(() => {
+    console.log('🏦 LendingContext: Creating new context value');
+    return {
+      loans,
+      userLoans,
+      marketData,
+      userPosition,
+      currentTime,
+      priceHistory,
+      simulationSettings,
+      liquidationEvents,
+      createLoan,
+      repayLoan,
+      addCollateral,
+      liquidateLoan,
+      simulateTime,
+      updateXpmPrice,
+      updateMarketPrice,
+      checkMarginCalls,
+      checkMaturedLoans,
+      toggleSimulation,
+      updateSimulationSettings,
+      clearPriceHistory,
+    };
+  }, [
     loans,
-  };
+    userLoans,
+    marketData.xpmPriceUSD, // Only track price changes, not entire object
+    userPosition,
+    currentTime.getTime(), // Only track timestamp, not Date object
+    priceHistory.length, // Only track length changes
+    simulationSettings.isActive,
+    simulationSettings.speed,
+    simulationSettings.volatility,
+    liquidationEvents.length,
+    createLoan,
+    repayLoan,
+    addCollateral,
+    liquidateLoan,
+    simulateTime,
+    updateXpmPrice,
+    updateMarketPrice,
+    checkMarginCalls,
+    checkMaturedLoans,
+    toggleSimulation,
+    updateSimulationSettings,
+    clearPriceHistory,
+  ]);
 
   console.log('🏦 LendingContext: Provider rendering, loans count:', loans.length, 'simulation active:', simulationSettings.isActive);
 
   return (
-    <LendingContext.Provider
-      value={{
-        loans,
-        userLoans: loans.filter(loan => loan.borrower === 'user1'), // In real app, filter by actual user
-        marketData,
-        userPosition,
-        currentTime,
-        priceHistory,
-        simulationSettings,
-        liquidationEvents,
-        createLoan,
-        repayLoan,
-        addCollateral,
-        liquidateLoan,
-        simulateTime,
-        updateXpmPrice,
-        updateMarketPrice,
-        checkMarginCalls,
-        checkMaturedLoans,
-        toggleSimulation,
-        updateSimulationSettings,
-        clearPriceHistory,
-      }}
-    >
+    <LendingContext.Provider value={contextValue}>
       {children}
     </LendingContext.Provider>
   );

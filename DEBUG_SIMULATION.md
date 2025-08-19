@@ -95,9 +95,12 @@ setInterval(() => {
 ## Recent Fixes Applied
 
 1. **Portfolio Tab Optimization** - Memoized expensive calculations
-2. **LTV Update Throttling** - Only update when LTV changes significantly
+2. **LTV Update Throttling** - Only update when LTV changes significantly  
 3. **Chart Performance** - Reduced data points and stable dependencies
 4. **Memory Management** - Aggressive cleanup and batching
 5. **Debug Logging** - Comprehensive performance monitoring
+6. **Context Value Memoization** - Prevents cascade re-renders from context changes
+7. **Price History Throttling** - Maximum 1 update per 5 seconds
+8. **Optimized Dependencies** - Fine-tuned memoization to prevent recreation loops
 
 The debug logs will help identify exactly what's causing the freeze when switching to Portfolio during simulation.
