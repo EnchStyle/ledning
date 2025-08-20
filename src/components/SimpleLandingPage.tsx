@@ -83,40 +83,49 @@ const SimpleLandingPage: React.FC = () => {
   ];
 
   return (
-    <Container maxWidth="md">
-      {/* Demo Badge */}
-      <Alert severity="info" sx={{ mb: 3, textAlign: 'center' }}>
-        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-          🚀 **DEMO MODE** - This is a simulation environment for testing. No real funds involved!
-        </Typography>
-      </Alert>
+    <Container maxWidth="md">{/* Demo mode hidden for production UI */}
 
-      {/* Simple Header */}
+      {/* Simplified Header */}
       <Box sx={{ textAlign: 'center', mb: 4 }}>
         <Typography 
           variant="h3" 
           gutterBottom 
           sx={{ 
-            fontWeight: 600,
-            fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3rem' }
+            fontWeight: 700,
+            fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3rem' },
+            mb: 2
           }}
         >
-          Get Your First Loan in 30 Seconds
+          Borrow RLUSD
         </Typography>
         <Typography 
           variant="h6" 
           color="text.secondary"
-          sx={{ fontSize: { xs: '1rem', sm: '1.25rem' }, mb: 2 }}
+          sx={{ fontSize: { xs: '1rem', sm: '1.25rem' }, mb: 3 }}
         >
-          Deposit XPM tokens → Instantly borrow RLUSD stablecoins
+          Use your XPM as collateral to instantly borrow stablecoins
         </Typography>
-        <Typography 
-          variant="body1" 
-          color="text.secondary"
-          sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
-        >
-          ✅ {FINANCIAL_CONSTANTS.INTEREST_RATES[90]}-{FINANCIAL_CONSTANTS.INTEREST_RATES[30]}% APR  •  ✅ Up to {FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}% LTV  •  ✅ No KYC Required  •  ✅ Instant Settlement
-        </Typography>
+        <Box sx={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: { xs: 1, sm: 3 }, 
+          justifyContent: 'center',
+          fontSize: { xs: '0.875rem', sm: '1rem' },
+          color: 'text.secondary'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main' }} />
+            {FINANCIAL_CONSTANTS.INTEREST_RATES[90]}-{FINANCIAL_CONSTANTS.INTEREST_RATES[30]}% APR
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main' }} />
+            Up to {FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}% LTV
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main' }} />
+            Instant Settlement
+          </Box>
+        </Box>
       </Box>
 
       {/* Main Loan Calculator */}

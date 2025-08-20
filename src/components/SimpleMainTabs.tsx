@@ -42,7 +42,7 @@ function a11yProps(index: number) {
 }
 
 const SimpleMainTabs: React.FC = () => {
-  const [value, setValue] = useState(0); // Start with "Get Started" tab
+  const [value, setValue] = useState(0); // Start with "Borrow" tab
   const { simulationSettings } = useLending();
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {

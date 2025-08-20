@@ -7,6 +7,7 @@ import {
   Chip,
   Paper
 } from '@mui/material';
+import { AccountBalance as BankIcon } from '@mui/icons-material';
 
 const PlatformHeader: React.FC = () => {
   return (
@@ -14,18 +15,18 @@ const PlatformHeader: React.FC = () => {
       <Container maxWidth="lg">
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
           <Box>
-            <Typography 
-              variant="h4" 
-              sx={{ 
-                fontWeight: 700, 
-                fontSize: { xs: '1.5rem', sm: '2rem' },
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1
-              }}
-            >
-              🏦 RLUSD Lending Platform
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <BankIcon sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }} />
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  fontWeight: 700, 
+                  fontSize: { xs: '1.5rem', sm: '2rem' }
+                }}
+              >
+                RLUSD Lending
+              </Typography>
+            </Box>
             <Typography 
               variant="body2" 
               sx={{ 
@@ -38,17 +39,21 @@ const PlatformHeader: React.FC = () => {
           </Box>
           
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-            <Chip 
-              label="🚀 DEMO MODE" 
-              size="small" 
-              sx={{ 
-                bgcolor: 'warning.main', 
-                color: 'warning.contrastText',
-                fontWeight: 600
-              }} 
-            />
+            {/* Demo mode badge hidden for production UI */}
+            {process.env.NODE_ENV === 'development' && (
+              <Chip 
+                label="DEV" 
+                size="small" 
+                sx={{ 
+                  bgcolor: 'warning.main', 
+                  color: 'warning.contrastText',
+                  fontWeight: 600,
+                  fontSize: '0.75rem'
+                }} 
+              />
+            )}
             <Typography variant="caption" sx={{ opacity: 0.8, display: { xs: 'none', sm: 'block' } }}>
-              v1.0.0-beta
+              v1.0.0
             </Typography>
           </Box>
         </Box>
