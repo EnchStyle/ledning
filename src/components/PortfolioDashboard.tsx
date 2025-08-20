@@ -65,7 +65,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
   const renderCount = React.useRef(0);
   renderCount.current += 1;
   
-  const { userLoans, marketData, repayLoan, addCollateral } = useLending();
+  const { userLoans, marketData, repayLoan, addCollateral, walletBalances } = useLending();
   
   if (renderCount.current % 20 === 0) { // Only log every 20th render
     console.log('🏦 PortfolioDashboard: Rendered', renderCount.current, 'times, userLoans:', userLoans.length, 'price:', marketData.xpmPriceUSD.toFixed(4));
@@ -82,8 +82,8 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  // Demo wallet balance
-  const walletBalance = DEMO_PORTFOLIO.XPM_BALANCE;
+  // Use dynamic wallet balance
+  const walletBalance = walletBalances.xpm;
 
   // Portfolio calculations using useState to avoid memoization issues
   const [portfolioStats, setPortfolioStats] = React.useState({ totalCollateralValue: 0, totalDebtRLUSD: 0, avgLTV: 0, availableToBorrow: 0, atRiskLoans: 0 });
@@ -531,6 +531,41 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
 
       {/* Liquidation Alert */}
       <LiquidationAlert />
+
+      {/* Wallet Balances */}
+      <Paper sx={{ p: 3, mb: 4, background: 'linear-gradient(135deg, #1a1f2e 0%, #252a3e 100%)' }}>
+        <Typography variant="h6" gutterBottom>
+          💰 Your Wallet
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6}>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                XPM Balance
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                {walletBalances.xpm.toLocaleString()} XPM
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                ≈ ${(walletBalances.xpm * marketData.xpmPriceUSD).toLocaleString()} USD
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                RLUSD Balance
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                {walletBalances.rlusd.toLocaleString()} RLUSD
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                ≈ ${walletBalances.rlusd.toLocaleString()} USD
+              </Typography>
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
 
       {/* Portfolio Overview */}
       <PortfolioOverview />

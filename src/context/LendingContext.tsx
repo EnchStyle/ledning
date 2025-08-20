@@ -56,6 +56,8 @@ interface LendingContextType {
   priceHistory: PriceHistoryPoint[];
   /** Simulation settings */
   simulationSettings: SimulationSettings;
+  /** Wallet balances */
+  walletBalances: { xpm: number; rlusd: number };
   /** Liquidation events */
   liquidationEvents: Array<{
     loanId: string;
@@ -125,6 +127,11 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     isActive: false,
     speed: 1, // 1x speed (10 seconds per update)
     volatility: 0.02, // 2% max price change per update
+  });
+  /** Dynamic wallet balances */
+  const [walletBalances, setWalletBalances] = useState<{ xpm: number; rlusd: number }>({
+    xpm: DEMO_PORTFOLIO.XPM_BALANCE, // 2M XPM
+    rlusd: 10000, // 10k RLUSD
   });
   /** Simulation timer reference */
   const simulationTimer = useRef<NodeJS.Timeout | null>(null);
@@ -707,6 +714,12 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
     
     setLoans(prev => [...prev, newLoan]);
+    
+    // Update wallet balances
+    setWalletBalances(prev => ({
+      xpm: prev.xpm - params.collateralAmount, // Deduct collateral
+      rlusd: prev.rlusd + params.borrowAmount  // Add borrowed amount
+    }));
   }, []); // No dependencies
 
   /**
@@ -715,6 +728,9 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
    * Loan is marked as 'repaid' if fully paid off
    */
   const repayLoan = useCallback((loanId: string, amount?: number) => {
+    let repaymentAmount = 0;
+    let collateralToReturn = 0;
+    
     setLoans(prevLoans =>
       prevLoans.map(loan => {
         if (loan.id !== loanId) return loan;
@@ -722,6 +738,8 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const totalDebt = loan.borrowedAmount + loan.fixedInterestAmount;
         // Full repayment - close the loan (if no amount specified or amount covers full debt)
         if (!amount || amount >= totalDebt) {
+          repaymentAmount = totalDebt;
+          collateralToReturn = loan.collateralAmount;
           return { ...loan, status: 'repaid' as const };
         }
         
@@ -742,6 +760,8 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         // Access current market data from ref
         const currentMarketData = stateRef.current.marketData;
         
+        repaymentAmount = amount;
+        
         // Recalculate LTV with remaining debt
         const collateralValueUSD = calculateCollateralValueUSD(loan.collateralAmount, currentMarketData.xpmPriceUSD);
         const remainingDebtUSD = calculateDebtValueUSD(remainingDebt); // RLUSD is 1:1 USD
@@ -754,12 +774,24 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         };
       })
     );
+    
+    // Update wallet balances after loan update
+    if (repaymentAmount > 0) {
+      setWalletBalances(prev => ({
+        xpm: prev.xpm + collateralToReturn, // Return collateral on full repayment
+        rlusd: prev.rlusd - repaymentAmount // Deduct repayment amount
+      }));
+    }
   }, []); // No dependencies
 
   const addCollateral = useCallback((loanId: string, amount: number) => {
+    let collateralAdded = false;
+    
     setLoans(prevLoans =>
       prevLoans.map(loan => {
         if (loan.id !== loanId || loan.status !== 'active') return loan;
+        
+        collateralAdded = true;
         
         // Access current market data from ref
         const currentMarketData = stateRef.current.marketData;
@@ -783,6 +815,14 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         };
       })
     );
+    
+    // Update wallet balance
+    if (collateralAdded) {
+      setWalletBalances(prev => ({
+        ...prev,
+        xpm: prev.xpm - amount // Deduct additional collateral
+      }));
+    }
   }, []); // No dependencies
 
   const processMaturedLoans = useCallback(() => {
@@ -912,6 +952,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       priceHistory,
       simulationSettings,
       liquidationEvents,
+      walletBalances,
       createLoan,
       repayLoan,
       addCollateral,
@@ -934,6 +975,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     priceHistory,
     simulationSettings,
     liquidationEvents,
+    walletBalances,
     createLoan,
     repayLoan,
     addCollateral,
