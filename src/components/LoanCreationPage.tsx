@@ -228,14 +228,6 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
             </Typography>
           </Alert>
         )}
-        {parameters.collateralAmount >= 1000 && !hasValidationErrors && (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            <Typography variant="body2">
-              <strong>Collateral will be locked</strong> via XRPL escrow until loan repayment.
-              Current XPM price: ${marketData.xpmPriceUSD.toFixed(4)}
-            </Typography>
-          </Alert>
-        )}
       </Box>
     </Box>
   );
@@ -438,19 +430,22 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
         </Button>
         
         <Collapse in={showAdvancedRisk}>
-          <Alert severity="warning" sx={{ mt: 2 }}>
+          <Alert severity="info" sx={{ mt: 2 }}>
             <Typography variant="body2" gutterBottom>
-              <strong>Risk Factors:</strong>
+              <strong>Price Scenarios:</strong>
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              Based on your {actualLTV.toFixed(1)}% LTV loan:
             </Typography>
             <ul style={{ margin: 0, paddingLeft: 20 }}>
-              <li>XPM price volatility directly affects your liquidation risk</li>
-              <li>RLUSD maintains 1:1 USD peg, eliminating debt-side risk</li>
-              <li>Interest is calculated upfront for the entire term</li>
-              <li>10% liquidation penalty applies if position becomes underwater</li>
-              {priceDropBuffer < 30 && (
-                <li><strong>Warning:</strong> Limited price drop protection ({priceDropBuffer.toFixed(1)}%)</li>
-              )}
+              <li>Current XPM price: ${marketData.xpmPriceUSD.toFixed(4)}</li>
+              <li>Safe zone: Above ${(liquidationPrice * 1.1).toFixed(4)} ({((priceDropBuffer - 10) > 0 ? priceDropBuffer - 10 : 0).toFixed(1)}%+ buffer)</li>
+              <li>Warning zone: ${(liquidationPrice * 1.1).toFixed(4)} - ${liquidationPrice.toFixed(4)}</li>
+              <li>Liquidation price: ${liquidationPrice.toFixed(4)} (65% LTV)</li>
             </ul>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+              Monitor your loan regularly to avoid liquidation. You can repay early at any time.
+            </Typography>
           </Alert>
         </Collapse>
       </Box>
@@ -509,10 +504,11 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
           <strong>Important Risk Disclosure:</strong>
         </Typography>
         <ul style={{ margin: 0, paddingLeft: 20 }}>
-          <li>Your collateral will be liquidated if LTV reaches {FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV}%</li>
-          <li>Liquidation triggers at XPM price of ${liquidationPrice.toFixed(4)}</li>
-          <li>{FINANCIAL_CONSTANTS.LIQUIDATION_FEE}% liquidation penalty will be deducted from your collateral</li>
-          <li>Interest is fixed and calculated for the full term</li>
+          <li>Your loan will be automatically liquidated if LTV reaches {FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV}%</li>
+          <li>This happens if XPM price drops to ${liquidationPrice.toFixed(4)} or below</li>
+          <li>A {FINANCIAL_CONSTANTS.LIQUIDATION_FEE}% penalty fee applies on liquidation</li>
+          <li>Interest is charged for the full term upfront</li>
+          <li>You can repay early at any time without penalty</li>
         </ul>
       </Alert>
 
