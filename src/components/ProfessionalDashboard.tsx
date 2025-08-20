@@ -77,9 +77,9 @@ const ProfessionalDashboard: React.FC = () => {
 
   const collateral = parseFloat(collateralAmount) || 0;
   const collateralValueUSD = collateral * marketData.xpmPriceUSD;
-  const maxBorrowRLUSD = calculateMaxBorrowRLUSD(collateral, marketData.xpmPriceUSD, 50);
+  const maxBorrowRLUSD = calculateMaxBorrowRLUSD(collateral, marketData.xpmPriceUSD, FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV);
   const borrowValueUSD = maxBorrowRLUSD;
-  const liquidationPriceUSD = calculateLiquidationPriceUSD(maxBorrowRLUSD, collateral, 65);
+  const liquidationPriceUSD = calculateLiquidationPriceUSD(maxBorrowRLUSD, collateral, FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV);
   const priceDropToLiquidation = collateral > 0 ? ((marketData.xpmPriceUSD - liquidationPriceUSD) / marketData.xpmPriceUSD) * 100 : 0;
 
   // Risk assessment levels
@@ -186,7 +186,7 @@ const ProfessionalDashboard: React.FC = () => {
           <CardContent sx={{ color: 'white', textAlign: 'center' }}>
             <SecurityIcon sx={{ fontSize: 48, mb: 1, opacity: 0.9 }} />
             <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-              ${Math.max(0, (totalCollateralValueUSD * 0.5) - totalDebtRLUSD).toFixed(0)}
+              ${Math.max(0, (totalCollateralValueUSD * (FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV / 100)) - totalDebtRLUSD).toFixed(0)}
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.8 }}>
               Available to Borrow
@@ -270,9 +270,9 @@ const ProfessionalDashboard: React.FC = () => {
                 onChange={(e) => setSelectedTerm(Number(e.target.value) as LoanTermDays)}
               >
                 {[
-                  { days: 30, rate: 14, popular: false },
-                  { days: 60, rate: 15, popular: true },
-                  { days: 90, rate: 16, popular: false }
+                  { days: 30, rate: FINANCIAL_CONSTANTS.INTEREST_RATES[30], popular: false },
+                  { days: 60, rate: FINANCIAL_CONSTANTS.INTEREST_RATES[60], popular: true },
+                  { days: 90, rate: FINANCIAL_CONSTANTS.INTEREST_RATES[90], popular: false }
                 ].map((option) => (
                   <FormControlLabel
                     key={option.days}
@@ -343,12 +343,12 @@ const ProfessionalDashboard: React.FC = () => {
                     LTV: {currentLTV.toFixed(1)}%
                   </Typography>
                   <Typography variant="body2">
-                    Safety Buffer: {(65 - currentLTV).toFixed(1)}%
+                    Safety Buffer: {(FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV - currentLTV).toFixed(1)}%
                   </Typography>
                 </Box>
                 <LinearProgress 
                   variant="determinate" 
-                  value={(currentLTV / 65) * 100}
+                  value={(currentLTV / FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV) * 100}
                   color={currentRiskLevel.color}
                   sx={{ mt: 1, height: 8, borderRadius: 1 }}
                 />
@@ -451,7 +451,7 @@ const ProfessionalDashboard: React.FC = () => {
                     <TableCell>
                       <LinearProgress 
                         variant="determinate" 
-                        value={(loanLTV / 65) * 100}
+                        value={(loanLTV / FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV) * 100}
                         color={healthColor}
                         sx={{ width: 100 }}
                       />

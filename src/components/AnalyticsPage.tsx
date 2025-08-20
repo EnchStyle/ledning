@@ -19,6 +19,7 @@ import {
   CheckCircle as CheckIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
+import { FINANCIAL_CONSTANTS } from '../config/demoConstants';
 import SimulationControls from './SimulationControls';
 
 const AnalyticsPage: React.FC = () => {
@@ -167,12 +168,12 @@ const AnalyticsPage: React.FC = () => {
               </Box>
               <LinearProgress
                 variant="determinate"
-                value={(protocolStats.averageLTV / 65) * 100}
+                value={(protocolStats.averageLTV / FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV) * 100}
                 color="primary"
                 sx={{ height: 8, borderRadius: 1, mb: 1 }}
               />
               <Typography variant="caption" color="text.secondary">
-                Healthy range: Below 50%
+                Healthy range: Below {FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}%
               </Typography>
             </Box>
 
@@ -345,9 +346,9 @@ const AnalyticsPage: React.FC = () => {
                 <strong>Interest Rates:</strong>
               </Typography>
               <Box sx={{ display: 'flex', gap: 1 }}>
-                <Chip label="30d: 19% APR" size="small" />
-                <Chip label="60d: 16% APR" size="small" />
-                <Chip label="90d: 15% APR" size="small" />
+                <Chip label={`30d: ${FINANCIAL_CONSTANTS.INTEREST_RATES[30]}% APR`} size="small" />
+                <Chip label={`60d: ${FINANCIAL_CONSTANTS.INTEREST_RATES[60]}% APR`} size="small" />
+                <Chip label={`90d: ${FINANCIAL_CONSTANTS.INTEREST_RATES[90]}% APR`} size="small" />
               </Box>
             </Box>
           </Grid>

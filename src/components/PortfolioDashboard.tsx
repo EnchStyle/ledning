@@ -47,7 +47,7 @@ import {
   HelpOutline as HelpIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
-import { DEMO_PORTFOLIO } from '../config/demoConstants';
+import { DEMO_PORTFOLIO, FINANCIAL_CONSTANTS } from '../config/demoConstants';
 import PortfolioChart from './PortfolioChart';
 import LiquidationAlert from './LiquidationAlert';
 
@@ -111,10 +111,10 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
       sum + loan.borrowedAmount + (loan.fixedInterestAmount || 0), 0
     );
     const avgLTV = totalCollateralValue > 0 ? (totalDebtRLUSD / totalCollateralValue) * 100 : 0;
-    const availableToBorrow = Math.max(0, (totalCollateralValue * 0.5) - totalDebtRLUSD);
+    const availableToBorrow = Math.max(0, (totalCollateralValue * (FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV / 100)) - totalDebtRLUSD);
     const atRiskLoans = userLoans.filter(loan => {
       const loanLTV = ((loan.borrowedAmount + loan.fixedInterestAmount) / (loan.collateralAmount * marketData.xpmPriceUSD)) * 100;
-      return loanLTV > 50;
+      return loanLTV > FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV;
     }).length;
     
     setPortfolioStats({
@@ -181,7 +181,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
   const getLoanHealth = (loan: any) => {
     const totalDebt = loan.borrowedAmount + (loan.fixedInterestAmount || 0);
     const loanLTV = (totalDebt / (loan.collateralAmount * marketData.xpmPriceUSD)) * 100;
-    const liquidationPrice = (totalDebt / (loan.collateralAmount * 0.65));
+    const liquidationPrice = (totalDebt / (loan.collateralAmount * (FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV / 100)));
     const priceBuffer = ((marketData.xpmPriceUSD - liquidationPrice) / marketData.xpmPriceUSD) * 100;
 
     let status, color, description, icon;
@@ -288,12 +288,12 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
             </Typography>
             <LinearProgress
               variant="determinate"
-              value={(avgLTV / 65) * 100}
+              value={(avgLTV / FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV) * 100}
               color={avgLTV > 50 ? 'warning' : 'primary'}
               sx={{ height: 6, borderRadius: 1, mb: 1 }}
             />
             <Typography variant="caption" color="text.secondary">
-              Danger Zone at 65%
+              Danger Zone at {FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV}%
             </Typography>
           </CardContent>
         </Card>
@@ -315,7 +315,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
               {availableToBorrow.toFixed(2)} RLUSD
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              At current 50% max LTV
+              At current {FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}% max LTV
             </Typography>
           </CardContent>
         </Card>
@@ -432,7 +432,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="caption" color="text.secondary">Interest Rate</Typography>
-                  <Typography variant="body2">{loan.interestRate || 15}% APR</Typography>
+                  <Typography variant="body2">{loan.interestRate || FINANCIAL_CONSTANTS.INTEREST_RATES[60]}% APR</Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="caption" color="text.secondary">Current XPM Price</Typography>

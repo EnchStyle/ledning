@@ -14,6 +14,7 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Slider,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -29,13 +30,14 @@ const SimpleLandingPage: React.FC = () => {
   const { createLoan, marketData } = useLending();
   const [collateralAmount, setCollateralAmount] = useState<string>('150000');
   const [selectedTerm, setSelectedTerm] = useState<LoanTermDays>(60);
+  const [targetLTV, setTargetLTV] = useState<number>(40); // Default to 40% LTV
   const [confirmDialog, setConfirmDialog] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   
   const collateral = parseFloat(collateralAmount) || 0;
   const collateralValueUSD = collateral * marketData.xpmPriceUSD;
-  const maxBorrowRLUSD = calculateMaxBorrowRLUSD(collateral, marketData.xpmPriceUSD, FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV);
+  const maxBorrowRLUSD = calculateMaxBorrowRLUSD(collateral, marketData.xpmPriceUSD, targetLTV);
   const borrowValueUSD = maxBorrowRLUSD; // RLUSD is 1:1 USD
   const liquidationPriceUSD = calculateLiquidationPriceUSD(maxBorrowRLUSD, collateral, FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV);
   const priceDropToLiquidation = collateral > 0 ? ((marketData.xpmPriceUSD - liquidationPriceUSD) / marketData.xpmPriceUSD) * 100 : 0;
@@ -196,16 +198,42 @@ const SimpleLandingPage: React.FC = () => {
               </RadioGroup>
             </FormControl>
 
+            {/* LTV Selection */}
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'primary.main', mt: 3 }}>
+              💹 Choose Your Loan Amount (LTV)
+            </Typography>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Loan-to-Value ratio: {targetLTV}%
+              </Typography>
+              <Slider
+                value={targetLTV}
+                onChange={(_, value: number | number[]) => setTargetLTV(value as number)}
+                min={FINANCIAL_CONSTANTS.LTV_LIMITS.MIN_LTV}
+                max={FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}
+                step={5}
+                marks={[
+                  { value: 20, label: '20%' },
+                  { value: 30, label: '30%' },
+                  { value: 40, label: '40%' },
+                  { value: 50, label: '50%' }
+                ]}
+                sx={{ mb: 1 }}
+              />
+              <Typography variant="caption" color="text.secondary">
+                Lower LTV = Safer loan with more price drop protection
+              </Typography>
+            </Box>
 
             {collateral > 0 && (
               <Box>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Loan Health (50% LTV target)
+                  Loan Health ({targetLTV}% LTV)
                 </Typography>
                 <LinearProgress 
                   variant="determinate" 
-                  value={76.9} // 50% of 65% liquidation threshold
-                  color="success"
+                  value={(targetLTV / FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV) * 100}
+                  color={targetLTV < 40 ? "success" : targetLTV < 55 ? "warning" : "error"}
                   sx={{ height: 8, borderRadius: 1, mb: 1 }}
                 />
                 <Typography variant="caption" color="text.secondary">
@@ -309,19 +337,25 @@ const SimpleLandingPage: React.FC = () => {
       <Grid container spacing={2} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={4}>
           <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6" color="primary.main">15%</Typography>
+            <Typography variant="h6" color="primary.main">
+              {FINANCIAL_CONSTANTS.INTEREST_RATES[selectedTerm]}%
+            </Typography>
             <Typography variant="body2">Annual Interest Rate</Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} sm={4}>
           <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6" color="primary.main">50%</Typography>
+            <Typography variant="h6" color="primary.main">
+              {FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}%
+            </Typography>
             <Typography variant="body2">Maximum LTV Ratio</Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} sm={4}>
           <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6" color="primary.main">10%</Typography>
+            <Typography variant="h6" color="primary.main">
+              {FINANCIAL_CONSTANTS.LIQUIDATION_FEE}%
+            </Typography>
             <Typography variant="body2">Liquidation Fee</Typography>
           </Paper>
         </Grid>
