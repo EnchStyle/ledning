@@ -35,6 +35,7 @@ import {
   CheckCircle as CheckIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
+import SmartTooltip from './SmartTooltip';
 import { calculateMaxBorrowRLUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
 import { LoanTermDays } from '../types/lending';
 import { FINANCIAL_CONSTANTS } from '../config/demoConstants';
@@ -232,6 +233,10 @@ const SimpleLandingPage: React.FC = () => {
               <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
                 Choose Your Loan Amount (LTV)
               </Typography>
+              <SmartTooltip 
+                helpText="LTV (Loan-to-Value) ratio determines how much you can borrow. Lower LTV is safer but gives you less cash. Higher LTV gives more cash but increases liquidation risk."
+                placement="top"
+              />
             </Box>
             <Box sx={{ mb: 3 }}>
               <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -324,6 +329,11 @@ const SimpleLandingPage: React.FC = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <WarningIcon color="warning" sx={{ mr: 0.5, fontSize: 16 }} />
                         <Typography variant="body2" color="text.secondary">Liquidation Price:</Typography>
+                        <SmartTooltip 
+                          helpText="If XPM price drops to this level, your loan will be automatically liquidated to protect lenders. Monitor this closely!"
+                          placement="top"
+                          size="small"
+                        />
                       </Box>
                       <Typography variant="body1" sx={{ fontWeight: 500, color: priceDropToLiquidation < 20 ? 'warning.main' : 'text.primary' }}>
                         ${liquidationPriceUSD.toFixed(4)} ({priceDropToLiquidation.toFixed(0)}% buffer)
@@ -375,30 +385,36 @@ const SimpleLandingPage: React.FC = () => {
         </Grid>
       </Paper>
 
-      {/* Key Information */}
-      <Grid container spacing={2} sx={{ mb: 4 }}>
+      {/* Key Information - Mobile Optimized */}
+      <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={4}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6" color="primary.main">
+          <Paper sx={{ p: { xs: 1.5, sm: 2 }, textAlign: 'center' }}>
+            <Typography variant="h6" color="primary.main" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
               {FINANCIAL_CONSTANTS.INTEREST_RATES[selectedTerm]}%
             </Typography>
-            <Typography variant="body2">Annual Interest Rate</Typography>
+            <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+              Annual Interest Rate
+            </Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} sm={4}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6" color="primary.main">
+          <Paper sx={{ p: { xs: 1.5, sm: 2 }, textAlign: 'center' }}>
+            <Typography variant="h6" color="primary.main" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
               {FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}%
             </Typography>
-            <Typography variant="body2">Maximum LTV Ratio</Typography>
+            <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+              Maximum LTV Ratio
+            </Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} sm={4}>
-          <Paper sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="h6" color="primary.main">
+          <Paper sx={{ p: { xs: 1.5, sm: 2 }, textAlign: 'center' }}>
+            <Typography variant="h6" color="primary.main" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
               {FINANCIAL_CONSTANTS.LIQUIDATION_FEE}%
             </Typography>
-            <Typography variant="body2">Liquidation Fee</Typography>
+            <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+              Liquidation Fee
+            </Typography>
           </Paper>
         </Grid>
       </Grid>
@@ -444,8 +460,20 @@ const SimpleLandingPage: React.FC = () => {
         </Grid>
       </Paper>
 
-      {/* Confirmation Dialog */}
-      <Dialog open={confirmDialog} onClose={() => setConfirmDialog(false)} maxWidth="sm" fullWidth>
+      {/* Confirmation Dialog - Mobile Optimized */}
+      <Dialog 
+        open={confirmDialog} 
+        onClose={() => setConfirmDialog(false)} 
+        maxWidth="sm" 
+        fullWidth
+        fullScreen={false}
+        PaperProps={{
+          sx: {
+            m: { xs: 1, sm: 3 },
+            width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+          }
+        }}
+      >
         <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <TargetIcon color="primary" sx={{ mr: 1 }} />

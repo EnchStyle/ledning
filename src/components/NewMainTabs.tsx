@@ -6,7 +6,7 @@ import {
   Settings as SettingsIcon 
 } from '@mui/icons-material';
 import SimpleLandingPage from './SimpleLandingPage';
-import AdvancedLoanManagement from './AdvancedLoanManagement';
+import OptimizedPortfolio from './OptimizedPortfolio';
 import SettingsPanel from './SettingsPanel';
 import PlatformHeader from './PlatformHeader';
 import { useLending } from '../context/LendingContext';
@@ -60,14 +60,17 @@ const NewMainTabs: React.FC = () => {
             centered
             sx={{
               '& .MuiTab-root': {
-                minHeight: 64,
+                minHeight: { xs: 56, sm: 64 },
                 textTransform: 'none',
-                fontSize: '1rem',
+                fontSize: { xs: '0.875rem', sm: '1rem' },
                 fontWeight: 600,
-                px: 3,
-                gap: 1,
+                px: { xs: 1, sm: 3 },
+                gap: { xs: 0.5, sm: 1 },
                 '&.Mui-selected': {
                   color: 'primary.main'
+                },
+                '& .MuiTab-iconWrapper': {
+                  fontSize: { xs: '1.25rem', sm: '1.5rem' }
                 }
               }
             }}
@@ -102,7 +105,7 @@ const NewMainTabs: React.FC = () => {
       {/* Portfolio Tab - Loan management */}
       <TabPanel value={value} index={1}>
         <Container maxWidth="xl">
-          <AdvancedLoanManagement />
+          <OptimizedPortfolio />
         </Container>
       </TabPanel>
       
