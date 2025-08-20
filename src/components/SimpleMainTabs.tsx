@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Box, Tabs, Tab, Container } from '@mui/material';
 import SimpleLandingPage from './SimpleLandingPage';
-import SimpleLoansManager from './SimpleLoansManager';
 import SimpleHelp from './SimpleHelp';
 import MarketInfo from './MarketInfo';
 import AdminDashboard from './AdminDashboard';
 import ProfessionalDashboard from './ProfessionalDashboard';
 import InteractiveLoanCalculator from './InteractiveLoanCalculator';
 import AdvancedLoanManagement from './AdvancedLoanManagement';
+import StaticPortfolioDashboard from './StaticPortfolioDashboard';
+import HighPerformancePortfolioDashboard from './HighPerformancePortfolioDashboard';
 import PlatformHeader from './PlatformHeader';
+import { useLending } from '../context/LendingContext';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -41,9 +43,24 @@ function a11yProps(index: number) {
 
 const SimpleMainTabs: React.FC = () => {
   const [value, setValue] = useState(0); // Start with "Get Started" tab
+  const { simulationSettings } = useLending();
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
+  };
+
+  // Smart portfolio component selection based on simulation performance
+  const renderPortfolioComponent = () => {
+    if (!simulationSettings.isActive) {
+      // No simulation - use regular component
+      return <AdvancedLoanManagement />;
+    } else if (simulationSettings.speed >= 5) {
+      // High speed (5x+) - use high-performance component
+      return <HighPerformancePortfolioDashboard />;
+    } else {
+      // Low speed (1x-4x) - use static component to prevent freezing
+      return <StaticPortfolioDashboard />;
+    }
   };
 
   return (
@@ -75,9 +92,10 @@ const SimpleMainTabs: React.FC = () => {
             <Tab label="🚀 Get Started" {...a11yProps(0)} />
             <Tab label="📊 My Portfolio" {...a11yProps(1)} />
             <Tab label="🧮 Calculator" {...a11yProps(2)} />
-            <Tab label="💼 Professional" {...a11yProps(3)} />
-            <Tab label="📈 Market Data" {...a11yProps(4)} />
-            <Tab label="❓ Help" {...a11yProps(5)} />
+            <Tab label="⚙️ Admin" {...a11yProps(3)} />
+            <Tab label="💼 Professional" {...a11yProps(4)} />
+            <Tab label="📈 Market Data" {...a11yProps(5)} />
+            <Tab label="❓ Help" {...a11yProps(6)} />
           </Tabs>
         </Container>
       </Box>
@@ -88,7 +106,7 @@ const SimpleMainTabs: React.FC = () => {
       
       <TabPanel value={value} index={1}>
         <Container maxWidth="xl">
-          <AdvancedLoanManagement />
+          {renderPortfolioComponent()}
         </Container>
       </TabPanel>
       
@@ -99,10 +117,16 @@ const SimpleMainTabs: React.FC = () => {
       </TabPanel>
       
       <TabPanel value={value} index={3}>
-        <ProfessionalDashboard />
+        <Container maxWidth="xl">
+          <AdminDashboard />
+        </Container>
       </TabPanel>
       
       <TabPanel value={value} index={4}>
+        <ProfessionalDashboard />
+      </TabPanel>
+      
+      <TabPanel value={value} index={5}>
         <Container maxWidth="md">
           <Box sx={{ mt: 4 }}>
             <MarketInfo />
@@ -110,7 +134,7 @@ const SimpleMainTabs: React.FC = () => {
         </Container>
       </TabPanel>
       
-      <TabPanel value={value} index={5}>
+      <TabPanel value={value} index={6}>
         <SimpleHelp />
       </TabPanel>
     </Box>

@@ -32,7 +32,6 @@ import {
 import {
   ExpandMore as ExpandMoreIcon,
   TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon,
   WarningAmber as WarningIcon,
   Security as SecurityIcon,
   CheckCircle as CheckIcon,
@@ -59,11 +58,9 @@ interface ActionDialog {
   loanIndex: number;
 }
 
-interface PortfolioDashboardProps {
-  onNavigateToBorrow?: () => void;
-}
+interface PortfolioDashboardProps {}
 
-const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBorrow }) => {
+const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
   // Throttle component rendering logs
   const renderCount = React.useRef(0);
   renderCount.current += 1;
@@ -501,9 +498,11 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
           <Button 
             variant="contained" 
             size="large"
-            onClick={onNavigateToBorrow}
+            onClick={() => {}}
+            disabled
+            sx={{ opacity: 0.7 }}
           >
-            Create Your First Loan
+            Go to "🚀 Get Started" Tab to Create Loan
           </Button>
         </Paper>
       </Box>
@@ -696,10 +695,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
 };
 
 // Memoize with custom comparison to only re-render when loans actually change
-const MemoizedPortfolioDashboard = React.memo(PortfolioDashboard, (prevProps, nextProps) => {
-  // Only re-render if the callback prop changes (which it shouldn't)
-  return prevProps.onNavigateToBorrow === nextProps.onNavigateToBorrow;
-});
+const MemoizedPortfolioDashboard = React.memo(PortfolioDashboard);
 
 MemoizedPortfolioDashboard.displayName = 'PortfolioDashboard';
 

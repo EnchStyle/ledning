@@ -36,7 +36,6 @@ import {
 import {
   ExpandMore as ExpandMoreIcon,
   TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon,
   WarningAmber as WarningIcon,
   Security as SecurityIcon,
   CheckCircle as CheckIcon,
@@ -55,11 +54,9 @@ import {
 import { useLending } from '../context/LendingContext';
 import { DEMO_PORTFOLIO } from '../config/demoConstants';
 
-interface StaticPortfolioDashboardProps {
-  onNavigateToBorrow?: () => void;
-}
+interface StaticPortfolioDashboardProps {}
 
-const StaticPortfolioDashboard: React.FC<StaticPortfolioDashboardProps> = ({ onNavigateToBorrow }) => {
+const StaticPortfolioDashboard: React.FC<StaticPortfolioDashboardProps> = () => {
   const { userLoans, marketData, simulationSettings, repayLoan, addCollateral } = useLending();
   
   // Freeze data snapshot when component mounts
@@ -169,9 +166,11 @@ const StaticPortfolioDashboard: React.FC<StaticPortfolioDashboardProps> = ({ onN
           <Button 
             variant="contained" 
             size="large"
-            onClick={onNavigateToBorrow}
+            onClick={() => {}}
+            disabled
+            sx={{ opacity: 0.7 }}
           >
-            Create Your First Loan
+            Go to "🚀 Get Started" Tab to Create Loan
           </Button>
         </Paper>
       </Box>

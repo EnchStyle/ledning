@@ -2,7 +2,7 @@ import React from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { LendingProvider } from './context/LendingContext';
-import NewDashboard from './components/NewDashboard';
+import SimpleMainTabs from './components/SimpleMainTabs';
 import ErrorBoundary from './components/ErrorBoundary';
 import darkTheme from './theme/darkTheme';
 
@@ -19,7 +19,7 @@ function App() {
             fallbackTitle="Dashboard Error"
             fallbackMessage="The dashboard component encountered an error. Try refreshing to restore functionality."
           >
-            <NewDashboard />
+            <SimpleMainTabs />
           </ErrorBoundary>
         </LendingProvider>
       </ThemeProvider>

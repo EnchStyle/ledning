@@ -89,16 +89,16 @@ const NewDashboard: React.FC = () => {
         // Smart component selection based on simulation speed
         if (!simulationSettings.isActive) {
           // No simulation - use regular component
-          return <PortfolioDashboard onNavigateToBorrow={() => setActiveTab('borrow')} />;
+          return <PortfolioDashboard />;
         } else if (simulationSettings.speed >= 5) {
           // High speed (5x+) - use high-performance component
-          return <HighPerformancePortfolioDashboard onNavigateToBorrow={() => setActiveTab('borrow')} />;
+          return <HighPerformancePortfolioDashboard />;
         } else {
           // Low speed (1x-4x) - use static component to prevent freezing
-          return <StaticPortfolioDashboard onNavigateToBorrow={() => setActiveTab('borrow')} />;
+          return <StaticPortfolioDashboard />;
         }
       case 'borrow':
-        return <LoanCreationPage onNavigateToPortfolio={() => setActiveTab('portfolio')} />;
+        return <LoanCreationPage />;
       case 'analytics':
         return <AnalyticsPage />;
       default:

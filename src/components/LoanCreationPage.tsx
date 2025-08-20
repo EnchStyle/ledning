@@ -54,11 +54,9 @@ interface LoanParameters {
   termDays: LoanTermDays;
 }
 
-interface LoanCreationPageProps {
-  onNavigateToPortfolio?: () => void;
-}
+interface LoanCreationPageProps {}
 
-const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfolio }) => {
+const LoanCreationPage: React.FC<LoanCreationPageProps> = () => {
   const { createLoan, marketData } = useLending();
   const [activeStep, setActiveStep] = useState(0);
   const [parameters, setParameters] = useState<LoanParameters>({
@@ -705,9 +703,8 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
           setAgreedToTerms(false);
           setAgreedToRisks(false);
           // Navigate to portfolio if handler provided
-          if (onNavigateToPortfolio) {
-            onNavigateToPortfolio();
-          }
+          // Navigate to portfolio tab would happen here
+          console.log('Loan created successfully');
         }}
         maxWidth="sm"
         fullWidth
@@ -767,9 +764,8 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
               setAgreedToTerms(false);
               setAgreedToRisks(false);
               // Navigate to portfolio if handler provided
-              if (onNavigateToPortfolio) {
-                onNavigateToPortfolio();
-              }
+              // Portfolio navigation would happen here
+              console.log('Navigating to portfolio');
             }}
             variant="contained" 
             size="large"

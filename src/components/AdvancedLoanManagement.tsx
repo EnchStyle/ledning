@@ -28,9 +28,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Divider,
   Badge,
-  CircularProgress,
 } from '@mui/material';
 import {
   AccountBalance as AccountBalanceIcon,

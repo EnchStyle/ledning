@@ -25,11 +25,9 @@ import {
 import { useLending } from '../context/LendingContext';
 import { DEMO_PORTFOLIO } from '../config/demoConstants';
 
-interface HighPerformancePortfolioDashboardProps {
-  onNavigateToBorrow?: () => void;
-}
+interface HighPerformancePortfolioDashboardProps {}
 
-const HighPerformancePortfolioDashboard: React.FC<HighPerformancePortfolioDashboardProps> = ({ onNavigateToBorrow }) => {
+const HighPerformancePortfolioDashboard: React.FC<HighPerformancePortfolioDashboardProps> = () => {
   const { userLoans, marketData, simulationSettings } = useLending();
   
   // Performance tracking
@@ -121,9 +119,11 @@ const HighPerformancePortfolioDashboard: React.FC<HighPerformancePortfolioDashbo
           <Button 
             variant="contained" 
             size="large"
-            onClick={onNavigateToBorrow}
+            onClick={() => {}}
+            disabled
+            sx={{ opacity: 0.7 }}
           >
-            Create Your First Loan
+            Go to "🚀 Get Started" Tab to Create Loan
           </Button>
         </Paper>
       </Box>
@@ -344,7 +344,4 @@ const HighPerformancePortfolioDashboard: React.FC<HighPerformancePortfolioDashbo
 };
 
 // Aggressive memoization to prevent unnecessary re-renders
-export default React.memo(HighPerformancePortfolioDashboard, (prevProps, nextProps) => {
-  // Only re-render if navigation callback changes
-  return prevProps.onNavigateToBorrow === nextProps.onNavigateToBorrow;
-});
+export default React.memo(HighPerformancePortfolioDashboard);

@@ -147,6 +147,16 @@ const AdminDashboard: React.FC = () => {
           </Grid>
         </Grid>
 
+        {/* Market Simulator */}
+        <Box sx={{ mt: 4 }}>
+          <DualAssetMarketSimulator 
+            currentXpmPrice={marketData.xpmPriceUSD}
+            currentXrpPrice={0.50} // Mock XRP price for demo
+            onXpmPriceChange={updateXpmPrice}
+            onXrpPriceChange={(price) => console.log('XRP price changed to:', price)} // Mock handler
+          />
+        </Box>
+
         {/* Loan Risk Analysis */}
         <Box sx={{ mt: 4 }}>
           <Typography variant="h6" gutterBottom>
