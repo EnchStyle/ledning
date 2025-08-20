@@ -4,7 +4,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { LendingProvider } from './context/LendingContext';
 import NewMainTabs from './components/NewMainTabs';
 import ErrorBoundary from './components/ErrorBoundary';
-import financialTheme from './theme/financialTheme';
+import charcoalTheme from './theme/charcoalTheme';
 
 function App() {
   return (
@@ -12,7 +12,7 @@ function App() {
       fallbackTitle="Application Error"
       fallbackMessage="The lending demo encountered an unexpected error. This is likely due to a development issue."
     >
-      <ThemeProvider theme={financialTheme}>
+      <ThemeProvider theme={charcoalTheme}>
         <CssBaseline />
         <LendingProvider>
           <ErrorBoundary

@@ -147,7 +147,7 @@ export const SIMULATION_CONFIG = {
 export const UI_CONFIG = {
   // Theme settings
   THEME: {
-    PRIMARY_COLOR: '#059669',   // Emerald Green
+    PRIMARY_COLOR: '#E5E7EB',   // Light Gray
     SUCCESS_COLOR: '#10B981',   // Professional green
     WARNING_COLOR: '#F59E0B',   // Gold
     ERROR_COLOR: '#EF4444',     // Refined red
