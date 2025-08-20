@@ -160,11 +160,11 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
 
   // Demo wallet balance: 2M XPM for demo purposes
-  const demoWalletBalance = 2000000;
+  const demoWalletBalance = DEMO_PORTFOLIO.XPM_BALANCE;
 
-  // Minimum loan amount to prevent micro transactions and spam
-  const MINIMUM_LOAN_AMOUNT_USD = 50; // $50 minimum loan value
-  const MINIMUM_COLLATERAL_AMOUNT_USD = 100; // $100 minimum collateral value
+  // Minimum loan amounts from configuration
+  const MINIMUM_LOAN_AMOUNT_USD = FINANCIAL_CONSTANTS.MINIMUM_AMOUNTS.LOAN_AMOUNT;
+  const MINIMUM_COLLATERAL_AMOUNT_USD = FINANCIAL_CONSTANTS.MINIMUM_AMOUNTS.COLLATERAL_VALUE;
 
 
   /**

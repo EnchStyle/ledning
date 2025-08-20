@@ -23,6 +23,7 @@ import {
 import { useLending } from '../context/LendingContext';
 import { calculateMaxBorrowRLUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
 import { LoanTermDays } from '../types/lending';
+import { FINANCIAL_CONSTANTS } from '../config/demoConstants';
 
 const SimpleLandingPage: React.FC = () => {
   const { createLoan, marketData } = useLending();
@@ -34,9 +35,9 @@ const SimpleLandingPage: React.FC = () => {
   
   const collateral = parseFloat(collateralAmount) || 0;
   const collateralValueUSD = collateral * marketData.xpmPriceUSD;
-  const maxBorrowRLUSD = calculateMaxBorrowRLUSD(collateral, marketData.xpmPriceUSD, 50);
+  const maxBorrowRLUSD = calculateMaxBorrowRLUSD(collateral, marketData.xpmPriceUSD, FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV);
   const borrowValueUSD = maxBorrowRLUSD; // RLUSD is 1:1 USD
-  const liquidationPriceUSD = calculateLiquidationPriceUSD(maxBorrowRLUSD, collateral, 65);
+  const liquidationPriceUSD = calculateLiquidationPriceUSD(maxBorrowRLUSD, collateral, FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV);
   const priceDropToLiquidation = collateral > 0 ? ((marketData.xpmPriceUSD - liquidationPriceUSD) / marketData.xpmPriceUSD) * 100 : 0;
 
   const handleCreateLoan = () => {
@@ -49,8 +50,8 @@ const SimpleLandingPage: React.FC = () => {
     createLoan({
       collateralAmount: collateral,
       borrowAmount: maxBorrowRLUSD,
-      interestRate: selectedTerm === 30 ? 14 : selectedTerm === 60 ? 15 : 16,
-      liquidationThreshold: 65,
+      interestRate: FINANCIAL_CONSTANTS.INTEREST_RATES[selectedTerm],
+      liquidationThreshold: FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV,
       termDays: selectedTerm,
     });
     setConfirmDialog(false);
@@ -61,9 +62,9 @@ const SimpleLandingPage: React.FC = () => {
   };
 
   const termOptions = [
-    { days: 30, label: '30 Days', rate: '19%' },
-    { days: 60, label: '60 Days', rate: '16%' }, 
-    { days: 90, label: '90 Days', rate: '15%' }
+    { days: 30 as LoanTermDays, label: '30 Days', rate: `${FINANCIAL_CONSTANTS.INTEREST_RATES[30]}%` },
+    { days: 60 as LoanTermDays, label: '60 Days', rate: `${FINANCIAL_CONSTANTS.INTEREST_RATES[60]}%` }, 
+    { days: 90 as LoanTermDays, label: '90 Days', rate: `${FINANCIAL_CONSTANTS.INTEREST_RATES[90]}%` }
   ];
 
   return (
@@ -99,7 +100,7 @@ const SimpleLandingPage: React.FC = () => {
           color="text.secondary"
           sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
         >
-          ✅ 15-16% APR  •  ✅ Up to 50% LTV  •  ✅ No KYC Required  •  ✅ Instant Settlement
+          ✅ {FINANCIAL_CONSTANTS.INTEREST_RATES[90]}-{FINANCIAL_CONSTANTS.INTEREST_RATES[30]}% APR  •  ✅ Up to {FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}% LTV  •  ✅ No KYC Required  •  ✅ Instant Settlement
         </Typography>
       </Box>
 
@@ -248,7 +249,7 @@ const SimpleLandingPage: React.FC = () => {
                     <Grid item xs={6}>
                       <Typography variant="body2" color="text.secondary">Interest:</Typography>
                       <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {(maxBorrowRLUSD * (selectedTerm === 30 ? 0.19 : selectedTerm === 60 ? 0.16 : 0.15) * selectedTerm / 365).toFixed(0)} RLUSD
+                        {(maxBorrowRLUSD * (FINANCIAL_CONSTANTS.INTEREST_RATES[selectedTerm] / 100) * selectedTerm / 365).toFixed(0)} RLUSD
                       </Typography>
                     </Grid>
                     <Grid item xs={12}>
@@ -352,7 +353,7 @@ const SimpleLandingPage: React.FC = () => {
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="h6" color="primary.main">2</Typography>
               <Typography variant="body2">
-                Receive RLUSD instantly at 15% APR
+                Receive RLUSD instantly at {FINANCIAL_CONSTANTS.INTEREST_RATES[90]}-{FINANCIAL_CONSTANTS.INTEREST_RATES[30]}% APR
               </Typography>
             </Box>
           </Grid>
@@ -411,7 +412,7 @@ const SimpleLandingPage: React.FC = () => {
               <Grid item xs={6}>
                 <Typography variant="body2" color="text.secondary">Interest:</Typography>
                 <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  {(maxBorrowRLUSD * (selectedTerm === 30 ? 0.19 : selectedTerm === 60 ? 0.16 : 0.15) * selectedTerm / 365).toFixed(0)} RLUSD
+                  {(maxBorrowRLUSD * (FINANCIAL_CONSTANTS.INTEREST_RATES[selectedTerm] / 100) * selectedTerm / 365).toFixed(0)} RLUSD
                 </Typography>
               </Grid>
             </Grid>

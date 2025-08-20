@@ -23,6 +23,7 @@ import {
   Bolt as BoltIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
+import { DEMO_PORTFOLIO } from '../config/demoConstants';
 
 interface HighPerformancePortfolioDashboardProps {
   onNavigateToBorrow?: () => void;
@@ -88,7 +89,7 @@ const HighPerformancePortfolioDashboard: React.FC<HighPerformancePortfolioDashbo
   const { totalCollateralValue, totalDebtRLUSD, avgLTV, availableToBorrow, atRiskLoans, fps } = portfolioStats;
 
   // Demo wallet balance
-  const walletBalance = 2000000;
+  const walletBalance = DEMO_PORTFOLIO.XPM_BALANCE;
 
   if (userLoans.length === 0) {
     return (

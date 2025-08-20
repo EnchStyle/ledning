@@ -53,6 +53,7 @@ import {
   PauseCircleFilled as PauseIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
+import { DEMO_PORTFOLIO } from '../config/demoConstants';
 
 interface StaticPortfolioDashboardProps {
   onNavigateToBorrow?: () => void;
@@ -73,7 +74,7 @@ const StaticPortfolioDashboard: React.FC<StaticPortfolioDashboardProps> = ({ onN
   const workingPrice = frozenData.marketData.xpmPriceUSD;
 
   // Demo wallet balance
-  const walletBalance = 2000000;
+  const walletBalance = DEMO_PORTFOLIO.XPM_BALANCE;
 
   // Static portfolio calculations using frozen data
   const portfolioStats = React.useMemo(() => {

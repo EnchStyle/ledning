@@ -48,6 +48,7 @@ import {
   HelpOutline as HelpIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
+import { DEMO_PORTFOLIO } from '../config/demoConstants';
 import PortfolioChart from './PortfolioChart';
 import LiquidationAlert from './LiquidationAlert';
 
@@ -85,7 +86,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = ({ onNavigateToBor
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   // Demo wallet balance
-  const walletBalance = 2000000;
+  const walletBalance = DEMO_PORTFOLIO.XPM_BALANCE;
 
   // Portfolio calculations using useState to avoid memoization issues
   const [portfolioStats, setPortfolioStats] = React.useState({ totalCollateralValue: 0, totalDebtRLUSD: 0, avgLTV: 0, availableToBorrow: 0, atRiskLoans: 0 });

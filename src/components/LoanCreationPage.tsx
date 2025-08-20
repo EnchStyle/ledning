@@ -441,7 +441,7 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = ({ onNavigateToPortfol
               <li>Current XPM price: ${marketData.xpmPriceUSD.toFixed(4)}</li>
               <li>Safe zone: Above ${(liquidationPrice * 1.1).toFixed(4)} ({((priceDropBuffer - 10) > 0 ? priceDropBuffer - 10 : 0).toFixed(1)}%+ buffer)</li>
               <li>Warning zone: ${(liquidationPrice * 1.1).toFixed(4)} - ${liquidationPrice.toFixed(4)}</li>
-              <li>Liquidation price: ${liquidationPrice.toFixed(4)} (65% LTV)</li>
+              <li>Liquidation price: ${liquidationPrice.toFixed(4)} ({FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV}% LTV)</li>
             </ul>
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
               Monitor your loan regularly to avoid liquidation. You can repay early at any time.

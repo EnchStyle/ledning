@@ -28,6 +28,7 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
+import { DEMO_PORTFOLIO } from '../config/demoConstants';
 import { DEMO_CONFIG } from '../config/demoConstants';
 import LoanCreationPage from './LoanCreationPage';
 import PortfolioDashboard from './PortfolioDashboard';
@@ -53,7 +54,7 @@ const NewDashboard: React.FC = () => {
   const { marketData, userPosition, simulationSettings } = useLending();
 
   // Demo balance - 2M XPM
-  const walletBalance = 2000000;
+  const walletBalance = DEMO_PORTFOLIO.XPM_BALANCE;
   const walletValueUSD = walletBalance * marketData.xpmPriceUSD;
 
   const navigationItems: NavigationItem[] = [

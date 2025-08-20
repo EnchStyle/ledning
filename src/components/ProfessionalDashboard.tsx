@@ -53,6 +53,7 @@ import {
   Help as HelpIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
+import { FINANCIAL_CONSTANTS } from '../config/demoConstants';
 import { calculateMaxBorrowRLUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
 import { LoanTermDays } from '../types/lending';
 
@@ -606,7 +607,7 @@ const ProfessionalDashboard: React.FC = () => {
                       {selectedTerm} days
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {selectedTerm === 30 ? '19%' : selectedTerm === 60 ? '16%' : '15%'} APR
+                      {FINANCIAL_CONSTANTS.INTEREST_RATES[selectedTerm]}% APR
                     </Typography>
                   </Grid>
                   <Grid item xs={6}>
@@ -683,7 +684,7 @@ const ProfessionalDashboard: React.FC = () => {
               • Receive: {maxBorrowRLUSD.toFixed(0)} RLUSD (${borrowValueUSD.toFixed(0)})
             </Typography>
             <Typography variant="body2">
-              • Term: {selectedTerm} days at {selectedTerm === 30 ? '19%' : selectedTerm === 60 ? '16%' : '15%'} APR
+              • Term: {selectedTerm} days at {FINANCIAL_CONSTANTS.INTEREST_RATES[selectedTerm]}% APR
             </Typography>
             <Typography variant="body2">
               • Liquidation: ${liquidationPriceUSD.toFixed(4)} XPM ({priceDropToLiquidation.toFixed(1)}% buffer)
