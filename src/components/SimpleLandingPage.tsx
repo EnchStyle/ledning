@@ -68,6 +68,13 @@ const SimpleLandingPage: React.FC = () => {
 
   return (
     <Container maxWidth="md">
+      {/* Demo Badge */}
+      <Alert severity="info" sx={{ mb: 3, textAlign: 'center' }}>
+        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+          🚀 **DEMO MODE** - This is a simulation environment for testing. No real funds involved!
+        </Typography>
+      </Alert>
+
       {/* Simple Header */}
       <Box sx={{ textAlign: 'center', mb: 4 }}>
         <Typography 
@@ -78,24 +85,31 @@ const SimpleLandingPage: React.FC = () => {
             fontSize: { xs: '1.75rem', sm: '2.5rem', md: '3rem' }
           }}
         >
-          Borrow RLUSD with XPM Collateral
+          Get Your First Loan in 30 Seconds
         </Typography>
         <Typography 
           variant="h6" 
           color="text.secondary"
-          sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
+          sx={{ fontSize: { xs: '1rem', sm: '1.25rem' }, mb: 2 }}
         >
-          15% APR • Up to 50% LTV • Instant loans
+          Deposit XPM tokens → Instantly borrow RLUSD stablecoins
+        </Typography>
+        <Typography 
+          variant="body1" 
+          color="text.secondary"
+          sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
+        >
+          ✅ 15-16% APR  •  ✅ Up to 50% LTV  •  ✅ No KYC Required  •  ✅ Instant Settlement
         </Typography>
       </Box>
 
       {/* Main Loan Calculator */}
-      <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4 }}>
+      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4, borderRadius: 3 }}>
         <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
           {/* Input Section */}
           <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>
-              How much XPM do you want to use as collateral?
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: 'primary.main' }}>
+              💰 Step 1: Choose Your Collateral
             </Typography>
             
             <TextField
@@ -104,28 +118,61 @@ const SimpleLandingPage: React.FC = () => {
               type="number"
               value={collateralAmount}
               onChange={(e) => setCollateralAmount(e.target.value)}
-              sx={{ mb: 3 }}
+              sx={{ mb: 2 }}
               inputProps={{ min: 1000, step: 1000 }}
               helperText={
                 collateral < 1000 
-                  ? "Minimum 1,000 XPM required" 
+                  ? "⚠️ Minimum 1,000 XPM required" 
                   : collateral > 10000000 
-                    ? "Maximum 10,000,000 XPM allowed"
-                    : `Worth $${collateralValueUSD.toFixed(0)} USD at current price`
+                    ? "⚠️ Maximum 10,000,000 XPM allowed"
+                    : `💵 Worth $${collateralValueUSD.toFixed(0)} USD at $${marketData.xpmPriceUSD.toFixed(4)} per XPM`
               }
               error={collateral > 0 && (collateral < 1000 || collateral > 10000000)}
             />
 
+            {/* Quick Amount Buttons */}
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Quick amounts:
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
+              {[100000, 250000, 500000, 1000000].map((amount) => (
+                <Button
+                  key={amount}
+                  variant={collateral === amount ? "contained" : "outlined"}
+                  size="small"
+                  onClick={() => setCollateralAmount(amount.toString())}
+                  sx={{ 
+                    minWidth: { xs: 60, sm: 'auto' },
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                    px: { xs: 1, sm: 2 }
+                  }}
+                >
+                  {amount >= 1000000 ? `${amount / 1000000}M` : `${amount / 1000}K`}
+                </Button>
+              ))}
+            </Box>
+
             {/* Loan Term Selection */}
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 500, color: 'primary.main' }}>
+              ⏰ Step 2: Pick Your Loan Term
+            </Typography>
             <FormControl component="fieldset" sx={{ mb: 3 }}>
-              <FormLabel component="legend">Loan Term</FormLabel>
               <RadioGroup
                 value={selectedTerm}
                 onChange={(e) => setSelectedTerm(Number(e.target.value) as LoanTermDays)}
                 row={false}
                 sx={{
                   '& .MuiFormControlLabel-root': {
-                    mb: 1
+                    mb: 1,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: 1,
+                    px: 2,
+                    py: 1,
+                    mr: 0,
+                    '&:hover': {
+                      bgcolor: 'action.hover'
+                    }
                   }
                 }}
               >
@@ -135,13 +182,14 @@ const SimpleLandingPage: React.FC = () => {
                     value={option.days}
                     control={<Radio />}
                     label={
-                      <Box>
-                        <Typography variant="body2">{option.label}</Typography>
-                        <Typography variant="caption" color="text.secondary">
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>{option.label}</Typography>
+                        <Typography variant="body2" color="primary.main" sx={{ fontWeight: 600 }}>
                           {option.rate} APR
                         </Typography>
                       </Box>
                     }
+                    sx={{ width: '100%' }}
                   />
                 ))}
               </RadioGroup>
@@ -170,29 +218,46 @@ const SimpleLandingPage: React.FC = () => {
           <Grid item xs={12} md={6}>
             {collateral > 0 ? (
               <Box>
-                <Typography variant="h6" gutterBottom>
-                  You'll receive
+                <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: 'success.main' }}>
+                  🎉 Step 3: Your Loan Preview
                 </Typography>
                 
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="h3" color="primary.main" sx={{ fontWeight: 600 }}>
+                {/* Main Result Card */}
+                <Paper elevation={3} sx={{ p: 3, mb: 3, bgcolor: 'success.light', color: 'success.contrastText' }}>
+                  <Typography variant="body1" sx={{ mb: 1, fontWeight: 500 }}>
+                    💵 You'll Instantly Receive:
+                  </Typography>
+                  <Typography variant="h2" sx={{ fontWeight: 700, mb: 1 }}>
                     {maxBorrowRLUSD.toFixed(0)}
                   </Typography>
-                  <Typography variant="h6" color="text.secondary">
-                    RLUSD (=${borrowValueUSD.toFixed(0)} USD)
+                  <Typography variant="h6">
+                    RLUSD ≈ ${borrowValueUSD.toFixed(0)} USD
                   </Typography>
-                </Box>
+                </Paper>
 
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Term: {selectedTerm} days
+                {/* Loan Details */}
+                <Box sx={{ mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                  <Typography variant="body1" gutterBottom sx={{ fontWeight: 500 }}>
+                    📋 Loan Details:
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Total interest: ~{(maxBorrowRLUSD * (selectedTerm === 30 ? 0.14 : selectedTerm === 60 ? 0.15 : 0.16) * selectedTerm / 365).toFixed(2)} RLUSD
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Liquidation if XPM drops to: ${liquidationPriceUSD.toFixed(4)}
-                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="text.secondary">Term:</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>{selectedTerm} days</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="text.secondary">Interest:</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {(maxBorrowRLUSD * (selectedTerm === 30 ? 0.19 : selectedTerm === 60 ? 0.16 : 0.15) * selectedTerm / 365).toFixed(0)} RLUSD
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography variant="body2" color="text.secondary">⚠️ Liquidation Price:</Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500, color: priceDropToLiquidation < 20 ? 'warning.main' : 'text.primary' }}>
+                        ${liquidationPriceUSD.toFixed(4)} ({priceDropToLiquidation.toFixed(0)}% buffer)
+                      </Typography>
+                    </Grid>
+                  </Grid>
                 </Box>
 
                 <Button
@@ -201,19 +266,37 @@ const SimpleLandingPage: React.FC = () => {
                   fullWidth
                   onClick={handleCreateLoan}
                   sx={{ 
-                    py: 1.5,
-                    fontSize: { xs: '1rem', sm: '1.125rem' },
-                    fontWeight: 600
+                    py: 2,
+                    fontSize: '1.25rem',
+                    fontWeight: 700,
+                    bgcolor: 'success.main',
+                    '&:hover': {
+                      bgcolor: 'success.dark'
+                    },
+                    borderRadius: 3,
+                    textTransform: 'none'
                   }}
                   disabled={collateral < 1000 || collateral > 10000000}
                 >
-                  Create Loan
+                  🚀 Get My Loan Now
                 </Button>
+                
+                {(collateral < 1000 || collateral > 10000000) && (
+                  <Alert severity="warning" sx={{ mt: 2 }}>
+                    {collateral < 1000 ? "Need at least 1,000 XPM to proceed" : "Maximum 10M XPM allowed"}
+                  </Alert>
+                )}
               </Box>
             ) : (
-              <Box sx={{ textAlign: 'center', color: 'text.secondary', mt: 4 }}>
+              <Box sx={{ textAlign: 'center', color: 'text.secondary', mt: 4, p: 4 }}>
+                <Typography variant="h4" gutterBottom sx={{ opacity: 0.7 }}>
+                  👆
+                </Typography>
                 <Typography variant="h6">
-                  Enter collateral amount to see loan details
+                  Enter your collateral amount to see instant loan preview
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  See exactly how much RLUSD you'll receive and all loan terms
                 </Typography>
               </Box>
             )}
@@ -285,41 +368,79 @@ const SimpleLandingPage: React.FC = () => {
       </Paper>
 
       {/* Confirmation Dialog */}
-      <Dialog open={confirmDialog} onClose={() => setConfirmDialog(false)}>
-        <DialogTitle>Confirm Loan Creation</DialogTitle>
+      <Dialog open={confirmDialog} onClose={() => setConfirmDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>
+            🎯 Final Confirmation
+          </Typography>
+        </DialogTitle>
         <DialogContent>
-          <Box sx={{ pt: 2 }}>
-            <Typography variant="body1" gutterBottom>
-              <strong>Loan Summary:</strong>
+          <Alert severity="success" sx={{ mb: 3 }}>
+            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+              You're about to receive {maxBorrowRLUSD.toFixed(0)} RLUSD instantly!
             </Typography>
-            <Typography variant="body2" gutterBottom>
-              • Collateral: {collateral.toLocaleString()} XPM (${collateralValueUSD.toFixed(0)} USD)
+          </Alert>
+
+          <Paper elevation={2} sx={{ p: 3, mb: 3, bgcolor: 'grey.50' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: 'primary.main', fontWeight: 600 }}>
+              📋 Loan Summary:
             </Typography>
-            <Typography variant="body2" gutterBottom>
-              • You'll receive: {maxBorrowRLUSD.toFixed(0)} RLUSD (${borrowValueUSD.toFixed(0)} USD)
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <Typography variant="body2" color="text.secondary">Collateral:</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {collateral.toLocaleString()} XPM
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  ≈ ${collateralValueUSD.toFixed(0)} USD
+                </Typography>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="body2" color="text.secondary">You Receive:</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {maxBorrowRLUSD.toFixed(0)} RLUSD
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  ≈ ${borrowValueUSD.toFixed(0)} USD
+                </Typography>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="body2" color="text.secondary">Term:</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>{selectedTerm} days</Typography>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="body2" color="text.secondary">Interest:</Typography>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {(maxBorrowRLUSD * (selectedTerm === 30 ? 0.19 : selectedTerm === 60 ? 0.16 : 0.15) * selectedTerm / 365).toFixed(0)} RLUSD
+                </Typography>
+              </Grid>
+            </Grid>
+          </Paper>
+          
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            <Typography variant="body2">
+              <strong>⚠️ Important:</strong> Your collateral will be liquidated if XPM price drops to ${liquidationPriceUSD.toFixed(4)} or below.
             </Typography>
-            <Typography variant="body2" gutterBottom>
-              • Term: {selectedTerm} days ({selectedTerm === 30 ? '19%' : selectedTerm === 60 ? '16%' : '15%'} APR)
-            </Typography>
-            <Typography variant="body2" gutterBottom>
-              • Liquidation if XPM drops to: ${liquidationPriceUSD.toFixed(4)}
-            </Typography>
-            
-            
-            <Alert severity="info" sx={{ mt: 2 }}>
-              <Typography variant="body2">
-                By confirming, you agree to deposit the collateral and receive the RLUSD loan. 
-                Fixed interest is calculated upfront for the full term.
-              </Typography>
-            </Alert>
-          </Box>
+          </Alert>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDialog(false)}>
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button onClick={() => setConfirmDialog(false)} size="large" sx={{ mr: 2 }}>
             Cancel
           </Button>
-          <Button onClick={confirmCreateLoan} variant="contained" size="large">
-            Confirm & Create Loan
+          <Button 
+            onClick={confirmCreateLoan} 
+            variant="contained" 
+            size="large"
+            sx={{ 
+              py: 1.5, 
+              px: 4, 
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              bgcolor: 'success.main',
+              '&:hover': { bgcolor: 'success.dark' }
+            }}
+          >
+            ✅ Yes, Create My Loan!
           </Button>
         </DialogActions>
       </Dialog>
