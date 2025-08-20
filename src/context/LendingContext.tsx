@@ -728,13 +728,16 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
    * Loan is marked as 'repaid' if fully paid off
    */
   const repayLoan = useCallback((loanId: string, amount?: number) => {
+    console.log('🏦 REPAY LOAN CALLED:', loanId, amount);
     let repaymentAmount = 0;
     let collateralToReturn = 0;
     
-    setLoans(prevLoans =>
-      prevLoans.map(loan => {
+    setLoans(prevLoans => {
+      console.log('🏦 CURRENT LOANS:', prevLoans.length);
+      return prevLoans.map(loan => {
         if (loan.id !== loanId) return loan;
         
+        console.log('🎯 FOUND LOAN TO REPAY:', loan.id, loan.borrowedAmount);
         const totalDebt = loan.borrowedAmount + loan.fixedInterestAmount;
         // Full repayment - close the loan (if no amount specified or amount covers full debt)
         if (!amount || amount >= totalDebt) {
@@ -772,8 +775,8 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           fixedInterestAmount: loan.fixedInterestAmount - paidInterest,
           currentLTV: calculateLTV(collateralValueUSD, remainingDebtUSD),
         };
-      })
-    );
+      });
+    });
     
     // Update wallet balances after loan update
     if (repaymentAmount > 0) {

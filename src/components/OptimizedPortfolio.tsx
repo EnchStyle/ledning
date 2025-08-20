@@ -71,12 +71,22 @@ const LoanCard = React.memo<LoanCardProps>(({
             <Typography variant="h6" gutterBottom>
               Loan #{index + 1}
             </Typography>
-            <Chip 
-              icon={getLoanHealthIcon(ltv)}
-              label={ltv < 30 ? 'Excellent' : ltv < 45 ? 'Good' : ltv < 55 ? 'Fair' : 'At Risk'}
-              color={getLoanHealthColor(ltv) as any}
-              size="small"
-            />
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Chip 
+                label={loan.status === 'active' ? 'Active' : loan.status === 'matured' ? 'Matured' : 'Liquidated'}
+                color={loan.status === 'active' ? 'success' : loan.status === 'matured' ? 'warning' : 'error'}
+                size="small"
+                sx={{ mb: 1 }}
+              />
+              {loan.status === 'active' && (
+                <Chip 
+                  icon={getLoanHealthIcon(ltv)}
+                  label={ltv < 30 ? 'Excellent' : ltv < 45 ? 'Good' : ltv < 55 ? 'Fair' : 'At Risk'}
+                  color={getLoanHealthColor(ltv) as any}
+                  size="small"
+                />
+              )}
+            </Box>
           </Box>
           <Box sx={{ textAlign: 'right' }}>
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
@@ -156,43 +166,51 @@ const LoanCard = React.memo<LoanCardProps>(({
             py: { xs: 0.5, sm: 1 }
           }
         }}>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<RepayIcon sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }} />}
-            onClick={() => onAction('repay', loan.id || `loan-${index}`, index)}
-            sx={{ minWidth: { xs: 80, sm: 'auto' } }}
-          >
-            Repay
-          </Button>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<AddCollateralIcon sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }} />}
-            onClick={() => onAction('add_collateral', loan.id || `loan-${index}`, index)}
-            sx={{ minWidth: { xs: 100, sm: 'auto' } }}
-          >
-            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-              Add Collateral
-            </Box>
-            <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
-              Add Col.
-            </Box>
-          </Button>
-          <Button
-            variant="contained"
-            size="small"
-            color="success"
-            onClick={() => onFullRepayment(loan.id || `loan-${index}`, index, totalDebt)}
-            sx={{ minWidth: { xs: 90, sm: 'auto' } }}
-          >
-            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-              Full Repayment
-            </Box>
-            <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
-              Full Pay
-            </Box>
-          </Button>
+          {loan.status === 'active' ? (
+            <>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<RepayIcon sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }} />}
+                onClick={() => onAction('repay', loan.id || `loan-${index}`, index)}
+                sx={{ minWidth: { xs: 80, sm: 'auto' } }}
+              >
+                Repay
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<AddCollateralIcon sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }} />}
+                onClick={() => onAction('add_collateral', loan.id || `loan-${index}`, index)}
+                sx={{ minWidth: { xs: 100, sm: 'auto' } }}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Add Collateral
+                </Box>
+                <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+                  Add Col.
+                </Box>
+              </Button>
+              <Button
+                variant="contained"
+                size="small"
+                color="success"
+                onClick={() => onFullRepayment(loan.id || `loan-${index}`, index, totalDebt)}
+                sx={{ minWidth: { xs: 90, sm: 'auto' } }}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                  Full Repayment
+                </Box>
+                <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+                  Full Pay
+                </Box>
+              </Button>
+            </>
+          ) : (
+            <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
+              {loan.status === 'matured' ? 'Loan term has expired' : 'Loan has been liquidated'}
+            </Typography>
+          )}
         </Box>
       </CardContent>
     </Card>
@@ -221,35 +239,40 @@ const OptimizedPortfolio: React.FC = () => {
 
   // Portfolio calculations with memoization for performance
   const portfolioMetrics = useMemo(() => {
-    if (userLoans.length === 0) {
+    const activeLoans = userLoans.filter(loan => loan.status === 'active');
+    
+    if (activeLoans.length === 0) {
       return {
         totalCollateralValue: 0,
         totalDebt: 0,
         avgLTV: 0,
         healthyLoans: 0,
         atRiskLoans: 0,
-        totalEarnings: 0
+        totalEarnings: 0,
+        activeLoans: 0,
+        maturedLoans: userLoans.filter(loan => loan.status === 'matured').length,
+        liquidatedLoans: userLoans.filter(loan => loan.status === 'liquidated').length
       };
     }
 
-    const totalCollateralValue = userLoans.reduce((sum, loan) => 
+    const totalCollateralValue = activeLoans.reduce((sum, loan) => 
       sum + (loan.collateralAmount * marketData.xpmPriceUSD), 0
     );
     
-    const totalDebt = userLoans.reduce((sum, loan) => 
+    const totalDebt = activeLoans.reduce((sum, loan) => 
       sum + loan.borrowedAmount + (loan.fixedInterestAmount || 0), 0
     );
     
     const avgLTV = totalCollateralValue > 0 ? (totalDebt / totalCollateralValue) * 100 : 0;
     
-    const healthyLoans = userLoans.filter(loan => {
+    const healthyLoans = activeLoans.filter(loan => {
       const loanDebt = loan.borrowedAmount + (loan.fixedInterestAmount || 0);
       const loanValue = loan.collateralAmount * marketData.xpmPriceUSD;
       const ltv = (loanDebt / loanValue) * 100;
       return ltv < 45;
     }).length;
     
-    const atRiskLoans = userLoans.filter(loan => {
+    const atRiskLoans = activeLoans.filter(loan => {
       const loanDebt = loan.borrowedAmount + (loan.fixedInterestAmount || 0);
       const loanValue = loan.collateralAmount * marketData.xpmPriceUSD;
       const ltv = (loanDebt / loanValue) * 100;
@@ -266,17 +289,22 @@ const OptimizedPortfolio: React.FC = () => {
       avgLTV,
       healthyLoans,
       atRiskLoans,
-      totalEarnings
+      totalEarnings,
+      activeLoans: activeLoans.length,
+      maturedLoans: userLoans.filter(loan => loan.status === 'matured').length,
+      liquidatedLoans: userLoans.filter(loan => loan.status === 'liquidated').length
     };
   }, [userLoans, marketData.xpmPriceUSD]);
 
   const handleAction = useCallback((type: 'repay' | 'add_collateral', loanId: string, loanIndex: number) => {
+    console.log('🔥 BUTTON CLICKED:', type, loanId, loanIndex);
     setActionDialog({ open: true, type, loanId, loanIndex });
     setRepayAmount('');
     setCollateralAmount('');
   }, []);
 
   const executeAction = useCallback(async () => {
+    console.log('💰 EXECUTE ACTION:', actionDialog.type, actionDialog.loanId, repayAmount);
     if (!actionDialog.type || actionDialog.loanIndex < 0) return;
     
     setProcessing(true);
@@ -286,6 +314,7 @@ const OptimizedPortfolio: React.FC = () => {
       
       if (actionDialog.type === 'repay') {
         const amount = repayAmount ? parseFloat(repayAmount) : undefined;
+        console.log('💸 CALLING REPAY LOAN:', actionDialog.loanId, amount);
         repayLoan(actionDialog.loanId, amount);
         setNotification(amount 
           ? `Repaid ${amount.toFixed(0)} RLUSD successfully`
@@ -299,6 +328,7 @@ const OptimizedPortfolio: React.FC = () => {
       
       setActionDialog({ open: false, type: null, loanId: '', loanIndex: -1 });
     } catch (error) {
+      console.error('❌ EXECUTE ACTION ERROR:', error);
       setNotification('Transaction failed. Please try again.');
     } finally {
       setProcessing(false);
@@ -363,7 +393,7 @@ const OptimizedPortfolio: React.FC = () => {
               Portfolio Overview
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              {userLoans.length} active loan{userLoans.length !== 1 ? 's' : ''}
+              {portfolioMetrics.activeLoans} active • {portfolioMetrics.maturedLoans} matured • {portfolioMetrics.liquidatedLoans} liquidated
             </Typography>
           </Box>
         </Box>
@@ -376,6 +406,7 @@ const OptimizedPortfolio: React.FC = () => {
           </Alert>
         )}
       </Box>
+
 
       {/* Wallet Balance */}
       <Paper sx={{ p: 3, mb: 4, background: 'linear-gradient(135deg, #1a1f2e 0%, #252a3e 100%)' }}>
