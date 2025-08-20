@@ -45,6 +45,7 @@ import {
   ReceiptLong as ReceiptIcon,
   Timeline as TimelineIcon,
   HelpOutline as HelpIcon,
+  AccountBalanceWallet as WalletIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
 import { DEMO_PORTFOLIO, FINANCIAL_CONSTANTS } from '../config/demoConstants';
@@ -534,9 +535,12 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
 
       {/* Wallet Balances */}
       <Paper sx={{ p: 3, mb: 4, background: 'linear-gradient(135deg, #1a1f2e 0%, #252a3e 100%)' }}>
-        <Typography variant="h6" gutterBottom>
-          💰 Your Wallet
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <WalletIcon color="primary" sx={{ mr: 1 }} />
+          <Typography variant="h6">
+            Your Wallet
+          </Typography>
+        </Box>
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6}>
             <Box>
