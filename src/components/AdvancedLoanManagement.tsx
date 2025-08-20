@@ -46,8 +46,10 @@ import {
   Refresh as RefreshIcon,
   Assessment as AssessmentIcon,
   Notifications as NotificationsIcon,
+  History as HistoryIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
+import LoanHistoryLog from './LoanHistoryLog';
 
 interface LoanAction {
   id: string;
@@ -466,6 +468,7 @@ const AdvancedLoanManagement: React.FC = () => {
           <Tab label="Active Loans" />
           <Tab label="Recent Activity" />
           <Tab label="Performance Analytics" />
+          <Tab label="Loan History" icon={<HistoryIcon />} iconPosition="start" />
         </Tabs>
       </Paper>
 
@@ -507,6 +510,8 @@ const AdvancedLoanManagement: React.FC = () => {
           </Typography>
         </Paper>
       )}
+
+      {activeTab === 3 && <LoanHistoryLog />}
 
       {/* Action Dialog */}
       <Dialog 

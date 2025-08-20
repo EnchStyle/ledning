@@ -612,6 +612,33 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []); // No dependencies - uses ref
 
   /**
+   * Update loan LTVs when price changes
+   */
+  useEffect(() => {
+    if (loans.length > 0) {
+      setLoans(prevLoans =>
+        prevLoans.map(loan => {
+          if (loan.status !== 'active') return loan;
+          
+          const collateralValueUSD = calculateCollateralValueUSD(loan.collateralAmount, marketData.xpmPriceUSD);
+          const totalDebtUSD = calculateDebtValueUSD(loan.borrowedAmount + loan.fixedInterestAmount);
+          const newLTV = calculateLTV(collateralValueUSD, totalDebtUSD);
+          
+          return {
+            ...loan,
+            currentLTV: newLTV,
+            liquidationPrice: calculateLiquidationPriceUSD(
+              loan.borrowedAmount + loan.fixedInterestAmount,
+              loan.collateralAmount,
+              FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV
+            ),
+          };
+        })
+      );
+    }
+  }, [marketData.xpmPriceUSD]);
+
+  /**
    * Check for liquidations when price changes during simulation
    */
   useEffect(() => {
@@ -622,8 +649,16 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       );
       
       eligibleForLiquidation.forEach(loan => {
-        console.log(`Auto-liquidating loan ${loan.id} at LTV ${loan.currentLTV?.toFixed(1)}%`);
+        const ltv = loan.currentLTV || 0;
+        console.log(`🔴 Auto-liquidating loan ${loan.id} at LTV ${ltv.toFixed(1)}%`);
+        
+        // Show alert for auto-liquidation
+        alert(`⚠️ LIQUIDATION TRIGGERED!\n\nLoan #${loan.id.slice(0, 8)} has been automatically liquidated.\nLTV reached: ${ltv.toFixed(1)}%\nLiquidation threshold: ${FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV}%`);
+        
         liquidateLoan(loan.id);
+        
+        // Stop simulation after liquidation
+        setSimulationSettings(prev => ({ ...prev, isActive: false }));
       });
     }
   }, [marketData.xpmPriceUSD, simulationSettings.isActive, loans, liquidateLoan]);
