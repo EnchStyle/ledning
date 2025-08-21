@@ -468,7 +468,7 @@ const SimpleLandingPage: React.FC = () => {
             </Typography>
           </Alert>
 
-          <Paper elevation={2} sx={{ p: 3, mb: 3, bgcolor: 'grey.50' }}>
+          <Paper elevation={2} sx={{ p: 3, mb: 3, bgcolor: 'background.default', border: '1px solid', borderColor: 'divider' }}>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
               <DetailsIcon color="primary" sx={{ mr: 1 }} />
               <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 600 }}>
