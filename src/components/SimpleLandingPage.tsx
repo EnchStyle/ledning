@@ -263,44 +263,38 @@ const SimpleLandingPage: React.FC = () => {
             </div>
           </div>
 
-          <FormControl component="fieldset" sx={{ width: '100%' }}>
-            <RadioGroup
-              value={selectedTerm}
-              onChange={(e) => setSelectedTerm(Number(e.target.value) as LoanTermDays)}
-              row={false}
-              sx={{
-                '& .MuiFormControlLabel-root': {
-                  mb: 1,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 1,
-                  px: 2,
-                  py: 1,
-                  mr: 0,
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {termOptions.map((option) => (
+              <Button
+                key={option.days}
+                variant={selectedTerm === option.days ? "contained" : "outlined"}
+                onClick={() => setSelectedTerm(option.days)}
+                sx={{
+                  py: 2,
+                  px: 3,
+                  justifyContent: 'space-between',
+                  textAlign: 'left',
+                  borderRadius: 2,
+                  textTransform: 'none',
                   '&:hover': {
-                    bgcolor: 'action.hover'
+                    borderColor: 'primary.main',
                   }
-                }
-              }}
-            >
-              {termOptions.map((option) => (
-                <FormControlLabel
-                  key={option.days}
-                  value={option.days}
-                  control={<Radio />}
-                  label={
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>{option.label}</Typography>
-                      <Typography variant="body2" color="primary.main" sx={{ fontWeight: 600 }}>
-                        {option.rate} APR
-                      </Typography>
-                    </div>
-                  }
-                  sx={{ width: '100%' }}
-                />
-              ))}
-            </RadioGroup>
-          </FormControl>
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
+                    {option.label}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Borrow for {option.days} days
+                  </Typography>
+                </div>
+                <Typography variant="h6" color="primary.main" sx={{ fontWeight: 700 }}>
+                  {option.rate} APR
+                </Typography>
+              </Button>
+            ))}
+          </div>
         </Paper>
 
         <Paper 
