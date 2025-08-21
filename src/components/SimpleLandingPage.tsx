@@ -403,22 +403,19 @@ const SimpleLandingPage: React.FC = () => {
                   color={targetLTV < 40 ? "success" : targetLTV < 55 ? "warning" : "error"}
                   sx={{ height: 8, borderRadius: 1, mb: 1 }}
                 />
-                <Typography variant="caption" color="text.secondary">
-                  Safe • {priceDropToLiquidation.toFixed(0)}% price drop buffer
-                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  <Typography variant="caption" color={targetLTV < 40 ? "success.main" : targetLTV < 55 ? "warning.main" : "error.main"} sx={{ fontWeight: 600 }}>
+                    {targetLTV < 40 ? "✓ Safe Zone" : targetLTV < 55 ? "⚠ Moderate Risk" : "⚠ High Risk"} • {priceDropToLiquidation.toFixed(0)}% price drop buffer
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Liquidation at ${liquidationPriceUSD.toFixed(4)} XPM price
+                  </Typography>
+                </Box>
               </Box>
             )}
         </Paper>
 
-        {/* STEP 4: ENHANCED RISK COMMUNICATION */}
-        {collateral > 0 && completedSteps[2] && (
-          <RiskMeterEnhanced
-            ltv={targetLTV}
-            liquidationPrice={liquidationPriceUSD}
-            currentPrice={marketData.xpmPriceUSD}
-            priceDropBuffer={priceDropToLiquidation}
-          />
-        )}
+        {/* REMOVED: Overpowering RiskMeterEnhanced - merged into Step 3 loan health section */
 
         {/* STEP 4: LOAN CONFIRMATION - REDESIGNED */}
         {completedSteps[3] && collateral > 0 && (
