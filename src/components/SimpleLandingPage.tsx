@@ -507,14 +507,23 @@ const SimpleLandingPage: React.FC = () => {
             </Grid>
           </Paper>
           
-          <Alert severity="warning" sx={{ mb: 2 }}>
+          <Paper 
+            sx={{ 
+              p: 2, 
+              mb: 2, 
+              bgcolor: 'error.dark',
+              color: 'error.contrastText',
+              border: '1px solid',
+              borderColor: 'error.main'
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-              <WarningIcon color="warning" sx={{ mr: 1, mt: 0.1, fontSize: 16 }} />
-              <Typography variant="body2">
+              <WarningIcon sx={{ mr: 1, mt: 0.1, fontSize: 16, color: 'error.contrastText' }} />
+              <Typography variant="body2" sx={{ color: 'error.contrastText' }}>
                 <strong>Important:</strong> Your collateral will be liquidated if XPM price drops to ${liquidationPriceUSD.toFixed(4)} or below.
               </Typography>
             </div>
-          </Alert>
+          </Paper>
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 0 }}>
           <Button onClick={() => setConfirmDialog(false)} size="large" sx={{ mr: 2 }}>
