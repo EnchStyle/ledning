@@ -10,6 +10,7 @@ import {
   Alert,
   LinearProgress,
   FormControl,
+  FormLabel,
   RadioGroup,
   FormControlLabel,
   Radio,
@@ -21,8 +22,15 @@ import {
   Snackbar,
 } from '@mui/material';
 import {
+  AccountBalanceWallet as CollateralIcon,
+  AccessTime as ScheduleIcon,
+  TrendingUp as LTVIcon,
+  Celebration as CelebrationIcon,
+  MonetizationOn as MoneyIcon,
   Assignment as DetailsIcon,
   Warning as WarningIcon,
+  RocketLaunch as LaunchIcon,
+  TouchApp as PointerIcon,
   GpsFixed as TargetIcon,
   CheckCircle as CheckIcon,
 } from '@mui/icons-material';
@@ -100,10 +108,10 @@ const SimpleLandingPage: React.FC = () => {
   ];
 
   return (
-    <Container maxWidth="md">
-      <>
-        {/* Simplified Header */}
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
+    <Container maxWidth="md">{/* Demo mode hidden for production UI */}
+
+      {/* Simplified Header */}
+      <Box sx={{ textAlign: 'center', mb: 4 }}>
         <Typography 
           variant="h3" 
           gutterBottom 
@@ -154,8 +162,8 @@ const SimpleLandingPage: React.FC = () => {
 
       {/* REDESIGN: Single Column Layout for Better Focus */}
       <Box sx={{ maxWidth: '800px', mx: 'auto' }}>
-        <>
-          {/* STEP 1: COLLATERAL INPUT CARD - REDESIGNED */}
+        
+        {/* STEP 1: COLLATERAL INPUT CARD - REDESIGNED */}
         <Paper 
           elevation={currentStep === 0 ? 4 : 2} 
           sx={{ 
@@ -406,6 +414,8 @@ const SimpleLandingPage: React.FC = () => {
             )}
         </Paper>
 
+        {/* REMOVED: Overpowering RiskMeterEnhanced - merged into Step 3 loan health section */
+
         {/* STEP 4: LOAN CONFIRMATION - REDESIGNED */}
         {completedSteps[3] && collateral > 0 && (
           <ProgressCelebration
@@ -414,8 +424,9 @@ const SimpleLandingPage: React.FC = () => {
             isLoading={false}
           />
         )}
-        </>
       </Box>
+
+      {/* REMOVED: Redundant key information cards - info already shown in step flow above */}
 
       {/* Risk Warning */}
       <Alert severity="warning" sx={{ mb: 4 }}>
@@ -569,7 +580,6 @@ const SimpleLandingPage: React.FC = () => {
           {successMessage}
         </Alert>
       </Snackbar>
-      </>
     </Container>
   );
 };
