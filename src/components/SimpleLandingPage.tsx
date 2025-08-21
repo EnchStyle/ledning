@@ -146,9 +146,7 @@ const SimpleLandingPage: React.FC = () => {
           </Box>
           </>
         </Box>
-          </>
         </Box>
-      </Box>
 
       {/* REDESIGN: Step Indicator for Clear Progression */}
       <StepIndicator 
