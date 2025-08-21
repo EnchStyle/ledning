@@ -34,21 +34,25 @@ export const modernTheme = createTheme({
       main: '#22D3EE', // Cyan - modern, fresh
       light: '#67E8F9',
       dark: '#0891B2',
+      contrastText: '#fff',
     },
     warning: {
       main: '#FBBF24', // Bright amber
       light: '#FCD34D',
       dark: '#F59E0B',
+      contrastText: '#000',
     },
     error: {
       main: '#F87171', // Coral red
       light: '#FCA5A5',
       dark: '#EF4444',
+      contrastText: '#fff',
     },
     info: {
       main: '#A855F7', // Purple
       light: '#C084FC',
       dark: '#9333EA',
+      contrastText: '#fff',
     },
     divider: 'rgba(148, 163, 184, 0.12)', // Subtle slate dividers
   },
