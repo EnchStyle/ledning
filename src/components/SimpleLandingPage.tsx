@@ -263,32 +263,32 @@ const SimpleLandingPage: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {termOptions.map((option) => (
-              <Button
-                key={option.days}
-                variant={selectedTerm === option.days ? "contained" : "outlined"}
-                onClick={() => setSelectedTerm(option.days)}
-                sx={{
-                  flex: { xs: '1 1 calc(33.333% - 5.33px)', sm: '1 1 auto' },
-                  minWidth: { xs: 0, sm: 120 },
-                  py: { xs: 1.5, sm: 2 },
-                  px: { xs: 1, sm: 2 },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  textTransform: 'none',
-                  borderRadius: 2,
-                }}
-              >
-                <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
-                  {option.label}
-                </Typography>
-                <Typography variant="caption" color="primary.main" sx={{ fontWeight: 700, mt: 0.5 }}>
-                  {option.rate} APR
-                </Typography>
-              </Button>
-            ))}
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+              <Typography variant="body2" color="text.secondary">
+                Loan term: {selectedTerm} days
+              </Typography>
+              <Typography variant="h6" color="primary.main" sx={{ fontWeight: 700 }}>
+                {FINANCIAL_CONSTANTS.INTEREST_RATES[selectedTerm]}% APR
+              </Typography>
+            </div>
+            <Slider
+              value={selectedTerm}
+              onChange={(event, value: number | number[]) => setSelectedTerm(value as LoanTermDays)}
+              min={30}
+              max={90}
+              step={30}
+              marks={termOptions.map(opt => ({ value: opt.days, label: opt.label }))}
+              sx={{ 
+                mb: 1,
+                '& .MuiSlider-markLabel': {
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' }
+                }
+              }}
+            />
+            <Typography variant="caption" color="text.secondary">
+              Longer terms have lower interest rates
+            </Typography>
           </div>
         </Paper>
 
