@@ -263,33 +263,28 @@ const SimpleLandingPage: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {termOptions.map((option) => (
               <Button
                 key={option.days}
                 variant={selectedTerm === option.days ? "contained" : "outlined"}
                 onClick={() => setSelectedTerm(option.days)}
                 sx={{
-                  py: 2,
-                  px: 3,
-                  justifyContent: 'space-between',
-                  textAlign: 'left',
-                  borderRadius: 2,
+                  flex: { xs: '1 1 calc(33.333% - 5.33px)', sm: '1 1 auto' },
+                  minWidth: { xs: 0, sm: 120 },
+                  py: { xs: 1.5, sm: 2 },
+                  px: { xs: 1, sm: 2 },
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
                   textTransform: 'none',
-                  '&:hover': {
-                    borderColor: 'primary.main',
-                  }
+                  borderRadius: 2,
                 }}
               >
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                  <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
-                    {option.label}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Borrow for {option.days} days
-                  </Typography>
-                </div>
-                <Typography variant="h6" color="primary.main" sx={{ fontWeight: 700 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
+                  {option.label}
+                </Typography>
+                <Typography variant="caption" color="primary.main" sx={{ fontWeight: 700, mt: 0.5 }}>
                   {option.rate} APR
                 </Typography>
               </Button>
