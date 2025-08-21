@@ -426,7 +426,7 @@ const SimpleLandingPage: React.FC = () => {
           />
         )}
 
-        {/* CLOSE MAIN CONTAINER */}
+      {/* CLOSE MAIN CONTAINER */}
       </Box>
 
       {/* REMOVED: Redundant key information cards - info already shown in step flow above */}
