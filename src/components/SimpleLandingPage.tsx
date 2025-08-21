@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
-  Box,
   Paper,
   TextField,
   Button,
@@ -38,12 +37,11 @@ const SimpleLandingPage: React.FC = () => {
   const { createLoan, marketData } = useLending();
   const [collateralAmount, setCollateralAmount] = useState<string>('150000');
   const [selectedTerm, setSelectedTerm] = useState<LoanTermDays>(60);
-  const [targetLTV, setTargetLTV] = useState<number>(40); // Default to 40% LTV
+  const [targetLTV, setTargetLTV] = useState<number>(40);
   const [confirmDialog, setConfirmDialog] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   
-  // REDESIGN: Step progression state for improved UX
   const [currentStep, setCurrentStep] = useState(0);
   const steps = ['Enter Collateral', 'Choose Terms', 'Review Risk', 'Confirm Loan'];
   const [completedSteps, setCompletedSteps] = useState([false, false, false, false]);
@@ -51,20 +49,18 @@ const SimpleLandingPage: React.FC = () => {
   const collateral = parseFloat(collateralAmount) || 0;
   const collateralValueUSD = collateral * marketData.xpmPriceUSD;
   const maxBorrowRLUSD = calculateMaxBorrowRLUSD(collateral, marketData.xpmPriceUSD, targetLTV);
-  const borrowValueUSD = maxBorrowRLUSD; // RLUSD is 1:1 USD
+  const borrowValueUSD = maxBorrowRLUSD;
   const liquidationPriceUSD = calculateLiquidationPriceUSD(maxBorrowRLUSD, collateral, FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV);
   const priceDropToLiquidation = collateral > 0 ? ((marketData.xpmPriceUSD - liquidationPriceUSD) / marketData.xpmPriceUSD) * 100 : 0;
   
-  // REDESIGN: Auto-advance step progression based on user input
   useEffect(() => {
     const newCompleted = [...completedSteps];
-    newCompleted[0] = collateral >= 1000; // Step 1: Valid collateral
-    newCompleted[1] = selectedTerm > 0; // Step 2: Term selected
-    newCompleted[2] = targetLTV > 0; // Step 3: LTV set
-    newCompleted[3] = newCompleted[0] && newCompleted[1] && newCompleted[2]; // Step 4: All ready
+    newCompleted[0] = collateral >= 1000;
+    newCompleted[1] = selectedTerm > 0;
+    newCompleted[2] = targetLTV > 0;
+    newCompleted[3] = newCompleted[0] && newCompleted[1] && newCompleted[2];
     setCompletedSteps(newCompleted);
     
-    // Auto-advance current step
     if (newCompleted[3]) setCurrentStep(3);
     else if (newCompleted[2]) setCurrentStep(2);
     else if (newCompleted[1]) setCurrentStep(1);
@@ -89,7 +85,6 @@ const SimpleLandingPage: React.FC = () => {
     setConfirmDialog(false);
     setSuccessMessage(`Loan created successfully! You received ${maxBorrowRLUSD.toFixed(0)} RLUSD for ${selectedTerm} days.`);
     setShowSuccess(true);
-    // Reset form
     setCollateralAmount('150000');
   };
 
@@ -101,11 +96,8 @@ const SimpleLandingPage: React.FC = () => {
 
   return (
     <Container maxWidth="md">
-      <>
-        {/* Simplified Header */}
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <>
-            <Typography 
+      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <Typography 
           variant="h3" 
           gutterBottom 
           sx={{ 
@@ -123,42 +115,36 @@ const SimpleLandingPage: React.FC = () => {
         >
           Use your XPM as collateral to instantly borrow stablecoins
         </Typography>
-        <Box sx={{ 
+        <div style={{ 
           display: 'flex', 
           flexWrap: 'wrap', 
-          gap: { xs: 1, sm: 3 }, 
+          gap: '12px', 
           justifyContent: 'center',
-          fontSize: { xs: '0.875rem', sm: '1rem' },
-          color: 'text.secondary'
+          fontSize: '1rem',
+          color: '#666'
         }}>
-          <>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#4caf50' }}></div>
             {FINANCIAL_CONSTANTS.INTEREST_RATES[90]}-{FINANCIAL_CONSTANTS.INTEREST_RATES[30]}% APR
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main' }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#4caf50' }}></div>
             Up to {FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}% LTV
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main' }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#4caf50' }}></div>
             Instant Settlement
-          </Box>
-          </>
-        </Box>
-        </Box>
+          </div>
+        </div>
+      </div>
 
-      {/* REDESIGN: Step Indicator for Clear Progression */}
       <StepIndicator 
         currentStep={currentStep}
         steps={steps}
         completedSteps={completedSteps}
       />
 
-      {/* REDESIGN: Single Column Layout for Better Focus */}
-      <Box sx={{ maxWidth: '800px', mx: 'auto' }}>
-        <>
-          {/* STEP 1: COLLATERAL INPUT CARD - REDESIGNED */}
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <Paper 
           elevation={currentStep === 0 ? 4 : 2} 
           sx={{ 
@@ -172,76 +158,72 @@ const SimpleLandingPage: React.FC = () => {
             opacity: completedSteps[0] && currentStep > 0 ? 0.8 : 1,
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <>
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                width: 40, 
-                height: 40, 
-                borderRadius: '50%', 
-                bgcolor: completedSteps[0] ? 'success.main' : 'primary.main',
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              width: '40px', 
+              height: '40px', 
+              borderRadius: '50%', 
+              backgroundColor: completedSteps[0] ? '#4caf50' : '#1976d2',
               color: 'white',
-              mr: 2,
+              marginRight: '16px',
               fontSize: '1.2rem',
               fontWeight: 'bold'
             }}>
               {completedSteps[0] ? '✓' : '1'}
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Typography variant="h5" sx={{ fontWeight: 700, color: completedSteps[0] ? 'success.main' : 'primary.main' }}>
                 Enter Your Collateral
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 How much XPM do you want to use as collateral?
               </Typography>
-            </Box>
-            </>
-          </Box>
+            </div>
+          </div>
             
-            <TextField
-              fullWidth
-              label="XPM Amount"
-              type="number"
-              value={collateralAmount}
-              onChange={(e) => setCollateralAmount(e.target.value)}
-              sx={{ mb: 2 }}
-              inputProps={{ min: 1000, step: 1000 }}
-              helperText={
-                collateral < 1000 
-                  ? "Minimum 1,000 XPM required" 
-                  : collateral > 10000000 
-                    ? "Maximum 10,000,000 XPM allowed"
-                    : `Worth $${collateralValueUSD.toFixed(0)} USD at $${marketData.xpmPriceUSD.toFixed(4)} per XPM`
-              }
-              error={collateral > 0 && (collateral < 1000 || collateral > 10000000)}
-            />
+          <TextField
+            fullWidth
+            label="XPM Amount"
+            type="number"
+            value={collateralAmount}
+            onChange={(e) => setCollateralAmount(e.target.value)}
+            sx={{ mb: 2 }}
+            inputProps={{ min: 1000, step: 1000 }}
+            helperText={
+              collateral < 1000 
+                ? "Minimum 1,000 XPM required" 
+                : collateral > 10000000 
+                  ? "Maximum 10,000,000 XPM allowed"
+                  : `Worth $${collateralValueUSD.toFixed(0)} USD at $${marketData.xpmPriceUSD.toFixed(4)} per XPM`
+            }
+            error={collateral > 0 && (collateral < 1000 || collateral > 10000000)}
+          />
 
-            {/* Quick Amount Buttons */}
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Quick amounts:
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
-              {[100000, 250000, 500000, 1000000].map((amount) => (
-                <Button
-                  key={amount}
-                  variant={collateral === amount ? "contained" : "outlined"}
-                  size="small"
-                  onClick={() => setCollateralAmount(amount.toString())}
-                  sx={{ 
-                    minWidth: { xs: 60, sm: 'auto' },
-                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                    px: { xs: 1, sm: 2 }
-                  }}
-                >
-                  {amount >= 1000000 ? `${amount / 1000000}M` : `${amount / 1000}K`}
-                </Button>
-              ))}
-            </Box>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Quick amounts:
+          </Typography>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
+            {[100000, 250000, 500000, 1000000].map((amount) => (
+              <Button
+                key={amount}
+                variant={collateral === amount ? "contained" : "outlined"}
+                size="small"
+                onClick={() => setCollateralAmount(amount.toString())}
+                sx={{ 
+                  minWidth: { xs: 60, sm: 'auto' },
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                  px: { xs: 1, sm: 2 }
+                }}
+              >
+                {amount >= 1000000 ? `${amount / 1000000}M` : `${amount / 1000}K`}
+              </Button>
+            ))}
+          </div>
         </Paper>
 
-        {/* STEP 2: LOAN TERM SELECTION CARD - REDESIGNED */}
         <Paper 
           elevation={currentStep === 1 ? 4 : 2} 
           sx={{ 
@@ -255,73 +237,72 @@ const SimpleLandingPage: React.FC = () => {
             opacity: completedSteps[1] && currentStep > 1 ? 0.8 : 1,
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <Box sx={{ 
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
+            <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              width: 40, 
-              height: 40, 
+              width: '40px', 
+              height: '40px', 
               borderRadius: '50%', 
-              bgcolor: completedSteps[1] ? 'success.main' : 'primary.main',
+              backgroundColor: completedSteps[1] ? '#4caf50' : '#1976d2',
               color: 'white',
-              mr: 2,
+              marginRight: '16px',
               fontSize: '1.2rem',
               fontWeight: 'bold'
             }}>
               {completedSteps[1] ? '✓' : '2'}
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Typography variant="h5" sx={{ fontWeight: 700, color: completedSteps[1] ? 'success.main' : 'primary.main' }}>
                 Choose Your Loan Term
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 How long do you want to borrow for?
               </Typography>
-            </Box>
-          </Box>
+            </div>
+          </div>
 
           <FormControl component="fieldset" sx={{ width: '100%' }}>
-              <RadioGroup
-                value={selectedTerm}
-                onChange={(e) => setSelectedTerm(Number(e.target.value) as LoanTermDays)}
-                row={false}
-                sx={{
-                  '& .MuiFormControlLabel-root': {
-                    mb: 1,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                    px: 2,
-                    py: 1,
-                    mr: 0,
-                    '&:hover': {
-                      bgcolor: 'action.hover'
-                    }
+            <RadioGroup
+              value={selectedTerm}
+              onChange={(e) => setSelectedTerm(Number(e.target.value) as LoanTermDays)}
+              row={false}
+              sx={{
+                '& .MuiFormControlLabel-root': {
+                  mb: 1,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  px: 2,
+                  py: 1,
+                  mr: 0,
+                  '&:hover': {
+                    bgcolor: 'action.hover'
                   }
-                }}
-              >
-                {termOptions.map((option) => (
-                  <FormControlLabel
-                    key={option.days}
-                    value={option.days}
-                    control={<Radio />}
-                    label={
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>{option.label}</Typography>
-                        <Typography variant="body2" color="primary.main" sx={{ fontWeight: 600 }}>
-                          {option.rate} APR
-                        </Typography>
-                      </Box>
-                    }
-                    sx={{ width: '100%' }}
-                  />
-                ))}
-              </RadioGroup>
+                }
+              }}
+            >
+              {termOptions.map((option) => (
+                <FormControlLabel
+                  key={option.days}
+                  value={option.days}
+                  control={<Radio />}
+                  label={
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>{option.label}</Typography>
+                      <Typography variant="body2" color="primary.main" sx={{ fontWeight: 600 }}>
+                        {option.rate} APR
+                      </Typography>
+                    </div>
+                  }
+                  sx={{ width: '100%' }}
+                />
+              ))}
+            </RadioGroup>
           </FormControl>
         </Paper>
 
-        {/* STEP 3: LTV SELECTION CARD - REDESIGNED */}
         <Paper 
           elevation={currentStep === 2 ? 4 : 2} 
           sx={{ 
@@ -335,83 +316,82 @@ const SimpleLandingPage: React.FC = () => {
             opacity: completedSteps[2] && currentStep > 2 ? 0.8 : 1,
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <Box sx={{ 
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
+            <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              width: 40, 
-              height: 40, 
+              width: '40px', 
+              height: '40px', 
               borderRadius: '50%', 
-              bgcolor: completedSteps[2] ? 'success.main' : 'primary.main',
+              backgroundColor: completedSteps[2] ? '#4caf50' : '#1976d2',
               color: 'white',
-              mr: 2,
+              marginRight: '16px',
               fontSize: '1.2rem',
               fontWeight: 'bold'
             }}>
               {completedSteps[2] ? '✓' : '3'}
-            </Box>
-            <Box>
+            </div>
+            <div>
               <Typography variant="h5" sx={{ fontWeight: 700, color: completedSteps[2] ? 'success.main' : 'primary.main' }}>
                 Set Your Loan Amount
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Choose how much you want to borrow (LTV ratio)
               </Typography>
-            </Box>
+            </div>
             <SmartTooltip 
               helpText="LTV (Loan-to-Value) ratio determines how much you can borrow. Lower LTV is safer but gives you less cash. Higher LTV gives more cash but increases liquidation risk."
               placement="top"
             />
-          </Box>
+          </div>
 
-          <Box sx={{ mb: 3 }}>
+          <div style={{ marginBottom: '24px' }}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Loan-to-Value ratio: {targetLTV}%
+            </Typography>
+            <Slider
+              value={targetLTV}
+              onChange={(event, value: number | number[]) => setTargetLTV(value as number)}
+              min={FINANCIAL_CONSTANTS.LTV_LIMITS.MIN_LTV}
+              max={FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}
+              step={5}
+              marks={[
+                { value: 20, label: '20%' },
+                { value: 30, label: '30%' },
+                { value: 40, label: '40%' },
+                { value: 50, label: '50%' }
+              ]}
+              sx={{ mb: 1 }}
+            />
+            <Typography variant="caption" color="text.secondary">
+              Lower LTV = Safer loan with more price drop protection
+            </Typography>
+          </div>
+
+          {collateral > 0 && (
+            <div>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                Loan-to-Value ratio: {targetLTV}%
+                Loan Health ({targetLTV}% LTV)
               </Typography>
-              <Slider
-                value={targetLTV}
-                onChange={(event, value: number | number[]) => setTargetLTV(value as number)}
-                min={FINANCIAL_CONSTANTS.LTV_LIMITS.MIN_LTV}
-                max={FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}
-                step={5}
-                marks={[
-                  { value: 20, label: '20%' },
-                  { value: 30, label: '30%' },
-                  { value: 40, label: '40%' },
-                  { value: 50, label: '50%' }
-                ]}
-                sx={{ mb: 1 }}
+              <LinearProgress 
+                variant="determinate" 
+                value={(targetLTV / FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV) * 100}
+                color={targetLTV < 40 ? "success" : targetLTV <= 50 ? "warning" : "error"}
+                sx={{ height: 8, borderRadius: 1, mb: 1 }}
               />
-              <Typography variant="caption" color="text.secondary">
-                Lower LTV = Safer loan with more price drop protection
-              </Typography>
-            </Box>
-
-            {collateral > 0 && (
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Loan Health ({targetLTV}% LTV)
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <Typography variant="caption" color={targetLTV < 40 ? "success.main" : targetLTV <= 50 ? "warning.main" : "error.main"} sx={{ fontWeight: 600 }}>
+                  {targetLTV < 40 ? "✓ Safe Zone" : targetLTV <= 50 ? "⚠ Monitor Closely" : "⚠ Near Liquidation"} • {priceDropToLiquidation.toFixed(0)}% price drop buffer
                 </Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={(targetLTV / FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV) * 100}
-                  color={targetLTV < 40 ? "success" : targetLTV <= 50 ? "warning" : "error"}
-                  sx={{ height: 8, borderRadius: 1, mb: 1 }}
-                />
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  <Typography variant="caption" color={targetLTV < 40 ? "success.main" : targetLTV <= 50 ? "warning.main" : "error.main"} sx={{ fontWeight: 600 }}>
-                    {targetLTV < 40 ? "✓ Safe Zone" : targetLTV <= 50 ? "⚠ Monitor Closely" : "⚠ Near Liquidation"} • {priceDropToLiquidation.toFixed(0)}% price drop buffer
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Liquidation at ${liquidationPriceUSD.toFixed(4)} XPM price
-                  </Typography>
-                </Box>
-              </Box>
-            )}
+                <Typography variant="caption" color="text.secondary">
+                  Liquidation at ${liquidationPriceUSD.toFixed(4)} XPM price
+                </Typography>
+              </div>
+            </div>
+          )}
         </Paper>
 
-        {/* STEP 4: LOAN CONFIRMATION - REDESIGNED */}
         {completedSteps[3] && collateral > 0 && (
           <ProgressCelebration
             borrowAmount={maxBorrowRLUSD}
@@ -419,10 +399,8 @@ const SimpleLandingPage: React.FC = () => {
             isLoading={false}
           />
         )}
-        </>
-      </Box>
+      </div>
 
-      {/* Risk Warning */}
       <Alert severity="warning" sx={{ mb: 4 }}>
         <Typography variant="body2">
           <strong>Important:</strong> Your loan will be liquidated if XPM price falls too much. 
@@ -430,40 +408,38 @@ const SimpleLandingPage: React.FC = () => {
         </Typography>
       </Alert>
 
-      {/* How It Works */}
       <Paper sx={{ p: 3 }}>
         <Typography variant="h6" gutterBottom>
           How It Works
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center' }}>
+            <div style={{ textAlign: 'center' }}>
               <Typography variant="h6" color="primary.main">1</Typography>
               <Typography variant="body2">
                 Deposit XPM tokens as collateral
               </Typography>
-            </Box>
+            </div>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center' }}>
+            <div style={{ textAlign: 'center' }}>
               <Typography variant="h6" color="primary.main">2</Typography>
               <Typography variant="body2">
                 Receive RLUSD instantly at {FINANCIAL_CONSTANTS.INTEREST_RATES[90]}-{FINANCIAL_CONSTANTS.INTEREST_RATES[30]}% APR
               </Typography>
-            </Box>
+            </div>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center' }}>
+            <div style={{ textAlign: 'center' }}>
               <Typography variant="h6" color="primary.main">3</Typography>
               <Typography variant="body2">
                 Repay anytime to get collateral back
               </Typography>
-            </Box>
+            </div>
           </Grid>
         </Grid>
       </Paper>
 
-      {/* Confirmation Dialog - Mobile Optimized */}
       <Dialog 
         open={confirmDialog} 
         onClose={() => setConfirmDialog(false)} 
@@ -478,12 +454,12 @@ const SimpleLandingPage: React.FC = () => {
         }}
       >
         <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <TargetIcon color="primary" sx={{ mr: 1 }} />
             <Typography variant="h5" sx={{ fontWeight: 700 }}>
               Final Confirmation
             </Typography>
-          </Box>
+          </div>
         </DialogTitle>
         <DialogContent>
           <Alert severity="success" sx={{ mb: 3 }}>
@@ -493,12 +469,12 @@ const SimpleLandingPage: React.FC = () => {
           </Alert>
 
           <Paper elevation={2} sx={{ p: 3, mb: 3, bgcolor: 'grey.50' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
               <DetailsIcon color="primary" sx={{ mr: 1 }} />
               <Typography variant="h6" sx={{ color: 'primary.main', fontWeight: 600 }}>
                 Loan Summary:
               </Typography>
-            </Box>
+            </div>
             <Grid container spacing={2}>
               <Grid item xs={6}>
                 <Typography variant="body2" color="text.secondary">Collateral:</Typography>
@@ -532,12 +508,12 @@ const SimpleLandingPage: React.FC = () => {
           </Paper>
           
           <Alert severity="warning" sx={{ mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
               <WarningIcon color="warning" sx={{ mr: 1, mt: 0.1, fontSize: 16 }} />
               <Typography variant="body2">
                 <strong>Important:</strong> Your collateral will be liquidated if XPM price drops to ${liquidationPriceUSD.toFixed(4)} or below.
               </Typography>
-            </Box>
+            </div>
           </Alert>
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 0 }}>
@@ -563,7 +539,6 @@ const SimpleLandingPage: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Success Notification */}
       <Snackbar
         open={showSuccess}
         autoHideDuration={6000}
@@ -574,7 +549,6 @@ const SimpleLandingPage: React.FC = () => {
           {successMessage}
         </Alert>
       </Snackbar>
-      </>
     </Container>
   );
 };
