@@ -477,10 +477,10 @@ const SimpleLoansManager: React.FC = () => {
               />
               {parseFloat(collateralAmount || '0') > 0 && (
                 <Box sx={{ mt: 2, p: 2, bgcolor: 'success.light', borderRadius: 1 }}>
-                  <Typography variant="body2" color="success.dark">
+                  <Typography variant="body2" color="success.contrastText">
                     New total collateral: {(addCollateralDialog.loan.collateralAmount + parseFloat(collateralAmount || '0')).toLocaleString()} XPM
                   </Typography>
-                  <Typography variant="body2" color="success.dark">
+                  <Typography variant="body2" color="success.contrastText">
                     Estimated new LTV: {((addCollateralDialog.loan.borrowedAmount + addCollateralDialog.loan.fixedInterestAmount) / ((addCollateralDialog.loan.collateralAmount + parseFloat(collateralAmount || '0')) * marketData.xpmPriceUSD) * 100).toFixed(1)}%
                   </Typography>
                 </Box>

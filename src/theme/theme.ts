@@ -77,21 +77,25 @@ export const theme = createTheme({
       main: semanticColors.success,
       light: alpha(semanticColors.success, 0.3),
       dark: alpha(semanticColors.success, 0.7),
+      contrastText: '#fff',
     },
     warning: {
       main: semanticColors.warning,
       light: alpha(semanticColors.warning, 0.3),
       dark: alpha(semanticColors.warning, 0.7),
+      contrastText: '#fff',
     },
     error: {
       main: semanticColors.error,
       light: alpha(semanticColors.error, 0.3),
       dark: alpha(semanticColors.error, 0.7),
+      contrastText: '#fff',
     },
     info: {
       main: semanticColors.info,
       light: alpha(semanticColors.info, 0.3),
       dark: alpha(semanticColors.info, 0.7),
+      contrastText: '#fff',
     },
     text: {
       primary: 'rgba(255, 255, 255, 0.95)',
