@@ -26,10 +26,10 @@ const SimpleHealthGauge: React.FC<SimpleHealthGaugeProps> = ({
   
   // Determine color and status
   const getHealthData = (ltv: number) => {
-    if (ltv >= 65) return { color: '#d32f2f', bgColor: '#ffebee', status: 'DANGER', textColor: '#d32f2f' };
-    if (ltv >= 55) return { color: '#ff9800', bgColor: '#fff3e0', status: 'HIGH RISK', textColor: '#ff9800' };
-    if (ltv >= 40) return { color: '#ffc107', bgColor: '#fffde7', status: 'MEDIUM', textColor: '#f57f17' };
-    return { color: '#4caf50', bgColor: '#e8f5e8', status: 'HEALTHY', textColor: '#2e7d32' };
+    if (ltv >= 65) return { color: '#d32f2f', bgColor: '#ffcdd2', status: 'DANGER', textColor: '#c62828' };
+    if (ltv >= 55) return { color: '#ff9800', bgColor: '#ffe0b2', status: 'HIGH RISK', textColor: '#e65100' };
+    if (ltv >= 40) return { color: '#ffc107', bgColor: '#fff9c4', status: 'MEDIUM', textColor: '#f57f17' };
+    return { color: '#4caf50', bgColor: '#c8e6c9', status: 'HEALTHY', textColor: '#1b5e20' };
   };
   
   const healthData = getHealthData(clampedValue);

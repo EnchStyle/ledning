@@ -54,7 +54,7 @@ const SimpleHelp: React.FC = () => {
           <Typography paragraph>
             LTV (Loan-to-Value) is how "full" your loan is, calculated in USD:
           </Typography>
-          <Typography paragraph sx={{ fontFamily: 'monospace', bgcolor: 'grey.100', p: 1, borderRadius: 1 }}>
+          <Typography paragraph sx={{ fontFamily: 'monospace', bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', p: 1, borderRadius: 1 }}>
             LTV = (RLUSD Debt Value ÷ XPM Collateral Value) × 100
           </Typography>
           <Typography paragraph>
@@ -149,7 +149,7 @@ Interest rates vary by loan term with daily compounding:
           <Typography paragraph>
             <strong>Examples:</strong>
           </Typography>
-          <Box sx={{ fontFamily: 'monospace', bgcolor: 'grey.100', p: 2, borderRadius: 1 }}>
+          <Box sx={{ fontFamily: 'monospace', bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', p: 2, borderRadius: 1 }}>
             500 RLUSD loan:<br />
             • 1 month: ~6.2 RLUSD interest<br />
             • 6 months: ~38.9 RLUSD interest<br />

@@ -100,7 +100,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                 variant="outlined"
                 sx={{
                   p: 2,
-                  backgroundColor: 'grey.100',
+                  backgroundColor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
                   textAlign: 'left',
                   fontFamily: 'monospace',
                   fontSize: '0.875rem',

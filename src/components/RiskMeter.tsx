@@ -31,11 +31,11 @@ const RiskMeter: React.FC<RiskMeterProps> = ({ loan, currentLTV, liquidationPric
   
   // Determine risk level and colors
   const getRiskLevel = () => {
-    if (ltv >= liquidationThreshold) return { level: 'LIQUIDATED', color: '#d32f2f', bg: '#ffebee' };
-    if (ltv >= 55) return { level: 'HIGH RISK', color: '#f57c00', bg: '#fff3e0' };
-    if (ltv >= 40) return { level: 'MEDIUM RISK', color: '#ed6c02', bg: '#fff8e1' };
-    if (ltv >= 25) return { level: 'LOW RISK', color: '#2e7d32', bg: '#e8f5e8' };
-    return { level: 'VERY SAFE', color: '#1976d2', bg: '#e3f2fd' };
+    if (ltv >= liquidationThreshold) return { level: 'LIQUIDATED', color: '#d32f2f', bg: '#ffcdd2' };
+    if (ltv >= 55) return { level: 'HIGH RISK', color: '#f57c00', bg: '#ffe0b2' };
+    if (ltv >= 40) return { level: 'MEDIUM RISK', color: '#ed6c02', bg: '#ffecb3' };
+    if (ltv >= 25) return { level: 'LOW RISK', color: '#2e7d32', bg: '#c8e6c9' };
+    return { level: 'VERY SAFE', color: '#1976d2', bg: '#bbdefb' };
   };
 
   const riskInfo = getRiskLevel();

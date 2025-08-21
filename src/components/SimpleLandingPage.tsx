@@ -121,7 +121,7 @@ const SimpleLandingPage: React.FC = () => {
           gap: '12px', 
           justifyContent: 'center',
           fontSize: '1rem',
-          color: '#666'
+          color: 'text.secondary'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#4caf50' }}></div>

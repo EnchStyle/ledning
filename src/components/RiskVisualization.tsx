@@ -130,7 +130,7 @@ const RiskVisualization: React.FC<RiskVisualizationProps> = ({
           sx={{ 
             height: 10, 
             borderRadius: 1,
-            bgcolor: 'grey.200',
+            bgcolor: 'action.hover',
             '& .MuiLinearProgress-bar': {
               borderRadius: 1,
             }
