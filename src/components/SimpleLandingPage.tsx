@@ -432,39 +432,7 @@ const SimpleLandingPage: React.FC = () => {
         {/* CLOSE MAIN CONTAINER */}
       </Box>
 
-      {/* REDESIGN COMPLETE: Key Information Grid */}
-      <Grid container spacing={3} sx={{ mb: 4, maxWidth: '800px', mx: 'auto' }}>
-        <Grid item xs={12} sm={4}>
-          <Paper sx={{ p: { xs: 1.5, sm: 2 }, textAlign: 'center' }}>
-            <Typography variant="h6" color="primary.main" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-              {FINANCIAL_CONSTANTS.INTEREST_RATES[selectedTerm]}%
-            </Typography>
-            <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-              Annual Interest Rate
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <Paper sx={{ p: { xs: 1.5, sm: 2 }, textAlign: 'center' }}>
-            <Typography variant="h6" color="primary.main" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-              {FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}%
-            </Typography>
-            <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-              Maximum LTV Ratio
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <Paper sx={{ p: { xs: 1.5, sm: 2 }, textAlign: 'center' }}>
-            <Typography variant="h6" color="primary.main" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-              {FINANCIAL_CONSTANTS.LIQUIDATION_FEE}%
-            </Typography>
-            <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-              Liquidation Fee
-            </Typography>
-          </Paper>
-        </Grid>
-      </Grid>
+      {/* REMOVED: Redundant key information cards - info already shown in step flow above */}
 
       {/* Risk Warning */}
       <Alert severity="warning" sx={{ mb: 4 }}>
