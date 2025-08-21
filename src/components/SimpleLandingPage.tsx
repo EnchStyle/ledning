@@ -400,12 +400,12 @@ const SimpleLandingPage: React.FC = () => {
                 <LinearProgress 
                   variant="determinate" 
                   value={(targetLTV / FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV) * 100}
-                  color={targetLTV < 40 ? "success" : targetLTV < 55 ? "warning" : "error"}
+                  color={targetLTV < 40 ? "success" : targetLTV <= 50 ? "warning" : "error"}
                   sx={{ height: 8, borderRadius: 1, mb: 1 }}
                 />
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  <Typography variant="caption" color={targetLTV < 40 ? "success.main" : targetLTV < 55 ? "warning.main" : "error.main"} sx={{ fontWeight: 600 }}>
-                    {targetLTV < 40 ? "✓ Safe Zone" : targetLTV < 55 ? "⚠ Moderate Risk" : "⚠ High Risk"} • {priceDropToLiquidation.toFixed(0)}% price drop buffer
+                  <Typography variant="caption" color={targetLTV < 40 ? "success.main" : targetLTV <= 50 ? "warning.main" : "error.main"} sx={{ fontWeight: 600 }}>
+                    {targetLTV < 40 ? "✓ Safe Zone" : targetLTV <= 50 ? "⚠ Monitor Closely" : "⚠ Near Liquidation"} • {priceDropToLiquidation.toFixed(0)}% price drop buffer
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Liquidation at ${liquidationPriceUSD.toFixed(4)} XPM price
