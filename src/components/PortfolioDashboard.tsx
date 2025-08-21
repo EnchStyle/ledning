@@ -51,6 +51,8 @@ import { useLending } from '../context/LendingContext';
 import { DEMO_PORTFOLIO, FINANCIAL_CONSTANTS } from '../config/demoConstants';
 import PortfolioChart from './PortfolioChart';
 import LiquidationAlert from './LiquidationAlert';
+import { Loan } from '../types/lending';
+import { calculateLTV, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
 
 interface ActionDialog {
   open: boolean;
@@ -93,7 +95,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
   // Update portfolio stats with throttling
   React.useEffect(() => {
     // Don't update stats during simulation to prevent freezing
-    if (typeof window !== 'undefined' && (window as any).__simulationPaused) {
+    if (typeof window !== 'undefined' && (window as Window & { __simulationPaused?: boolean }).__simulationPaused) {
       return;
     }
     
@@ -179,7 +181,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
     }
   };
 
-  const getLoanHealth = (loan: any) => {
+  const getLoanHealth = (loan: Loan) => {
     const totalDebt = loan.borrowedAmount + (loan.fixedInterestAmount || 0);
     const loanLTV = (totalDebt / (loan.collateralAmount * marketData.xpmPriceUSD)) * 100;
     const liquidationPrice = (totalDebt / (loan.collateralAmount * (FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV / 100)));
@@ -324,7 +326,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
     </Grid>
   );
 
-  const LoanCard = ({ loan, index }: { loan: any; index: number }) => {
+  const LoanCard = ({ loan, index }: { loan: Loan; index: number }) => {
     const health = getLoanHealth(loan);
     const totalDebt = loan.borrowedAmount + (loan.fixedInterestAmount || 0);
     const daysUntilMaturity = Math.ceil((new Date(loan.maturityDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
@@ -339,7 +341,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
               </Typography>
               <Chip 
                 label={health.status}
-                color={health.color as any}
+                color={health.color as 'default' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning'}
                 size="small"
                 icon={health.icon}
               />
@@ -413,7 +415,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
             <LinearProgress
               variant="determinate"
               value={(health.ltv / 65) * 100}
-              color={health.color as any}
+              color={health.color as 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning'}
               sx={{ height: 8, borderRadius: 1, mb: 1 }}
             />
             <Typography variant="caption" color="text.secondary">
@@ -433,7 +435,7 @@ const PortfolioDashboard: React.FC<PortfolioDashboardProps> = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="caption" color="text.secondary">Interest Rate</Typography>
-                  <Typography variant="body2">{loan.interestRate || FINANCIAL_CONSTANTS.INTEREST_RATES[60]}% APR</Typography>
+                  <Typography variant="body2">{FINANCIAL_CONSTANTS.INTEREST_RATES[loan.termDays] || FINANCIAL_CONSTANTS.INTEREST_RATES[60]}% APR</Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="caption" color="text.secondary">Current XPM Price</Typography>

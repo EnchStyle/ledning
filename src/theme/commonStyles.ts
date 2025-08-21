@@ -190,13 +190,13 @@ export const getRiskColor = (riskPercentage: number): string => {
  * Responsive utilities
  */
 export const responsive = {
-  mobile: (styles: any): SxProps<Theme> => ({
+  mobile: (styles: Record<string, unknown>): SxProps<Theme> => ({
     '@media (max-width: 600px)': styles,
   }),
-  tablet: (styles: any): SxProps<Theme> => ({
+  tablet: (styles: Record<string, unknown>): SxProps<Theme> => ({
     '@media (max-width: 960px)': styles,
   }),
-  desktop: (styles: any): SxProps<Theme> => ({
+  desktop: (styles: Record<string, unknown>): SxProps<Theme> => ({
     '@media (min-width: 1280px)': styles,
   }),
 };

@@ -5,15 +5,17 @@
  * Provides typed error classes and handling patterns
  */
 
+import { logger } from './logger';
+
 /**
  * Base error class for lending platform errors
  */
 export class LendingError extends Error {
   public readonly code: string;
   public readonly userMessage: string;
-  public readonly details?: any;
+  public readonly details?: Record<string, unknown>;
 
-  constructor(code: string, message: string, userMessage: string, details?: any) {
+  constructor(code: string, message: string, userMessage: string, details?: Record<string, unknown>) {
     super(message);
     this.name = 'LendingError';
     this.code = code;
@@ -26,7 +28,7 @@ export class LendingError extends Error {
  * Validation error for user input
  */
 export class ValidationError extends LendingError {
-  constructor(field: string, message: string, value?: any) {
+  constructor(field: string, message: string, value?: unknown) {
     super(
       'VALIDATION_ERROR',
       `Validation failed for field: ${field}`,
@@ -71,7 +73,7 @@ export class LoanHealthError extends LendingError {
  * Market condition error
  */
 export class MarketConditionError extends LendingError {
-  constructor(condition: string, details: any) {
+  constructor(condition: string, details: Record<string, unknown>) {
     super(
       'MARKET_CONDITION_ERROR',
       `Unfavorable market condition: ${condition}`,
@@ -126,14 +128,14 @@ export const ErrorMessages = {
 /**
  * Type guard to check if error is a LendingError
  */
-export const isLendingError = (error: any): error is LendingError => {
+export const isLendingError = (error: unknown): error is LendingError => {
   return error instanceof LendingError;
 };
 
 /**
  * Get user-friendly error message
  */
-export const getUserErrorMessage = (error: any): string => {
+export const getUserErrorMessage = (error: unknown): string => {
   if (isLendingError(error)) {
     return error.userMessage;
   }
@@ -156,22 +158,13 @@ export const getUserErrorMessage = (error: any): string => {
 /**
  * Log error with context
  */
-export const logError = (error: any, context: string, details?: any): void => {
-  const timestamp = new Date().toISOString();
-  const errorInfo = {
-    timestamp,
+export const logError = (error: unknown, context: string, details?: Record<string, unknown>): void => {
+  logger.error(
+    error instanceof Error ? error.message : String(error),
+    error,
     context,
-    error: {
-      name: error?.name || 'Unknown',
-      message: error?.message || String(error),
-      code: error?.code,
-      stack: error?.stack,
-    },
-    details,
-  };
-  
-  // In production, this would send to error tracking service
-  console.error('[LendingPlatform Error]', errorInfo);
+    details
+  );
 };
 
 /**

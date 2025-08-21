@@ -47,6 +47,7 @@ import { useLending } from '../context/LendingContext';
 import { calculateMaxBorrowRLUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
 import { LoanTermDays } from '../types/lending';
 import { FINANCIAL_CONSTANTS, DEMO_PORTFOLIO, DEMO_CONFIG } from '../config/demoConstants';
+import { logger } from '../utils/logger';
 
 interface LoanParameters {
   collateralAmount: number;
@@ -155,7 +156,12 @@ const LoanCreationPage: React.FC<LoanCreationPageProps> = () => {
       setShowSuccessDialog(true);
       
     } catch (error) {
-      console.error('Failed to create loan:', error);
+      logger.error('Failed to create loan', error, 'LoanCreationPage.handleCreateLoan', { 
+        collateralAmount: parameters.collateralAmount,
+        targetBorrowAmount,
+        termDays: parameters.termDays,
+        interestRate
+      });
     } finally {
       setIsCreatingLoan(false);
     }

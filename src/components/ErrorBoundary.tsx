@@ -13,6 +13,7 @@ import {
   Refresh as RefreshIcon,
   Home as HomeIcon,
 } from '@mui/icons-material';
+import { logger } from '../utils/logger';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -52,7 +53,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     });
 
     // Log error for debugging (in real app, send to error reporting service)
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    logger.error('ErrorBoundary caught an error', error, 'ErrorBoundary.componentDidCatch', { 
+      errorInfo: errorInfo.componentStack,
+      componentStack: errorInfo.componentStack 
+    });
   }
 
   handleReload = (): void => {

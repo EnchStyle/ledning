@@ -5,18 +5,7 @@
  * Integrates with Material-UI's Snackbar component
  */
 
-// TODO: Install notistack package: npm install notistack
-// import { VariantType, enqueueSnackbar, SnackbarOrigin } from 'notistack';
-
-// Temporary types until notistack is installed
-type VariantType = 'success' | 'error' | 'warning' | 'info';
-interface SnackbarOrigin {
-  vertical: 'top' | 'bottom';
-  horizontal: 'left' | 'center' | 'right';
-}
-const enqueueSnackbar = (message: string, options: any) => {
-  console.log(`Notification: ${message}`, options);
-};
+import { VariantType, enqueueSnackbar, SnackbarOrigin } from 'notistack';
 
 /**
  * Notification types

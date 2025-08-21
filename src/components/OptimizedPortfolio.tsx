@@ -36,6 +36,7 @@ import {
 import { useLending } from '../context/LendingContext';
 import SmartTooltip from './SmartTooltip';
 import { FINANCIAL_CONSTANTS } from '../config/demoConstants';
+import { logger } from '../utils/logger';
 
 interface LoanCardProps {
   loan: any;
@@ -328,7 +329,7 @@ const OptimizedPortfolio: React.FC = () => {
       
       setActionDialog({ open: false, type: null, loanId: '', loanIndex: -1 });
     } catch (error) {
-      console.error('❌ EXECUTE ACTION ERROR:', error);
+      logger.error('Execute action error', error, 'OptimizedPortfolio.executeAction', { actionType: actionDialog.type, loanId: actionDialog.loanId, repayAmount, collateralAmount });
       setNotification('Transaction failed. Please try again.');
     } finally {
       setProcessing(false);

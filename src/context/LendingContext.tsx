@@ -13,6 +13,23 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 import { generateSecureId } from '../utils/securityUtils';
 import { FINANCIAL_CONSTANTS, DEMO_PORTFOLIO, SIMULATION_CONFIG, DEMO_CONFIG } from '../config/demoConstants';
 import { Loan, LoanParams, MarketData, UserPosition } from '../types/lending';
+import { logger } from '../utils/logger';
+
+// Type definitions for browser APIs
+interface MemoryInfo {
+  jsHeapSizeLimit: number;
+  totalJSHeapSize: number;
+  usedJSHeapSize: number;
+}
+
+interface ExtendedWindow extends Window {
+  __simulationPaused?: boolean;
+  gc?: () => void;
+}
+
+interface ExtendedPerformance extends Performance {
+  memory?: MemoryInfo;
+}
 import { 
   calculateLTV, 
   calculateCollateralValueUSD,
@@ -199,7 +216,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (!simulationSettings.isActive || loans.length === 0) return;
     
     // Skip price history updates if Portfolio tab is active
-    if (typeof window !== 'undefined' && (window as any).__simulationPaused) {
+    if (typeof window !== 'undefined' && (window as ExtendedWindow).__simulationPaused) {
       return;
     }
     
@@ -279,7 +296,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
     
     // Check if simulation is paused by Portfolio component
-    if (typeof window !== 'undefined' && (window as any).__simulationPaused) {
+    if (typeof window !== 'undefined' && (window as ExtendedWindow).__simulationPaused) {
       return;
     }
     
@@ -363,8 +380,8 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         lastMemoryCheck.current = now;
         
         // Check if performance.memory is available (Chrome-based browsers)
-        if (typeof performance !== 'undefined' && (performance as any).memory) {
-          const memory = (performance as any).memory;
+        if (typeof performance !== 'undefined' && (performance as ExtendedPerformance).memory) {
+          const memory = (performance as ExtendedPerformance).memory!;
           const usedMB = memory.usedJSHeapSize / 1048576; // Convert to MB
           const limitMB = memory.jsHeapSizeLimit / 1048576;
           
@@ -378,19 +395,19 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             setPriceHistory(prev => prev.slice(-5)); // Keep only last 5 points
             
             // Trigger garbage collection if available
-            if ((window as any).gc) {
-              (window as any).gc();
+            if ((window as ExtendedWindow).gc) {
+              (window as ExtendedWindow).gc!();
             }
             
             // If still over 90%, stop simulation
             setTimeout(() => {
-              if (typeof performance !== 'undefined' && (performance as any).memory) {
-                const newMemory = (performance as any).memory;
+              if (typeof performance !== 'undefined' && (performance as ExtendedPerformance).memory) {
+                const newMemory = (performance as ExtendedPerformance).memory!;
                 const newUsedMB = newMemory.usedJSHeapSize / 1048576;
                 const newLimitMB = newMemory.jsHeapSizeLimit / 1048576;
                 
                 if (newUsedMB / newLimitMB > 0.9) {
-                  console.error('🚨 MEMORY CRITICAL: Stopping simulation to prevent crash');
+                  logger.error('MEMORY CRITICAL: Stopping simulation to prevent crash', undefined, 'LendingContext.simulationTick', { memoryUsage: { usedMB: newUsedMB, limitMB: newLimitMB, percentage: (newUsedMB / newLimitMB) * 100 } });
                   setSimulationSettings(prev => ({ ...prev, isActive: false }));
                   alert('Simulation stopped due to high memory usage. Please refresh the page to continue.');
                 }
@@ -401,7 +418,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
       
     } catch (error) {
-      console.error('🚨 Simulation tick error:', error);
+      logger.error('Simulation tick error', error, 'LendingContext.simulationTick', { marketData: stateRef.current.marketData, simulationSettings: stateRef.current.simulationSettings });
       
       // Circuit breaker logic
       const now = Date.now();
@@ -415,7 +432,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // Trip circuit breaker if too many errors
       if (errorCount.current >= 3) {
         circuitBreakerTripped.current = true;
-        console.error('🚨 CIRCUIT BREAKER TRIPPED: Too many simulation errors, stopping permanently');
+        logger.error('CIRCUIT BREAKER TRIPPED: Too many simulation errors, stopping permanently', undefined, 'LendingContext.simulationTick', { errorCount: errorCount.current, lastErrorTime: lastErrorTime.current });
         alert('Simulation crashed due to repeated errors. Please refresh the page to restart.');
       }
       
@@ -455,7 +472,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         batchTimer.current = setTimeout(flushBatchedUpdates, 200);
         
       } catch (error) {
-        console.error('Simulation error:', error);
+        logger.error('Simulation error', error, 'LendingContext.simulationTick', { currentSettings: simulationSettings, currentPrice: marketData.xpmPriceUSD });
         setSimulationSettings(prev => ({ ...prev, isActive: false }));
       }
     };
@@ -488,7 +505,7 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         try {
           simulationTick.current();
         } catch (error) {
-          console.error('Critical simulation error:', error);
+          logger.error('Critical simulation error', error, 'LendingContext.simulationTimer', { isActive: simulationSettings.isActive, speed: simulationSettings.speed });
           if (simulationTimer.current) {
             clearInterval(simulationTimer.current);
             simulationTimer.current = null;

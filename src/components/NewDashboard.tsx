@@ -35,6 +35,7 @@ import PortfolioDashboard from './PortfolioDashboard';
 import StaticPortfolioDashboard from './StaticPortfolioDashboard';
 import HighPerformancePortfolioDashboard from './HighPerformancePortfolioDashboard';
 import AnalyticsPage from './AnalyticsPage';
+import FeatureErrorBoundary from './FeatureErrorBoundary';
 
 type TabType = 'portfolio' | 'borrow' | 'analytics';
 
@@ -87,29 +88,45 @@ const NewDashboard: React.FC = () => {
     switch (activeTab) {
       case 'portfolio':
         // Smart component selection based on simulation speed
-        if (!simulationSettings.isActive) {
-          // No simulation - use regular component
-          return <PortfolioDashboard />;
-        } else if (simulationSettings.speed >= 5) {
-          // High speed (5x+) - use high-performance component
-          return <HighPerformancePortfolioDashboard />;
-        } else {
-          // Low speed (1x-4x) - use static component to prevent freezing
-          return <StaticPortfolioDashboard />;
-        }
+        const PortfolioComponent = !simulationSettings.isActive
+          ? PortfolioDashboard
+          : simulationSettings.speed >= 5
+          ? HighPerformancePortfolioDashboard
+          : StaticPortfolioDashboard;
+        
+        return (
+          <FeatureErrorBoundary featureName="Portfolio Dashboard">
+            <PortfolioComponent />
+          </FeatureErrorBoundary>
+        );
+      
       case 'borrow':
-        return <LoanCreationPage />;
+        return (
+          <FeatureErrorBoundary featureName="Loan Creation">
+            <LoanCreationPage />
+          </FeatureErrorBoundary>
+        );
+      
       case 'analytics':
-        return <AnalyticsPage />;
+        return (
+          <FeatureErrorBoundary featureName="Analytics">
+            <AnalyticsPage />
+          </FeatureErrorBoundary>
+        );
+      
       default:
         // Smart default component selection
-        if (!simulationSettings.isActive) {
-          return <PortfolioDashboard />;
-        } else if (simulationSettings.speed >= 5) {
-          return <HighPerformancePortfolioDashboard />;
-        } else {
-          return <StaticPortfolioDashboard />;
-        }
+        const DefaultComponent = !simulationSettings.isActive
+          ? PortfolioDashboard
+          : simulationSettings.speed >= 5
+          ? HighPerformancePortfolioDashboard
+          : StaticPortfolioDashboard;
+        
+        return (
+          <FeatureErrorBoundary featureName="Dashboard">
+            <DefaultComponent />
+          </FeatureErrorBoundary>
+        );
     }
   };
 
