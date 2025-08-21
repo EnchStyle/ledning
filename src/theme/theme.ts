@@ -75,9 +75,9 @@ export const theme = createTheme({
     background: backgroundColors,
     success: {
       main: semanticColors.success,
-      light: alpha(semanticColors.success, 0.3),
+      light: alpha(semanticColors.success, 0.3), // Semi-transparent green background
       dark: alpha(semanticColors.success, 0.7),
-      contrastText: '#fff',
+      contrastText: '#fff', // FIX: White text for dark backgrounds - prevents black text on colored backgrounds in loan review step 3
     },
     warning: {
       main: semanticColors.warning,

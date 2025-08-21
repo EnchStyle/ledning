@@ -291,6 +291,7 @@ const SimpleLandingPage: React.FC = () => {
                 </Box>
                 
                 {/* Main Result Card */}
+                {/* STEP 3: Loan Preview Card - FIX: Uses success.contrastText for white text on colored background */}
                 <Paper elevation={3} sx={{ p: 3, mb: 3, bgcolor: 'success.light', color: 'success.contrastText' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <MoneyIcon sx={{ mr: 1 }} />

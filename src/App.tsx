@@ -4,7 +4,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { LendingProvider } from './context/LendingContext';
 import NewMainTabs from './components/NewMainTabs';
 import ErrorBoundary from './components/ErrorBoundary';
-import theme from './theme/theme';
+import theme from './theme/theme'; // MASTER THEME: Single theme system - no theme switching allowed
 
 function App() {
   return (
