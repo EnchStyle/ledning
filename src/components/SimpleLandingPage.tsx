@@ -103,7 +103,7 @@ const SimpleLandingPage: React.FC = () => {
     <Container maxWidth="md">
       <>
         {/* Simplified Header */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
         <Typography 
           variant="h3" 
           gutterBottom 
@@ -122,28 +122,28 @@ const SimpleLandingPage: React.FC = () => {
         >
           Use your XPM as collateral to instantly borrow stablecoins
         </Typography>
-        <div style={{ 
+        <Box sx={{ 
           display: 'flex', 
           flexWrap: 'wrap', 
-          gap: '12px', 
+          gap: { xs: 1, sm: 3 }, 
           justifyContent: 'center',
-          fontSize: '1rem',
-          color: '#666'
+          fontSize: { xs: '0.875rem', sm: '1rem' },
+          color: 'text.secondary'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#4caf50' }}></div>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main' }} />
             {FINANCIAL_CONSTANTS.INTEREST_RATES[90]}-{FINANCIAL_CONSTANTS.INTEREST_RATES[30]}% APR
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#4caf50' }}></div>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main' }} />
             Up to {FINANCIAL_CONSTANTS.LTV_LIMITS.MAX_LTV}% LTV
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#4caf50' }}></div>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main' }} />
             Instant Settlement
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
 
       {/* REDESIGN: Step Indicator for Clear Progression */}
       <StepIndicator 
@@ -153,7 +153,7 @@ const SimpleLandingPage: React.FC = () => {
       />
 
       {/* REDESIGN: Single Column Layout for Better Focus */}
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <Box sx={{ maxWidth: '800px', mx: 'auto' }}>
         {/* STEP 1: COLLATERAL INPUT CARD - REDESIGNED */}
         <Paper 
           elevation={currentStep === 0 ? 4 : 2} 
@@ -168,31 +168,31 @@ const SimpleLandingPage: React.FC = () => {
             opacity: completedSteps[0] && currentStep > 0 ? 0.8 : 1,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-            <div style={{ 
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              width: '40px', 
-              height: '40px', 
+              width: 40, 
+              height: 40, 
               borderRadius: '50%', 
-              backgroundColor: completedSteps[0] ? '#4caf50' : '#1976d2',
+              bgcolor: completedSteps[0] ? 'success.main' : 'primary.main',
               color: 'white',
-              marginRight: '16px',
+              mr: 2,
               fontSize: '1.2rem',
               fontWeight: 'bold'
             }}>
               {completedSteps[0] ? '✓' : '1'}
-            </div>
-            <div>
+            </Box>
+            <Box>
               <Typography variant="h5" sx={{ fontWeight: 700, color: completedSteps[0] ? 'success.main' : 'primary.main' }}>
                 Enter Your Collateral
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 How much XPM do you want to use as collateral?
               </Typography>
-            </div>
-          </div>
+            </Box>
+          </Box>
             
             <TextField
               fullWidth
@@ -413,7 +413,7 @@ const SimpleLandingPage: React.FC = () => {
             isLoading={false}
           />
         )}
-      </div>
+      </Box>
 
       {/* Risk Warning */}
       <Alert severity="warning" sx={{ mb: 4 }}>
