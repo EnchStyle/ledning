@@ -36,6 +36,9 @@ import {
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
 import SmartTooltip from './SmartTooltip';
+import StepIndicator from './StepIndicator';
+import RiskMeterEnhanced from './RiskMeterEnhanced';
+import ProgressCelebration from './ProgressCelebration';
 import { calculateMaxBorrowRLUSD, calculateLiquidationPriceUSD } from '../utils/lendingCalculations';
 import { LoanTermDays } from '../types/lending';
 import { FINANCIAL_CONSTANTS } from '../config/demoConstants';
@@ -49,12 +52,34 @@ const SimpleLandingPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   
+  // REDESIGN: Step progression state for improved UX
+  const [currentStep, setCurrentStep] = useState(0);
+  const steps = ['Enter Collateral', 'Choose Terms', 'Review Risk', 'Confirm Loan'];
+  const [completedSteps, setCompletedSteps] = useState([false, false, false, false]);
+  
   const collateral = parseFloat(collateralAmount) || 0;
   const collateralValueUSD = collateral * marketData.xpmPriceUSD;
   const maxBorrowRLUSD = calculateMaxBorrowRLUSD(collateral, marketData.xpmPriceUSD, targetLTV);
   const borrowValueUSD = maxBorrowRLUSD; // RLUSD is 1:1 USD
   const liquidationPriceUSD = calculateLiquidationPriceUSD(maxBorrowRLUSD, collateral, FINANCIAL_CONSTANTS.LTV_LIMITS.LIQUIDATION_LTV);
   const priceDropToLiquidation = collateral > 0 ? ((marketData.xpmPriceUSD - liquidationPriceUSD) / marketData.xpmPriceUSD) * 100 : 0;
+  
+  // REDESIGN: Auto-advance step progression based on user input
+  React.useEffect(() => {
+    const newCompleted = [...completedSteps];
+    newCompleted[0] = collateral >= 1000; // Step 1: Valid collateral
+    newCompleted[1] = selectedTerm > 0; // Step 2: Term selected
+    newCompleted[2] = targetLTV > 0; // Step 3: LTV set
+    newCompleted[3] = newCompleted[0] && newCompleted[1] && newCompleted[2]; // Step 4: All ready
+    setCompletedSteps(newCompleted);
+    
+    // Auto-advance current step
+    if (newCompleted[3]) setCurrentStep(3);
+    else if (newCompleted[2]) setCurrentStep(2);
+    else if (newCompleted[1]) setCurrentStep(1);
+    else if (newCompleted[0]) setCurrentStep(1);
+    else setCurrentStep(0);
+  }, [collateral, selectedTerm, targetLTV]);
 
   const handleCreateLoan = () => {
     if (collateral >= 1000 && collateral <= 10000000) {
@@ -129,17 +154,55 @@ const SimpleLandingPage: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Main Loan Calculator */}
-      <Paper elevation={3} sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4, borderRadius: 3 }}>
-        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
-          {/* Input Section */}
-          <Grid item xs={12} md={6}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <CollateralIcon color="primary" sx={{ mr: 1 }} />
-              <Typography variant="h5" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                Step 1: Choose Your Collateral
+      {/* REDESIGN: Step Indicator for Clear Progression */}
+      <StepIndicator 
+        currentStep={currentStep}
+        steps={steps}
+        completedSteps={completedSteps}
+      />
+
+      {/* REDESIGN: Single Column Layout for Better Focus */}
+      <Box sx={{ maxWidth: '800px', mx: 'auto' }}>
+        
+        {/* STEP 1: COLLATERAL INPUT CARD - REDESIGNED */}
+        <Paper 
+          elevation={currentStep === 0 ? 4 : 2} 
+          sx={{ 
+            p: 4, 
+            mb: 3, 
+            borderRadius: 3, 
+            bgcolor: currentStep === 0 ? 'primary.light' : 'background.paper',
+            border: currentStep === 0 ? '2px solid' : '1px solid',
+            borderColor: currentStep === 0 ? 'primary.main' : 'divider',
+            transition: 'all 0.3s ease',
+            opacity: completedSteps[0] && currentStep > 0 ? 0.8 : 1,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              width: 40, 
+              height: 40, 
+              borderRadius: '50%', 
+              bgcolor: completedSteps[0] ? 'success.main' : 'primary.main',
+              color: 'white',
+              mr: 2,
+              fontSize: '1.2rem',
+              fontWeight: 'bold'
+            }}>
+              {completedSteps[0] ? '✓' : '1'}
+            </Box>
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: completedSteps[0] ? 'success.main' : 'primary.main' }}>
+                Enter Your Collateral
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                How much XPM do you want to use as collateral?
               </Typography>
             </Box>
+          </Box>
             
             <TextField
               fullWidth
@@ -180,15 +243,49 @@ const SimpleLandingPage: React.FC = () => {
                 </Button>
               ))}
             </Box>
+        </Paper>
 
-            {/* Loan Term Selection */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <ScheduleIcon color="primary" sx={{ mr: 1 }} />
-              <Typography variant="h6" sx={{ fontWeight: 500, color: 'primary.main' }}>
-                Step 2: Pick Your Loan Term
+        {/* STEP 2: LOAN TERM SELECTION CARD - REDESIGNED */}
+        <Paper 
+          elevation={currentStep === 1 ? 4 : 2} 
+          sx={{ 
+            p: 4, 
+            mb: 3, 
+            borderRadius: 3, 
+            bgcolor: currentStep === 1 ? 'primary.light' : 'background.paper',
+            border: currentStep === 1 ? '2px solid' : '1px solid',
+            borderColor: currentStep === 1 ? 'primary.main' : 'divider',
+            transition: 'all 0.3s ease',
+            opacity: completedSteps[1] && currentStep > 1 ? 0.8 : 1,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              width: 40, 
+              height: 40, 
+              borderRadius: '50%', 
+              bgcolor: completedSteps[1] ? 'success.main' : 'primary.main',
+              color: 'white',
+              mr: 2,
+              fontSize: '1.2rem',
+              fontWeight: 'bold'
+            }}>
+              {completedSteps[1] ? '✓' : '2'}
+            </Box>
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: completedSteps[1] ? 'success.main' : 'primary.main' }}>
+                Choose Your Loan Term
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                How long do you want to borrow for?
               </Typography>
             </Box>
-            <FormControl component="fieldset" sx={{ mb: 3 }}>
+          </Box>
+
+          <FormControl component="fieldset" sx={{ width: '100%' }}>
               <RadioGroup
                 value={selectedTerm}
                 onChange={(e) => setSelectedTerm(Number(e.target.value) as LoanTermDays)}
