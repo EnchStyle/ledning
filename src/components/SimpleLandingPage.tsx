@@ -104,7 +104,8 @@ const SimpleLandingPage: React.FC = () => {
       <>
         {/* Simplified Header */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Typography 
+          <>
+            <Typography 
           variant="h3" 
           gutterBottom 
           sx={{ 
@@ -130,7 +131,8 @@ const SimpleLandingPage: React.FC = () => {
           fontSize: { xs: '0.875rem', sm: '1rem' },
           color: 'text.secondary'
         }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main' }} />
             {FINANCIAL_CONSTANTS.INTEREST_RATES[90]}-{FINANCIAL_CONSTANTS.INTEREST_RATES[30]}% APR
           </Box>
@@ -142,6 +144,9 @@ const SimpleLandingPage: React.FC = () => {
             <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main' }} />
             Instant Settlement
           </Box>
+          </>
+        </Box>
+          </>
         </Box>
       </Box>
 
@@ -170,14 +175,15 @@ const SimpleLandingPage: React.FC = () => {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <Box sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              width: 40, 
-              height: 40, 
-              borderRadius: '50%', 
-              bgcolor: completedSteps[0] ? 'success.main' : 'primary.main',
+            <>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                width: 40, 
+                height: 40, 
+                borderRadius: '50%', 
+                bgcolor: completedSteps[0] ? 'success.main' : 'primary.main',
               color: 'white',
               mr: 2,
               fontSize: '1.2rem',
@@ -193,6 +199,7 @@ const SimpleLandingPage: React.FC = () => {
                 How much XPM do you want to use as collateral?
               </Typography>
             </Box>
+            </>
           </Box>
             
             <TextField
