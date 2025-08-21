@@ -153,9 +153,8 @@ const SimpleLandingPage: React.FC = () => {
       />
 
       {/* REDESIGN: Single Column Layout for Better Focus */}
-      <Box sx={{ maxWidth: '800px', mx: 'auto' }}>
-        <>
-          {/* STEP 1: COLLATERAL INPUT CARD - REDESIGNED */}
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        {/* STEP 1: COLLATERAL INPUT CARD - REDESIGNED */}
         <Paper 
           elevation={currentStep === 0 ? 4 : 2} 
           sx={{ 
@@ -414,8 +413,7 @@ const SimpleLandingPage: React.FC = () => {
             isLoading={false}
           />
         )}
-        </>
-      </Box>
+      </div>
 
       {/* Risk Warning */}
       <Alert severity="warning" sx={{ mb: 4 }}>
