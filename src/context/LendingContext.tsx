@@ -14,6 +14,15 @@ import { generateSecureId } from '../utils/securityUtils';
 import { FINANCIAL_CONSTANTS, DEMO_PORTFOLIO, SIMULATION_CONFIG, DEMO_CONFIG } from '../config/demoConstants';
 import { Loan, LoanParams, MarketData, UserPosition } from '../types/lending';
 import { logger } from '../utils/logger';
+import { 
+  calculateLTV, 
+  calculateCollateralValueUSD,
+  calculateDebtValueUSD,
+  calculateFixedInterest,
+  calculateLiquidationPriceUSD,
+  isEligibleForLiquidationRLUSD,
+  calculateLiquidationReturnRLUSD
+} from '../utils/lendingCalculations';
 
 // Type definitions for browser APIs
 interface MemoryInfo {
@@ -30,15 +39,6 @@ interface ExtendedWindow extends Window {
 interface ExtendedPerformance extends Performance {
   memory?: MemoryInfo;
 }
-import { 
-  calculateLTV, 
-  calculateCollateralValueUSD,
-  calculateDebtValueUSD,
-  calculateFixedInterest,
-  calculateLiquidationPriceUSD,
-  isEligibleForLiquidationRLUSD,
-  calculateLiquidationReturnRLUSD
-} from '../utils/lendingCalculations';
 
 // Price history tracking
 interface PriceHistoryPoint {
