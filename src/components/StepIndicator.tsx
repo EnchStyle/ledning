@@ -41,7 +41,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep, steps, compl
         {steps.map((label, index) => (
           <Step key={label} completed={completedSteps[index]}>
             <StepLabel 
-              StepIconComponent={completedSteps[index] ? CheckIcon : undefined}
+              StepIconComponent={completedSteps[index] ? () => <CheckIcon color="success" /> : undefined}
             >
               <Typography 
                 variant={isMobile ? "body1" : "h6"} 

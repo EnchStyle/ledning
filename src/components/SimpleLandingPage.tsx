@@ -322,20 +322,54 @@ const SimpleLandingPage: React.FC = () => {
                   />
                 ))}
               </RadioGroup>
-            </FormControl>
+          </FormControl>
+        </Paper>
 
-            {/* LTV Selection */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, mt: 3 }}>
-              <LTVIcon color="primary" sx={{ mr: 1 }} />
-              <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                Choose Your Loan Amount (LTV)
-              </Typography>
-              <SmartTooltip 
-                helpText="LTV (Loan-to-Value) ratio determines how much you can borrow. Lower LTV is safer but gives you less cash. Higher LTV gives more cash but increases liquidation risk."
-                placement="top"
-              />
+        {/* STEP 3: LTV SELECTION CARD - REDESIGNED */}
+        <Paper 
+          elevation={currentStep === 2 ? 4 : 2} 
+          sx={{ 
+            p: 4, 
+            mb: 3, 
+            borderRadius: 3, 
+            bgcolor: currentStep === 2 ? 'primary.light' : 'background.paper',
+            border: currentStep === 2 ? '2px solid' : '1px solid',
+            borderColor: currentStep === 2 ? 'primary.main' : 'divider',
+            transition: 'all 0.3s ease',
+            opacity: completedSteps[2] && currentStep > 2 ? 0.8 : 1,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              width: 40, 
+              height: 40, 
+              borderRadius: '50%', 
+              bgcolor: completedSteps[2] ? 'success.main' : 'primary.main',
+              color: 'white',
+              mr: 2,
+              fontSize: '1.2rem',
+              fontWeight: 'bold'
+            }}>
+              {completedSteps[2] ? '✓' : '3'}
             </Box>
-            <Box sx={{ mb: 3 }}>
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: completedSteps[2] ? 'success.main' : 'primary.main' }}>
+                Set Your Loan Amount
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Choose how much you want to borrow (LTV ratio)
+              </Typography>
+            </Box>
+            <SmartTooltip 
+              helpText="LTV (Loan-to-Value) ratio determines how much you can borrow. Lower LTV is safer but gives you less cash. Higher LTV gives more cash but increases liquidation risk."
+              placement="top"
+            />
+          </Box>
+
+          <Box sx={{ mb: 3 }}>
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 Loan-to-Value ratio: {targetLTV}%
               </Typography>
@@ -374,117 +408,32 @@ const SimpleLandingPage: React.FC = () => {
                 </Typography>
               </Box>
             )}
-          </Grid>
+        </Paper>
 
-          {/* Output Section */}
-          <Grid item xs={12} md={6}>
-            {collateral > 0 ? (
-              <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <CelebrationIcon color="success" sx={{ mr: 1 }} />
-                  <Typography variant="h5" sx={{ fontWeight: 600, color: 'success.main' }}>
-                    Step 3: Your Loan Preview
-                  </Typography>
-                </Box>
-                
-                {/* Main Result Card */}
-                {/* STEP 3: Loan Preview Card - FIX: Uses success.contrastText for white text on colored background */}
-                <Paper elevation={3} sx={{ p: 3, mb: 3, bgcolor: 'success.light', color: 'success.contrastText' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <MoneyIcon sx={{ mr: 1 }} />
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      You'll Instantly Receive:
-                    </Typography>
-                  </Box>
-                  <Typography variant="h2" sx={{ fontWeight: 700, mb: 1 }}>
-                    {maxBorrowRLUSD.toFixed(0)}
-                  </Typography>
-                  <Typography variant="h6">
-                    RLUSD ≈ ${borrowValueUSD.toFixed(0)} USD
-                  </Typography>
-                </Paper>
+        {/* STEP 4: ENHANCED RISK COMMUNICATION */}
+        {collateral > 0 && completedSteps[2] && (
+          <RiskMeterEnhanced
+            ltv={targetLTV}
+            liquidationPrice={liquidationPriceUSD}
+            currentPrice={marketData.xpmPriceUSD}
+            priceDropBuffer={priceDropToLiquidation}
+          />
+        )}
 
-                {/* Loan Details */}
-                <Box sx={{ mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <DetailsIcon color="primary" sx={{ mr: 1 }} />
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      Loan Details:
-                    </Typography>
-                  </Box>
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">Term:</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>{selectedTerm} days</Typography>
-                    </Grid>
-                    <Grid item xs={6}>
-                      <Typography variant="body2" color="text.secondary">Interest:</Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {(maxBorrowRLUSD * (FINANCIAL_CONSTANTS.INTEREST_RATES[selectedTerm] / 100) * selectedTerm / 365).toFixed(0)} RLUSD
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <WarningIcon color="warning" sx={{ mr: 0.5, fontSize: 16 }} />
-                        <Typography variant="body2" color="text.secondary">Liquidation Price:</Typography>
-                        <SmartTooltip 
-                          helpText="If XPM price drops to this level, your loan will be automatically liquidated to protect lenders. Monitor this closely!"
-                          placement="top"
-                          size="small"
-                        />
-                      </Box>
-                      <Typography variant="body1" sx={{ fontWeight: 500, color: priceDropToLiquidation < 20 ? 'warning.main' : 'text.primary' }}>
-                        ${liquidationPriceUSD.toFixed(4)} ({priceDropToLiquidation.toFixed(0)}% buffer)
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </Box>
+        {/* STEP 4: LOAN CONFIRMATION - REDESIGNED */}
+        {completedSteps[3] && collateral > 0 && (
+          <ProgressCelebration
+            borrowAmount={maxBorrowRLUSD}
+            onConfirm={handleCreateLoan}
+            isLoading={false}
+          />
+        )}
 
-                <Button
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  onClick={handleCreateLoan}
-                  sx={{ 
-                    py: 2,
-                    fontSize: '1.25rem',
-                    fontWeight: 700,
-                    bgcolor: 'success.main',
-                    '&:hover': {
-                      bgcolor: 'success.dark'
-                    },
-                    borderRadius: 3,
-                    textTransform: 'none'
-                  }}
-                  disabled={collateral < 1000 || collateral > 10000000}
-                  startIcon={<LaunchIcon />}
-                >
-                  Get My Loan Now
-                </Button>
-                
-                {(collateral < 1000 || collateral > 10000000) && (
-                  <Alert severity="warning" sx={{ mt: 2 }}>
-                    {collateral < 1000 ? "Need at least 1,000 XPM to proceed" : "Maximum 10M XPM allowed"}
-                  </Alert>
-                )}
-              </Box>
-            ) : (
-              <Box sx={{ textAlign: 'center', color: 'text.secondary', mt: 4, p: 4 }}>
-                <PointerIcon sx={{ fontSize: 48, opacity: 0.7, mb: 2 }} />
-                <Typography variant="h6">
-                  Enter your collateral amount to see instant loan preview
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  See exactly how much RLUSD you'll receive and all loan terms
-                </Typography>
-              </Box>
-            )}
-          </Grid>
-        </Grid>
-      </Paper>
+        {/* CLOSE MAIN CONTAINER */}
+      </Box>
 
-      {/* Key Information - Mobile Optimized */}
-      <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ mb: 4 }}>
+      {/* REDESIGN COMPLETE: Key Information Grid */}
+      <Grid container spacing={3} sx={{ mb: 4, maxWidth: '800px', mx: 'auto' }}>
         <Grid item xs={12} sm={4}>
           <Paper sx={{ p: { xs: 1.5, sm: 2 }, textAlign: 'center' }}>
             <Typography variant="h6" color="primary.main" sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
