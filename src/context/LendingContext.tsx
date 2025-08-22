@@ -14,6 +14,7 @@ import { generateSecureId } from '../utils/securityUtils';
 import { FINANCIAL_CONSTANTS, DEMO_PORTFOLIO, SIMULATION_CONFIG, DEMO_CONFIG } from '../config/demoConstants';
 import { Loan, LoanParams, MarketData, UserPosition } from '../types/lending';
 import { logger } from '../utils/logger';
+import { createPriceMonitor } from '../utils/xpmPrice';
 import { 
   calculateLTV, 
   calculateCollateralValueUSD,
@@ -176,6 +177,8 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     collateral: number;
     debt: number;
   }>>([]);
+  /** Real-time price monitoring cleanup function */
+  const priceMonitorCleanup = useRef<(() => void) | null>(null);
   
   // Ref to hold current state values for stable callback access
   const stateRef = useRef({ marketData, currentTime, loans, simulationSettings });
@@ -190,6 +193,32 @@ export const LendingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const MINIMUM_LOAN_AMOUNT_USD = FINANCIAL_CONSTANTS.MINIMUM_AMOUNTS.LOAN_AMOUNT;
   const MINIMUM_COLLATERAL_AMOUNT_USD = FINANCIAL_CONSTANTS.MINIMUM_AMOUNTS.COLLATERAL_VALUE;
 
+
+  /**
+   * Initialize real-time XPM price monitoring
+   */
+  useEffect(() => {
+    if (priceMonitorCleanup.current) {
+      priceMonitorCleanup.current();
+    }
+
+    priceMonitorCleanup.current = createPriceMonitor(
+      (newPrice) => {
+        setMarketData(prev => ({
+          ...prev,
+          xpmPriceUSD: newPrice
+        }));
+      },
+      30000, // Update every 30 seconds
+      0.022 // Fallback price
+    );
+
+    return () => {
+      if (priceMonitorCleanup.current) {
+        priceMonitorCleanup.current();
+      }
+    };
+  }, []);
 
   /**
    * Page Visibility API to pause simulation in background tabs

@@ -72,7 +72,7 @@ const ProgressCelebration: React.FC<ProgressCelebrationProps> = ({
           fontSize: { xs: '1rem', sm: '1.25rem' }
         }}
       >
-        Ready to borrow instantly!
+        Loan details confirmed!
       </Typography>
 
       {/* CALL TO ACTION */}
