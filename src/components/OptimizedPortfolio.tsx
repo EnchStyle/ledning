@@ -19,6 +19,7 @@ import {
   Fab,
   Snackbar,
   Divider,
+  Slider,
 } from '@mui/material';
 import {
   AccountBalanceWallet as WalletIcon,
@@ -234,6 +235,7 @@ const OptimizedPortfolio: React.FC = () => {
     loanIndex: -1
   });
   const [repayAmount, setRepayAmount] = useState<string>('');
+  const [repayPercentage, setRepayPercentage] = useState<number>(100);
   const [collateralAmount, setCollateralAmount] = useState<string>('');
   const [processing, setProcessing] = useState(false);
   const [notification, setNotification] = useState<string>('');
@@ -530,7 +532,11 @@ const OptimizedPortfolio: React.FC = () => {
       {/* Action Dialog */}
       <Dialog 
         open={actionDialog.open}
-        onClose={() => setActionDialog({ open: false, type: null, loanId: '', loanIndex: -1 })}
+        onClose={() => {
+          setActionDialog({ open: false, type: null, loanId: '', loanIndex: -1 });
+          setRepayAmount('');
+          setRepayPercentage(100);
+        }}
         maxWidth="sm"
         fullWidth
       >
@@ -538,22 +544,156 @@ const OptimizedPortfolio: React.FC = () => {
           {actionDialog.type === 'repay' ? 'Repay Loan' : 'Add Collateral'}
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
-          {actionDialog.type === 'repay' ? (
-            <Box>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Enter repayment amount (RLUSD) or leave empty for full repayment
-              </Typography>
-              <TextField
-                fullWidth
-                label="Repayment Amount"
-                type="number"
-                value={repayAmount}
-                onChange={(e) => setRepayAmount(e.target.value)}
-                sx={{ mb: 2 }}
-                helperText="Leave empty for full repayment"
-                inputProps={{ min: 0, step: 0.01 }}
-              />
-            </Box>
+          {actionDialog.type === 'repay' ? (() => {
+            const loan = userLoans[actionDialog.loanIndex];
+            const totalDebt = loan ? loan.borrowedAmount + (loan.fixedInterestAmount || 0) : 0;
+            const currentRepayAmount = parseFloat(repayAmount) || 0;
+            const remainingDebt = totalDebt - currentRepayAmount;
+            
+            return (
+              <Box>
+                {/* Wallet Balance Display */}
+                <Paper sx={{ p: 2, mb: 3, bgcolor: 'background.default' }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Your RLUSD Balance
+                  </Typography>
+                  <Typography variant="h6" color="primary">
+                    {walletBalances.rlusd.toFixed(2)} RLUSD
+                  </Typography>
+                </Paper>
+
+                {/* Debt Information */}
+                <Box sx={{ mb: 3 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Total Debt
+                    </Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      {totalDebt.toFixed(4)} RLUSD
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Principal
+                    </Typography>
+                    <Typography variant="body2">
+                      {loan ? loan.borrowedAmount.toFixed(4) : '0'} RLUSD
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Interest
+                    </Typography>
+                    <Typography variant="body2">
+                      {loan ? (loan.fixedInterestAmount || 0).toFixed(4) : '0'} RLUSD
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Manual Input */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Repayment Amount
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    value={repayAmount}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value) || 0;
+                      if (value >= 0 && value <= totalDebt) {
+                        setRepayAmount(e.target.value);
+                        setRepayPercentage((value / totalDebt) * 100);
+                      }
+                    }}
+                    variant="outlined"
+                    InputProps={{
+                      endAdornment: <Typography variant="body1" sx={{ fontWeight: 500 }}>RLUSD</Typography>,
+                      inputProps: { 
+                        style: { textAlign: 'right', fontSize: '1.1rem', fontWeight: 500 }
+                      }
+                    }}
+                    type="number"
+                  />
+                </Box>
+
+                {/* Percentage Slider */}
+                <Box sx={{ mb: 3 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Percentage of debt
+                    </Typography>
+                    <Typography variant="body2" color="primary" sx={{ fontWeight: 600 }}>
+                      {repayPercentage.toFixed(1)}%
+                    </Typography>
+                  </Box>
+                  <Slider
+                    value={repayPercentage}
+                    onChange={(event, value: number | number[]) => {
+                      const percentage = value as number;
+                      setRepayPercentage(percentage);
+                      const amount = (totalDebt * percentage) / 100;
+                      setRepayAmount(amount.toFixed(4));
+                    }}
+                    min={0}
+                    max={100}
+                    step={0.1}
+                    marks={[
+                      { value: 0, label: '0%' },
+                      { value: 25, label: '25%' },
+                      { value: 50, label: '50%' },
+                      { value: 75, label: '75%' },
+                      { value: 100, label: 'Full' }
+                    ]}
+                    sx={{ 
+                      '& .MuiSlider-mark': {
+                        backgroundColor: 'primary.main',
+                        height: 8,
+                        width: 2,
+                      },
+                      '& .MuiSlider-thumb': {
+                        width: 20,
+                        height: 20,
+                      }
+                    }}
+                  />
+                </Box>
+
+                {/* Repayment Summary */}
+                {currentRepayAmount > 0 && (
+                  <Paper sx={{ p: 2, bgcolor: 'info.light' }}>
+                    <Typography variant="body2" color="info.contrastText" gutterBottom>
+                      After this payment:
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography variant="body2" color="info.contrastText">
+                        Remaining debt:
+                      </Typography>
+                      <Typography variant="body2" color="info.contrastText" fontWeight={600}>
+                        {remainingDebt.toFixed(4)} RLUSD
+                      </Typography>
+                    </Box>
+                    {remainingDebt < 0.01 && (
+                      <Typography variant="caption" color="info.contrastText" sx={{ display: 'block', mt: 1 }}>
+                        ✓ Loan will be fully repaid and collateral returned
+                      </Typography>
+                    )}
+                  </Paper>
+                )}
+
+                {/* Warnings */}
+                {currentRepayAmount > walletBalances.rlusd && (
+                  <Alert severity="error" sx={{ mt: 2 }}>
+                    Insufficient balance. You only have {walletBalances.rlusd.toFixed(2)} RLUSD
+                  </Alert>
+                )}
+                {currentRepayAmount > totalDebt && (
+                  <Alert severity="warning" sx={{ mt: 2 }}>
+                    Amount exceeds total debt
+                  </Alert>
+                )}
+              </Box>
+            );
+          })()
           ) : (
             <Box>
               <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -573,7 +713,11 @@ const OptimizedPortfolio: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setActionDialog({ open: false, type: null, loanId: '', loanIndex: -1 })}>
+          <Button onClick={() => {
+            setActionDialog({ open: false, type: null, loanId: '', loanIndex: -1 });
+            setRepayAmount('');
+            setRepayPercentage(100);
+          }}>
             Cancel
           </Button>
           <Button 
