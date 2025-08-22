@@ -186,37 +186,94 @@ const SimpleLandingPage: React.FC = () => {
             
           <div style={{ marginBottom: '32px' }}>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Select percentage of your balance: {collateralPercentage.toFixed(1)}%
+              Select percentage of your balance
             </Typography>
-            <Slider
-              value={collateralPercentage}
-              onChange={(event, value: number | number[]) => setCollateralPercentage(value as number)}
-              min={0}
-              max={100}
-              step={0.1}
-              marks={[
-                { value: 0, label: '0%' },
-                { value: 25, label: '25%' },
-                { value: 50, label: '50%' },
-                { value: 75, label: '75%' },
-                { value: 100, label: '100%' }
-              ]}
-              sx={{ 
-                mb: 2,
-                '& .MuiSlider-mark': {
-                  backgroundColor: 'primary.main',
-                  height: 8,
-                  width: 2,
-                },
-                '& .MuiSlider-markLabel': {
-                  fontSize: '0.875rem',
-                }
-              }}
-            />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="h6" color="primary">
-                {collateral.toLocaleString()} XPM
-              </Typography>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '16px' }}>
+              <div style={{ flex: 1 }}>
+                <Slider
+                  value={collateralPercentage}
+                  onChange={(event, value: number | number[]) => setCollateralPercentage(value as number)}
+                  min={0}
+                  max={100}
+                  step={0.1}
+                  marks={[
+                    { value: 0, label: '0%' },
+                    { value: 25, label: '25%' },
+                    { value: 50, label: '50%' },
+                    { value: 75, label: '75%' },
+                    { value: 100, label: '100%' }
+                  ]}
+                  sx={{ 
+                    '& .MuiSlider-mark': {
+                      backgroundColor: 'primary.main',
+                      height: 8,
+                      width: 2,
+                    },
+                    '& .MuiSlider-markLabel': {
+                      fontSize: '0.875rem',
+                    }
+                  }}
+                />
+              </div>
+              <TextField
+                value={collateralPercentage.toFixed(1)}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value);
+                  if (!isNaN(value) && value >= 0 && value <= 100) {
+                    setCollateralPercentage(value);
+                  }
+                }}
+                onBlur={(e) => {
+                  const value = parseFloat(e.target.value);
+                  if (isNaN(value) || value < 0) {
+                    setCollateralPercentage(0);
+                  } else if (value > 100) {
+                    setCollateralPercentage(100);
+                  }
+                }}
+                size="small"
+                sx={{ width: '80px' }}
+                InputProps={{
+                  endAdornment: <Typography variant="body2" color="text.secondary">%</Typography>,
+                  inputProps: { 
+                    style: { textAlign: 'right' },
+                    min: 0,
+                    max: 100,
+                    step: 0.1
+                  }
+                }}
+                type="number"
+              />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <Typography variant="body2" color="text.secondary">Amount:</Typography>
+                <TextField
+                  value={collateral}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value);
+                    if (!isNaN(value) && value >= 0) {
+                      const percentage = (value / walletBalances.xpm) * 100;
+                      setCollateralPercentage(Math.min(percentage, 100));
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const value = parseFloat(e.target.value);
+                    if (isNaN(value) || value < 0) {
+                      setCollateralPercentage(0);
+                    }
+                  }}
+                  size="small"
+                  sx={{ width: '150px' }}
+                  InputProps={{
+                    endAdornment: <Typography variant="body2" color="text.secondary">XPM</Typography>,
+                    inputProps: { 
+                      style: { textAlign: 'right' }
+                    }
+                  }}
+                  type="number"
+                />
+              </div>
               <Typography variant="body2" color="text.secondary">
                 Worth ${collateralValueUSD.toFixed(0)} USD
               </Typography>
