@@ -230,24 +230,6 @@ const SimpleLandingPage: React.FC = () => {
               </Typography>
             )}
           </div>
-
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
-            {[10, 25, 50, 75, 100].map((percentage) => (
-              <Button
-                key={percentage}
-                variant={Math.abs(collateralPercentage - percentage) < 0.1 ? "contained" : "outlined"}
-                size="small"
-                onClick={() => setCollateralPercentage(percentage)}
-                sx={{ 
-                  minWidth: { xs: 50, sm: 'auto' },
-                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                  px: { xs: 1, sm: 2 }
-                }}
-              >
-                {percentage}%
-              </Button>
-            ))}
-          </div>
         </Paper>
 
         <Paper 
