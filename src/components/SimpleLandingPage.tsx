@@ -85,7 +85,7 @@ const SimpleLandingPage: React.FC = () => {
     setConfirmDialog(false);
     setSuccessMessage(`Loan created successfully! You received ${maxBorrowRLUSD.toFixed(0)} RLUSD for ${selectedTerm} days.`);
     setShowSuccess(true);
-    setCollateralAmount('150000');
+    setCollateralPercentage(7.5); // Reset to default 7.5%
   };
 
   const termOptions = [
