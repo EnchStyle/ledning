@@ -693,8 +693,7 @@ const OptimizedPortfolio: React.FC = () => {
                 )}
               </Box>
             );
-          })()
-          ) : (
+          })() : (
             <Box>
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 Enter additional collateral amount (XPM)
