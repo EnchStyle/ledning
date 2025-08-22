@@ -34,8 +34,8 @@ import { LoanTermDays } from '../types/lending';
 import { FINANCIAL_CONSTANTS } from '../config/demoConstants';
 
 const SimpleLandingPage: React.FC = () => {
-  const { createLoan, marketData } = useLending();
-  const [collateralAmount, setCollateralAmount] = useState<string>('150000');
+  const { createLoan, marketData, walletBalances } = useLending();
+  const [collateralPercentage, setCollateralPercentage] = useState<number>(7.5); // 7.5% = 150,000 XPM out of 2M
   const [selectedTerm, setSelectedTerm] = useState<LoanTermDays>(60);
   const [targetLTV, setTargetLTV] = useState<number>(40);
   const [confirmDialog, setConfirmDialog] = useState(false);
@@ -46,7 +46,7 @@ const SimpleLandingPage: React.FC = () => {
   const steps = ['Enter Collateral', 'Choose Terms', 'Review Risk', 'Confirm Loan'];
   const [completedSteps, setCompletedSteps] = useState([false, false, false, false]);
   
-  const collateral = parseFloat(collateralAmount) || 0;
+  const collateral = Math.floor((collateralPercentage / 100) * walletBalances.xpm);
   const collateralValueUSD = collateral * marketData.xpmPriceUSD;
   const maxBorrowRLUSD = calculateMaxBorrowRLUSD(collateral, marketData.xpmPriceUSD, targetLTV);
   const borrowValueUSD = maxBorrowRLUSD;
@@ -184,41 +184,67 @@ const SimpleLandingPage: React.FC = () => {
             </div>
           </div>
             
-          <TextField
-            fullWidth
-            label="XPM Amount"
-            type="number"
-            value={collateralAmount}
-            onChange={(e) => setCollateralAmount(e.target.value)}
-            sx={{ mb: 2 }}
-            inputProps={{ min: 1000, step: 1000 }}
-            helperText={
-              collateral < 1000 
-                ? "Minimum 1,000 XPM required" 
-                : collateral > 10000000 
-                  ? "Maximum 10,000,000 XPM allowed"
-                  : `Worth $${collateralValueUSD.toFixed(0)} USD at $${marketData.xpmPriceUSD.toFixed(4)} per XPM`
-            }
-            error={collateral > 0 && (collateral < 1000 || collateral > 10000000)}
-          />
+          <div style={{ marginBottom: '32px' }}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Select percentage of your balance: {collateralPercentage.toFixed(1)}%
+            </Typography>
+            <Slider
+              value={collateralPercentage}
+              onChange={(event, value: number | number[]) => setCollateralPercentage(value as number)}
+              min={0}
+              max={100}
+              step={0.1}
+              marks={[
+                { value: 0, label: '0%' },
+                { value: 25, label: '25%' },
+                { value: 50, label: '50%' },
+                { value: 75, label: '75%' },
+                { value: 100, label: '100%' }
+              ]}
+              sx={{ 
+                mb: 2,
+                '& .MuiSlider-mark': {
+                  backgroundColor: 'primary.main',
+                  height: 8,
+                  width: 2,
+                },
+                '& .MuiSlider-markLabel': {
+                  fontSize: '0.875rem',
+                }
+              }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h6" color="primary">
+                {collateral.toLocaleString()} XPM
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Worth ${collateralValueUSD.toFixed(0)} USD
+              </Typography>
+            </div>
+            <Typography variant="caption" color="text.secondary">
+              Available balance: {walletBalances.xpm.toLocaleString()} XPM
+            </Typography>
+            {collateral > 0 && collateral < 1000 && (
+              <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
+                Minimum 1,000 XPM required
+              </Typography>
+            )}
+          </div>
 
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Quick amounts:
-          </Typography>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
-            {[100000, 250000, 500000, 1000000].map((amount) => (
+            {[10, 25, 50, 75, 100].map((percentage) => (
               <Button
-                key={amount}
-                variant={collateral === amount ? "contained" : "outlined"}
+                key={percentage}
+                variant={Math.abs(collateralPercentage - percentage) < 0.1 ? "contained" : "outlined"}
                 size="small"
-                onClick={() => setCollateralAmount(amount.toString())}
+                onClick={() => setCollateralPercentage(percentage)}
                 sx={{ 
-                  minWidth: { xs: 60, sm: 'auto' },
+                  minWidth: { xs: 50, sm: 'auto' },
                   fontSize: { xs: '0.8rem', sm: '0.875rem' },
                   px: { xs: 1, sm: 2 }
                 }}
               >
-                {amount >= 1000000 ? `${amount / 1000000}M` : `${amount / 1000}K`}
+                {percentage}%
               </Button>
             ))}
           </div>
