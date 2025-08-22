@@ -185,38 +185,20 @@ const SimpleLandingPage: React.FC = () => {
           </div>
             
           <div style={{ marginBottom: '32px' }}>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Select percentage of your balance: {collateralPercentage.toFixed(1)}%
-            </Typography>
-            <Slider
-              value={collateralPercentage}
-              onChange={(event, value: number | number[]) => setCollateralPercentage(value as number)}
-              min={0}
-              max={100}
-              step={0.1}
-              marks={[
-                { value: 0, label: '0%' },
-                { value: 25, label: '25%' },
-                { value: 50, label: '50%' },
-                { value: 75, label: '75%' },
-                { value: 100, label: '100%' }
-              ]}
-              sx={{ 
-                mb: 2,
-                '& .MuiSlider-mark': {
-                  backgroundColor: 'primary.main',
-                  height: 8,
-                  width: 2,
-                },
-                '& .MuiSlider-markLabel': {
-                  fontSize: '0.875rem',
-                }
-              }}
-            />
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <Typography variant="body2" color="text.secondary">Amount:</Typography>
+            {/* Manual Input Section */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'flex-end', 
+              marginBottom: '24px',
+              gap: '16px'
+            }}>
+              <div style={{ flex: 1 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  Collateral Amount
+                </Typography>
                 <TextField
+                  fullWidth
                   value={collateral}
                   onChange={(e) => {
                     const value = parseFloat(e.target.value);
@@ -231,29 +213,94 @@ const SimpleLandingPage: React.FC = () => {
                       setCollateralPercentage(0);
                     }
                   }}
-                  size="small"
-                  sx={{ width: '150px' }}
+                  variant="outlined"
                   InputProps={{
-                    endAdornment: <Typography variant="body2" color="text.secondary">XPM</Typography>,
+                    endAdornment: <Typography variant="body1" color="text.primary" sx={{ fontWeight: 500 }}>XPM</Typography>,
                     inputProps: { 
-                      style: { textAlign: 'right' }
+                      style: { textAlign: 'right', fontSize: '1.1rem', fontWeight: 500 }
+                    },
+                    sx: {
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: 'primary.main',
+                        },
+                      }
                     }
                   }}
                   type="number"
                 />
               </div>
-              <Typography variant="body2" color="text.secondary">
-                Worth ${collateralValueUSD.toFixed(0)} USD
-              </Typography>
+              <div style={{ minWidth: '140px', textAlign: 'right' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                  Value
+                </Typography>
+                <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
+                  ${collateralValueUSD.toFixed(0)} USD
+                </Typography>
+              </div>
             </div>
-            <Typography variant="caption" color="text.secondary">
-              Available balance: {walletBalances.xpm.toLocaleString()} XPM
-            </Typography>
-            {collateral > 0 && collateral < 1000 && (
-              <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
-                Minimum 1,000 XPM required
+
+            {/* Percentage Slider Section */}
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+                <Typography variant="body2" color="text.secondary">
+                  Percentage of balance
+                </Typography>
+                <Typography variant="body2" color="primary" sx={{ fontWeight: 600 }}>
+                  {collateralPercentage.toFixed(1)}%
+                </Typography>
+              </div>
+              <Slider
+                value={collateralPercentage}
+                onChange={(event, value: number | number[]) => setCollateralPercentage(value as number)}
+                min={0}
+                max={100}
+                step={0.1}
+                marks={[
+                  { value: 0, label: '0%' },
+                  { value: 25, label: '25%' },
+                  { value: 50, label: '50%' },
+                  { value: 75, label: '75%' },
+                  { value: 100, label: '100%' }
+                ]}
+                sx={{ 
+                  '& .MuiSlider-mark': {
+                    backgroundColor: 'primary.main',
+                    height: 8,
+                    width: 2,
+                  },
+                  '& .MuiSlider-markLabel': {
+                    fontSize: '0.75rem',
+                    transform: 'translateX(-50%)',
+                    '&.MuiSlider-markLabelActive': {
+                      color: 'primary.main',
+                    }
+                  },
+                  '& .MuiSlider-thumb': {
+                    width: 20,
+                    height: 20,
+                  },
+                  '& .MuiSlider-rail': {
+                    height: 6,
+                  },
+                  '& .MuiSlider-track': {
+                    height: 6,
+                  }
+                }}
+              />
+            </div>
+
+            {/* Balance and Validation Info */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="caption" color="text.secondary">
+                Available: {walletBalances.xpm.toLocaleString()} XPM
               </Typography>
-            )}
+              {collateral > 0 && collateral < 1000 && (
+                <Typography variant="caption" color="error">
+                  Minimum 1,000 XPM required
+                </Typography>
+              )}
+            </div>
           </div>
         </Paper>
 
