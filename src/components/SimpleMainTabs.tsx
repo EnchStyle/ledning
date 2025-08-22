@@ -9,7 +9,6 @@ import InteractiveLoanCalculator from './InteractiveLoanCalculator';
 import AdvancedLoanManagement from './AdvancedLoanManagement';
 import StaticPortfolioDashboard from './StaticPortfolioDashboard';
 import HighPerformancePortfolioDashboard from './HighPerformancePortfolioDashboard';
-import PlatformHeader from './PlatformHeader';
 import { useLending } from '../context/LendingContext';
 
 interface TabPanelProps {
@@ -65,7 +64,6 @@ const SimpleMainTabs: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <PlatformHeader />
       <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
         <Container maxWidth="lg">
           <Tabs 

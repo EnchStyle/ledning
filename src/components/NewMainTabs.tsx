@@ -8,7 +8,6 @@ import {
 import SimpleLandingPage from './SimpleLandingPage';
 import OptimizedPortfolio from './OptimizedPortfolio';
 import SettingsPanel from './SettingsPanel';
-import PlatformHeader from './PlatformHeader';
 import { useLending } from '../context/LendingContext';
 
 interface TabPanelProps {
@@ -50,7 +49,6 @@ const NewMainTabs: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <PlatformHeader />
       <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
         <Container maxWidth="lg">
           <Tabs 
