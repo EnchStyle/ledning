@@ -575,7 +575,7 @@ const SimpleLoansManager: React.FC = () => {
               !repayAmount || 
               parseFloat(repayAmount || '0') <= 0 ||
               parseFloat(repayAmount || '0') > walletBalances.rlusd ||
-              (repayDialog.loan && parseFloat(repayAmount || '0') > (repayDialog.loan.borrowedAmount + repayDialog.loan.fixedInterestAmount))
+              (repayDialog.loan ? parseFloat(repayAmount || '0') > (repayDialog.loan.borrowedAmount + repayDialog.loan.fixedInterestAmount) : false)
             }
           >
             Repay {parseFloat(repayAmount || '0') > 0 ? `${parseFloat(repayAmount).toFixed(2)} RLUSD` : ''}
