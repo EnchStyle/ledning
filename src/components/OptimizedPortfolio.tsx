@@ -33,9 +33,12 @@ import {
   MonetizationOn as EarningsIcon,
   Add as QuickActionIcon,
   Close as CloseIcon,
+  History as HistoryIcon,
+  Timeline as TimelineIcon,
 } from '@mui/icons-material';
 import { useLending } from '../context/LendingContext';
 import SmartTooltip from './SmartTooltip';
+import LoanHistory from './LoanHistory';
 import { FINANCIAL_CONSTANTS } from '../config/demoConstants';
 import { logger } from '../utils/logger';
 
@@ -239,6 +242,7 @@ const OptimizedPortfolio: React.FC = () => {
   const [collateralAmount, setCollateralAmount] = useState<string>('');
   const [processing, setProcessing] = useState(false);
   const [notification, setNotification] = useState<string>('');
+  const [showHistory, setShowHistory] = useState<boolean>(false);
 
   // Portfolio calculations with memoization for performance
   const portfolioMetrics = useMemo(() => {
@@ -387,28 +391,54 @@ const OptimizedPortfolio: React.FC = () => {
 
   return (
     <Box>
-      {/* Header */}
+      {/* Header with Toggle */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <OverviewIcon color="primary" sx={{ mr: 2, fontSize: 32 }} />
+          {showHistory ? <HistoryIcon color="primary" sx={{ mr: 2, fontSize: 32 }} /> : <OverviewIcon color="primary" sx={{ mr: 2, fontSize: 32 }} />}
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700 }}>
-              Portfolio Overview
+              {showHistory ? 'Loan History' : 'Portfolio Overview'}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              {portfolioMetrics.activeLoans} active • {portfolioMetrics.maturedLoans} matured • {portfolioMetrics.liquidatedLoans} liquidated
+              {showHistory 
+                ? `Complete record of ${userLoans.length} loan${userLoans.length !== 1 ? 's' : ''}`
+                : `${portfolioMetrics.activeLoans} active • ${portfolioMetrics.maturedLoans} matured • ${portfolioMetrics.liquidatedLoans} liquidated`
+              }
             </Typography>
           </Box>
         </Box>
         
-        {portfolioMetrics.atRiskLoans > 0 && (
-          <Alert severity="warning" sx={{ maxWidth: 300 }}>
-            <Typography variant="body2">
-              {portfolioMetrics.atRiskLoans} loan{portfolioMetrics.atRiskLoans > 1 ? 's' : ''} need attention
-            </Typography>
-          </Alert>
-        )}
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Button
+            variant={!showHistory ? "contained" : "outlined"}
+            startIcon={<OverviewIcon />}
+            onClick={() => setShowHistory(false)}
+            size="small"
+          >
+            Portfolio
+          </Button>
+          <Button
+            variant={showHistory ? "contained" : "outlined"}
+            startIcon={<HistoryIcon />}
+            onClick={() => setShowHistory(true)}
+            size="small"
+          >
+            History
+          </Button>
+          {!showHistory && portfolioMetrics.atRiskLoans > 0 && (
+            <Alert severity="warning" sx={{ maxWidth: 300, ml: 2 }}>
+              <Typography variant="body2">
+                {portfolioMetrics.atRiskLoans} loan{portfolioMetrics.atRiskLoans > 1 ? 's' : ''} need attention
+              </Typography>
+            </Alert>
+          )}
+        </Box>
       </Box>
+
+      {showHistory ? (
+        <LoanHistory />
+      ) : (
+        <>
 
 
       {/* Wallet Balance */}
@@ -728,6 +758,8 @@ const OptimizedPortfolio: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+        </>
+      )}
 
       {/* Success Notification */}
       <Snackbar
